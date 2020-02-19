@@ -1,0 +1,135 @@
+// terms associated with Manus robot base
+// ================================================
+
+// singular noun
+
+=[AKO]
+  gripper
+  hand
+
+
+// adjective
+
+=[HQ]
+  close
+
+
+// -----------------------------------------
+
+// modifier
+
+=[MOD]
+  quickly
+  slowly
+
+
+// direction
+
+=[DIR]
+  forward
+  forwards
+  backward
+  backwards
+  clockwise
+  counterclockwise
+  right
+  left
+
+
+// imperative verb
+
+=[ACT]
+  freeze
+  drive
+  step
+  move
+  turn
+  rotate
+  spin
+  raise
+  lift
+  lower
+  release
+  grab
+  open
+  close
+
+
+// ================================================
+
+// plural noun
+
+=[AKO-S]
+  grippers
+  hands
+
+
+// comparative adjectives
+
+=[HQ-ER]
+  closer
+
+
+// superlative adjectives
+
+=[HQ-EST]
+  closest
+
+
+// -----------------------------------------
+
+// present verb
+
+=[ACT-S]
+  freezes
+  drives
+  steps
+  moves
+  turns
+  rotates
+  spins
+  raises
+  lifts
+  lowers
+  releases
+  grabs
+  opens
+  closes
+
+
+// progressive verb
+
+=[ACT-G]
+  freezing
+  driving
+  stepping
+  moving
+  turning
+  rotating
+  spinning
+  raising
+  lifting
+  lowering
+  releasing
+  grabbing
+  opening
+  closing
+
+
+// past or passive verb
+
+=[ACT-D]
+  froze
+  drove
+  stepped
+  moved
+  turned
+  rotated
+  spun
+  raised
+  lifted
+  lowered
+  released
+  grabbed
+  opened
+  closed

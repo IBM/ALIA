@@ -1,0 +1,104 @@
+// terms associated with the visual object characterization system
+// ================================================
+
+// singular noun
+
+=[AKO]
+  color
+  size
+  width
+
+
+// adjective
+
+=[HQ]
+  red
+  orange
+  yellow
+  green
+  blue
+  purple
+  black
+  gray
+  white
+  striped
+  big
+  small
+  wide 
+  narrow
+
+
+// -----------------------------------------
+
+// imperative verb
+
+=[ACT]
+  see
+
+
+// ================================================
+
+// plural noun
+
+=[AKO-S]
+  colors
+  sizes
+  widths
+
+
+// comparative adjectives
+
+=[HQ-ER]
+  redder
+  oranger
+  yellower
+  greener
+  bluer
+  purpler
+  blacker
+  grayer
+  whiter
+  more striped
+  bigger
+  smaller
+  wider
+  narrower
+
+// superlative adjectives
+
+=[HQ-EST]
+  reddest
+  orangest
+  yellowest
+  greenest
+  bluest
+  purplest
+  blackest
+  grayest
+  whitest
+  most striped
+  biggest
+  smallest
+  widest
+  narrowest
+
+
+// -----------------------------------------
+
+// present verb
+
+=[ACT-S]
+  sees
+
+
+// progressive verb
+
+=[ACT-G]
+  seeing
+
+
+// past or passive verb
+
+=[ACT-D]
+  saw
+

@@ -1,0 +1,47 @@
+// DERIVED MORPHOLOGIES
+// ================================================
+
+// plural noun
+
+=[AKO-S]
+
+
+// comparative adjectives
+
+=[HQ-ER]
+
+
+// superlative adjectives
+
+=[HQ-EST]
+
+
+
+// -----------------------------------------
+
+// present verb
+
+=[ACT-S]
+  nods
+  shakes
+  assents
+  bobbles
+
+
+// progressive verb
+
+=[ACT-G]
+  nodding
+  shaking
+  assenting
+  bobbling
+
+
+// past or passive verb
+
+=[ACT-D]
+  nodded
+  shook
+  assented
+  bobbled
+

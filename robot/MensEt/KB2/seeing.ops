@@ -1,0 +1,33 @@
+// NOTE - OPERATOR 1: If you see something freeze and find out what it is
+trig:
+  NOTE[ act-1 -lex-  see
+              -agt-> obj-3
+              -obj-> obj-5
+        obj-3 -lex-  you ]
+-----------------
+   >>>
+      DO[ act-6 -lex-  freeze
+                -tag-  vimp ]
+   +++
+    FIND[ ako-8 -ako-> obj-5 ]
+   <<<
+
+
+// FIND - OPERATOR 2: To find out what something is find out what color it is
+trig:
+  FIND[ ako-2 -ako-> obj-1 ]
+-----------------
+  FIND[  hq-3 -hq--> obj-1
+        ako-4 -lex-  color
+              -ako-> hq-3  ]
+
+
+// FIND - OPERATOR 3: To find out what something is check if it is striped
+trig:
+  FIND[ ako-2 -ako-> obj-1 ]
+pref: 0.5
+-----------------
+   CHK[  hq-3 -lex-  striped
+              -hq--> obj-1 ]
+
+

@@ -1,0 +1,179 @@
+// terms associated with ELI robot base
+// ================================================
+
+// singular noun
+
+=[AKO]
+  grip
+  arm
+  hand
+  head
+
+
+// adjective
+
+=[HQ]
+  tired
+
+
+// -----------------------------------------
+
+// modifier
+
+=[MOD]
+  quickly
+  slowly
+
+
+// direction
+
+=[DIR]
+  forward
+  forwards
+  backward
+  backwards
+  clockwise
+  counterclockwise
+  right 
+  left
+  up 
+  down
+  level
+  straight
+  vertical
+  horizontal
+  sideways
+
+
+// imperative verb
+
+=[ACT]
+  lose
+  freeze
+  drive
+  step
+  move
+  turn
+  rotate
+  spin
+  raise
+  lift
+  lower
+  open
+  release
+  close
+  hold
+  gaze
+  extend
+  retract
+  shift
+  point
+  twist
+  reset
+
+
+// ================================================
+
+// plural noun
+
+=[AKO-S]
+  grips
+  arms
+  hands
+  heads
+
+
+// comparative adjectives
+
+=[HQ-ER]
+  more tired
+
+
+// superlative adjectives
+
+=[HQ-EST]
+  most tired
+
+
+// -----------------------------------------
+
+// present verb
+
+=[ACT-S]
+  loses
+  freezes
+  drives
+  steps
+  moves
+  turns
+  rotates
+  spins
+  raises
+  lifts
+  lowers
+  opens
+  releases
+  closes
+  holds
+  gazes
+  extends
+  retracts
+  shifts
+  points
+  twists
+  resets
+
+
+// progressive verb
+
+=[ACT-G]
+  losing
+  freezing
+  driving
+  stepping
+  moving
+  turning
+  rotating
+  spinning
+  raising
+  lifting
+  lowering
+  opening
+  releasing
+  closing
+  holding
+  gazing
+  extending
+  retracting
+  shifting
+  pointing
+  twisting
+  resetting
+
+
+// past or passive verb
+
+=[ACT-D]
+  lost
+  froze
+  drove
+  stepped
+  moved
+  turned
+  rotated
+  spun
+  raised
+  lifted
+  lowered
+  opened
+  released
+  closed
+  held
+  gazed
+  extended
+  retracted
+  shifted
+  pointed
+  twisted
+  reset
+

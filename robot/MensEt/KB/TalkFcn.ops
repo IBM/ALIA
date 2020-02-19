@@ -1,0 +1,10 @@
+// commands understood by text-to-speech pattern generator
+// ================================================
+
+// To say something ...
+trig:
+    DO[ act-1 -lex-  say
+              -obj-> txt-1 ]
+-----------
+   FCN[ fcn-1 -lex-  echo_wds 
+              -pat-> txt-1 ]

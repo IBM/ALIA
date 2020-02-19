@@ -1,0 +1,91 @@
+// terms associated with jhcGraphizer speech acts
+// ================================================
+
+// singular noun
+
+=[AKO]
+  rule 
+  operator
+
+
+// adjective
+
+=[HQ]
+  awake
+
+
+// -----------------------------------------
+
+// imperative verb
+
+=[ACT]
+  understand
+  hail
+  dismiss
+  give
+  ask
+  tell
+  acknowledge
+  announce
+
+
+// ================================================
+
+// plural noun
+
+=[AKO-S]
+  rules
+  operators
+
+
+// comparative adjectives
+
+=[HQ-ER]
+  more awake
+
+
+// superlative adjectives
+
+=[HQ-EST]
+  most awake
+
+
+// -----------------------------------------
+
+// present verb
+
+=[ACT-S]
+  understands
+  hails
+  dismisses
+  gives
+  asks
+  tells
+  acknowledges
+  announces
+
+
+// progressive verb
+
+=[ACT-G]
+  understanding
+  hailing
+  dismissing
+  giving
+  asking
+  telling
+  acknowledging
+  announcing
+
+
+// past or passive verb
+
+=[ACT-D]
+  understood
+  hailed
+  dismissed
+  gave
+  asked
+  told
+  acknowledged
+  announced

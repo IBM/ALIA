@@ -1,0 +1,272 @@
+// CLOSED CLASS WORDS
+// ================================================
+
+// requesting graciously
+
+=[POLITE]
+  please
+
+
+// initial greeting
+
+=[HELLO]
+  hello
+  hi
+
+
+// farewell
+
+=[BYE]
+  goodbye
+  bye
+  bye-bye
+
+
+// -----------------------------------------
+
+// part and owner
+
+=[HAS]
+  with
+
+
+// location phrase with reference object
+
+=[LOC]
+  behind
+  outside
+  inside
+  on
+  in
+  in front of
+  close to
+  
+
+// dual location phrase
+
+=[LOC-2]
+   between
+
+
+// indefinite article
+
+=[ind]
+  a
+  an
+
+
+// alternate indefinite article
+
+=[ind-alt]
+  another
+
+
+// definite article
+
+=[def]
+  the
+  that
+
+
+// alternate definite article
+
+=[alt]
+  other
+
+
+// ordinal
+
+=[ord]
+  first
+  second
+
+
+// indefinite noun
+
+=[n-ind]
+  something
+  someone
+
+
+// definite noun
+
+=[REF-D]
+  that
+  this
+
+
+// something to be determined
+
+=[n-find]
+  what
+
+
+// pronoun
+
+=[REF]
+  I
+  me
+  you
+  he
+  she
+  him
+  her
+  it
+  they
+  them
+
+
+// possessive pronoun
+
+=[WRT]
+  my
+  your
+  its
+  their
+
+
+// place
+
+=[PLACE]
+  here
+
+
+// degree
+
+=[DEG]
+  very
+  very very
+  fairly
+
+
+// amount
+
+=[AMT]
+  a lot
+  far
+  a little (bit)
+  slightly
+  way
+  all the way
+
+
+// -----------------------------------------
+
+// auxiliary verbs
+
+=[aux]
+  is
+  are
+
+
+// infinitive
+
+=[inf]
+  to
+
+
+// any copula form
+
+=[be]
+  <be-sing>
+  <be-pl>
+  be
+
+
+// singular copula 
+
+=[be-sing]
+  is
+  am
+
+
+// plural copula
+
+=[be-pl]
+  are
+
+
+// negation
+
+=[NEG]
+  not
+
+
+// preference
+
+=[PREF]
+  could
+  should
+  always
+  must
+  might
+
+
+// strength
+
+=[CONF]
+  always
+  usually
+  probably
+  sometimes
+  occasionally
+  seldom
+  never
+
+
+// belief
+
+=[BLF]
+  may
+  might
+  definitely
+  certainly
+  probably
+  likely
+  possibly
+
+
+// particle
+
+=[part]
+  out
+
+
+// -----------------------------------------
+
+// conjunctions
+
+=[conj]
+  and
+
+
+// argument introduction
+
+=[arg]
+  that
+  whether
+
+
+// before attempting action 
+
+=[BEFORE]
+  before
+
+
+// after attempting action
+
+=[AFTER]
+  after
+
+
+// conditions
+
+=[if]
+  if
+
+
+// consequents
+
+=[then]
+  then
+

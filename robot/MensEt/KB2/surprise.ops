@@ -1,0 +1,25 @@
+// To express surprise say "Uh oh"
+trig:
+    DO[ act-1 -lex-  express 
+              -obj-> obj-1
+        ako-1 -lex-  surprise
+              -ako-> obj-1 ]
+-----------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  uh oh! I think I'm in trouble ]
+
+
+
+// To express surprise say "Yikes!"
+trig:
+    DO[ act-1 -lex-  express 
+              -obj-> obj-1
+        ako-1 -lex-  surprise
+              -ako-> obj-1 ]
+-----------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  yikes! Save me master ]
+
+

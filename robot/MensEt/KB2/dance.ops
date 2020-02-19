@@ -1,0 +1,32 @@
+// DO - OPERATOR 11
+trig:
+    DO[ act-1 -lex-  shimmy ]
+-----------------
+    DO[ act-3 -lex-  turn
+        dir-5 -lex-  left
+              -dir-> act-3 ]
+    DO[ act-7 -lex-  turn
+        dir-9 -lex-  right
+              -dir-> act-7 ]
+
+
+// DO - OPERATOR 12
+trig:
+    DO[ act-1 -lex-  cha-cha ]
+-----------------
+    DO[ act-3 -lex-  drive
+        dir-5 -lex-  forward
+              -dir-> act-3 ]
+    DO[ act-7 -lex-  drive
+        dir-9 -lex-  backward
+              -dir-> act-7 ]
+
+
+// DO - OPERATOR 13
+trig:
+    DO[ act-1 -lex-  dance ]
+-----------------
+    DO[ act-3 -lex-  cha-cha ]
+    DO[ act-5 -lex-  shimmy ]
+
+

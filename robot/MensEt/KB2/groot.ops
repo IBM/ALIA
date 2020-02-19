@@ -1,0 +1,42 @@
+// OP - refuse commands from Groot
+trig:
+  NOTE[  req-1 -lex-   tell
+               -agt--> user-1
+               -dest-> self-1
+               -cmd->  act-1
+        user-1 -lex-   Groot ]
+unless:  mod-1 -lex-   polite
+               -mod--> req-1
+---------------
+    DO[ act-2 -lex-  sass
+              -obj-> obj-1
+        ako-1 -lex-  vegetable
+              -ako-> obj-1 ]
+  PUNT[ ]
+
+
+// OP - ask for politeness
+trig:
+    DO[ act-1 -lex-  sass
+              -obj-> user-1
+        ako-1 -lex-  vegetable
+              -ako-> user-1 ]
+---------------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  only if you ask nicely ]
+
+
+// OP - disparage species
+trig:
+    DO[ act-1 -lex-  sass
+              -obj-> user-1
+        ako-1 -lex-  vegetable
+              -ako-> user-1 ]
+---------------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  now I'm taking orders from a vegetable? ]
+
+
+              

@@ -1,0 +1,36 @@
+
+// positive response to Y/N question
+trig:
+  DO[ act-1 -lex-   tell
+            -dest-> user-1
+            -ynq--> fact-1
+      fact-1 ]
+------
+  DO[ act-1 -lex-  say
+             -obj-> txt-1
+       txt-1 -str-  yes ]
+
+
+// negative response to Y/N question
+trig:
+  DO[ act-1  -lex-   tell
+             -dest-> user-1
+             -ynq--> fact-1
+      fact-1 -neg- 1]
+------
+  DO[ act-1 -lex-  say
+            -obj-> txt-1
+      txt-1 -str-  yes ]
+
+
+// unknown response to Y/N question
+trig:
+  DO[ act-1  -lex-   tell
+             -dest-> user-1
+             -ynq--> fact-1 ]
+pref: 0.5
+------
+  DO[ act-1 -lex-  say
+            -obj-> txt-1
+      txt-1 -str-  I don't know ]
+

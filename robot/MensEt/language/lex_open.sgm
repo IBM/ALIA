@@ -1,0 +1,159 @@
+// OPEN CLASS WORDS
+// ================================================
+
+// singular noun
+
+=[AKO]
+  dog
+  animal
+  cat
+  tiger
+  maid
+  tantrum
+  force
+  motion
+  parameter
+  accomplishment
+  finder
+  routine
+  head
+  sponge
+  Advil
+  collar
+  house
+  door
+  bottle 
+  can
+  table
+  block
+  object
+  wall
+  person
+  man
+  woman
+  boy
+  girl
+  finger
+  step
+  example
+  vegetable
+  zebra
+  ducky
+  car
+
+
+// mass nouns (do not take "the" or "a")
+
+=[AKO-M]
+  danger
+  surprise
+
+
+// adjective
+
+=[HQ]
+  furry
+  alive
+  new
+  violent
+  present
+  big
+  close
+  male
+  female
+  slippery
+  far
+  angry
+  sad
+  happy
+  scared
+
+
+// proper noun
+
+=[NAME]
+  Cyril
+  Tommy
+  Jon
+  Ivan
+  Groot
+  Rachel
+  Mary
+  Rick
+
+
+// robot name
+
+=[ATTN]
+  Robby
+
+
+// -----------------------------------------
+
+// modifier
+
+=[MOD]
+  hard
+  fast
+  briskly
+  slow
+
+
+// direction
+
+=[DIR]
+  away
+  widdershins
+
+
+// imperative verb
+
+=[ACT]
+  appear
+  wash
+  sleep
+  hit
+  throw
+  set
+  swing
+  retract
+  begin
+  whack
+  adjust
+  tuck
+  rejoice
+  figure
+  determine
+  run
+  put
+  pat
+  use
+  cha-cha
+  shimmy
+  dance
+  run
+  drop
+  hold
+  deny
+  demur
+  complain
+  apologize
+  describe
+  excuse
+  reach
+  teach
+  know
+  express
+  sass
+  do something
+  flee
+  sing
+  yack
+  twerk
+  waltz
+  tango
+  swing
+  riff
+  pirouette
+  proclaim
+

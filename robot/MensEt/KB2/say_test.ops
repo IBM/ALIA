@@ -1,0 +1,88 @@
+
+// "Me and my slippery fingers"
+trig:
+    DO[  act-1 -lex-  excuse ]
+-----------
+   SAY[ conj-1 -lex-   and
+               -conj-> self-1
+               -conj-> obj-1
+         ako-1 -lex-   finger
+               -ako--> obj-1
+               -wrt--> self-1
+          hq-1 -lex-   slippery
+               -hq---> obj-1 
+         obj-1 -tag-   npl 
+        self-1 -lex-   me 
+               -tag-   nsing ]     
+
+
+// "I don't see any"
+trig:
+    DO[ act-1 -lex-  deny ]
+-----------
+   SAY[ act-2 -lex- see
+              -neg- 1
+              -tag-  vpres
+              -obj-> obj-1 
+        obj-1 -tag-  nzero ]
+
+
+// "That is farther than I am able to reach"
+trig:
+    DO[  act-1 -lex-  demur ]
+-------------
+   SAY[   hq-2 -lex-  far
+               -tag-  comp
+               -hq--> obj-1
+               -wrt-> able-1
+        able-1 -lex-  able
+               -tag-  vpres
+               -obj-> act-2  
+         act-2 -lex-  reach 
+               -tag-  vinf ]
+
+
+// "But you did not teach me the steps"
+trig:
+  DO[ act-1 -lex- complain ]
+--------------
+ SAY[ conj-1 -lex-   but
+             -conj-> act-2
+       act-2 -lex-   teach
+             -neg-   1
+             -tag-   vpres
+             -agt--> user-3
+             -dest-> self-1 
+             -obj--> obj-1
+      user-3 -lex-   me
+      self-1 -lex-   you
+       ako-1 -lex-   step
+             -ako--> obj-1 
+       obj-1 -tag-   npl ]
+
+
+// "Sorry. I don't know how to do it"
+trig:
+  DO[ act-1 -lex- apologize ]
+-------------
+ SAY[ intj-1 -lex-  sorry ]
+ SAY[ know-1 -lex-  know           
+             -neg-  1
+             -tag-  vpres
+             -obj-> how-1
+       how-1 -lex-  how
+             -obj-> act-1 
+       act-1 -tag-  vinf ]
+
+
+// "It is an example of X"
+trig:
+   DO[ act-1 -lex-  describe
+             -obj-> obj-1
+       lex-1 -lex-> ako-1
+       ako-1 -ako-> obj-1 ]
+--------------
+  SAY[ ako-1 -lex-  example
+             -ako-> obj-1
+             -wrt-> lex-1 
+       obj-1 -tag-  nsing ]

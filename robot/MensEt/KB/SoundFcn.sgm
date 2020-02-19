@@ -1,0 +1,91 @@
+// terms associated with sound effect system
+// ================================================
+
+// imperative verb
+
+=[ACT]
+  pause
+  bleep
+  bloop
+  ching
+  chong
+  bing
+  bong
+  plink
+  plunk
+  toot
+  honk
+  squawk
+  warble
+  tweet
+  crash
+  thump
+  chirp
+
+
+// ================================================
+
+// present verb
+
+=[ACT-S]
+  pauses
+  bleeps
+  bloops
+  chings
+  chongs
+  bings
+  bongs
+  plinks
+  plunks
+  toots
+  honks
+  squawks
+  warbles
+  tweets
+  crashes
+  thumps
+  chirps
+
+
+// progressive verb
+
+=[ACT-G]
+  pausing
+  bleeping
+  blooping
+  chinging
+  chonging
+  binging
+  bonging
+  plinking
+  plunking
+  tooting
+  honking
+  squawking
+  warbling
+  tweeting
+  crashing
+  thumping
+  chirping
+
+
+// past or passive verb
+
+=[ACT-D]
+  paused
+  bleeped
+  blooped
+  chinged
+  chonged
+  binged
+  bonged
+  plinked
+  plunked
+  tooted
+  honked
+  squawked
+  warbled
+  tweeted
+  crashed
+  thumped
+  chirped

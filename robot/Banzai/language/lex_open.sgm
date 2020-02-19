@@ -1,0 +1,53 @@
+// OPEN CLASS WORDS
+// ================================================
+
+// singular noun
+
+=[AKO]
+  tiger
+
+
+// mass nouns (do not take "the" or "a")
+
+=[AKO-M]
+
+
+// adjective
+
+=[HQ]
+  close
+
+
+// proper noun
+
+=[NAME]
+
+
+// robot name
+
+=[ATTN]
+
+
+
+// -----------------------------------------
+
+// modifier
+
+=[MOD]
+
+
+// direction
+
+=[DIR]
+
+
+// imperative verb
+
+=[ACT]
+  nod
+  shake
+  assent
+  bobble
+  wave
+  runaway
+

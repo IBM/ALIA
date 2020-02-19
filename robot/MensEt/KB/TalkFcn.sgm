@@ -1,0 +1,28 @@
+// terms associated with text-to-speech pattern generator
+// ================================================
+
+// imperative verb
+
+=[ACT]
+  say
+
+
+// ================================================
+
+// present verb
+
+=[ACT-S]
+  says
+
+
+// progressive verb
+
+=[ACT-G]
+  saying
+
+
+// past or passive verb
+
+=[ACT-D]
+  said
+

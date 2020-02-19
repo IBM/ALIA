@@ -1,0 +1,122 @@
+// Respond to speech acts posted by jhcGraphizer
+// ================================================
+
+// OP 1 - "If someone hails you then acknowledge that"
+trig:
+  NOTE[ input-1 -lex-   hail
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-1 -lex-  acknowledge
+              -obj-> input-1 ]
+
+
+// OP 2 - "To acknowledge that someone hailed you say I'm here"
+trig:
+    DO[   act-1 -lex-   acknowledge
+                -obj--> input-1
+        input-1 -lex-   hail
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  I'm here ]
+
+
+// OP 3 - "To acknowledge that someone hailed you say I'm listening"
+trig:
+    DO[   act-1 -lex-   acknowledge
+                -obj--> input-1
+        input-1 -lex-   hail
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  I'm listening ]
+
+
+// ----------------------------------------
+
+// OP 4 - "If someone greets you then acknowledge that"
+trig:
+  NOTE[ input-1 -lex-   greet
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-1 -lex-  acknowledge
+              -obj-> input-1 ]
+
+
+// OP 5 - "To acknowledge that someone greeted you say hello there"
+trig:
+    DO[   act-1 -lex-   acknowledge
+                -obj--> input-1
+        input-1 -lex-   greet
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  Hello there ]
+
+
+// OP 6 - "To acknowledge that someone greeted you say Nice to see you again"
+trig:
+    DO[   act-1 -lex-   acknowledge
+                -obj--> input-1
+        input-1 -lex-   greet
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  Nice to see you again ]
+
+
+// ----------------------------------------
+
+// OP 7 - "If someone dismisses you then acknowledge that"
+trig:
+  NOTE[ input-1 -lex-   dismiss
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-1 -lex-  acknowledge
+              -obj-> input-1 ]
+
+
+// OP 8 - "To acknowledge that someone dismissed you say goodbye for now"
+trig:
+    DO[   act-1 -lex-   acknowledge
+                -obj--> input-1
+        input-1 -lex-   dismiss
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  goodbye for now ]
+
+
+// OP 9 - "To acknowledge that someone dismissed you say Ta ta, see you later"
+trig:
+    DO[   act-1 -lex-   acknowledge
+                -obj--> input-1
+        input-1 -lex-   dismiss
+                -agt--> obj-1  
+                -dest-> obj-2  
+          obj-2 -lex-   you ]
+-----------------
+    DO[ act-2 -lex-  say
+              -obj-> txt-1
+        txt-1 -str-  Ta ta, see you later ]

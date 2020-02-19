@@ -1,0 +1,202 @@
+// TOP LEVEL PATTERNS
+// ================================================
+
+#include "alia_NP.sgm"
+#include "alia_VP.sgm"
+#include "lex_closed.sgm"
+
+#include "graphizer.sgm"
+#include "lex_open.sgm"
+#include "lex_deriv.sgm"
+
+
+// valid utterances once attention established
+
+=[toplevel]
+ <vocative>
+ (<vocative>) <main>
+ <main> <vocative>
+
+
+// calling out robot's name
+
+=[vocative]
+ ? <ATTN> ?
+
+
+// main categories of utterances
+
+=[main]
+  <HELLO>
+  <BYE>
+  <%Attn>
+  <%Rule>
+  <%Operator>
+
+
+// --------------------------------------------------
+
+// something to do or note
+
+=[%Attn]
+  (<POLITE>) <chain> (<POLITE>)
+  <fact>
+
+
+// --------------------------------------------------
+
+// halo deductive rule
+
+=[%Rule]
+  <$cond> (<then>) <$res>
+  <$res> <$cond>
+  <$cond-i> <$res-i>
+  <$cond-s> <$res-s>
+  <$macro>
+
+
+// rule precondition
+
+=[$cond]
+  <if> <fact>
+
+
+// rule result
+
+=[$res]
+  <fact>
+
+
+// rule precondition (indefinite)
+
+=[$cond-i]
+  <%obj-i>
+  <HQ>
+
+
+// rule result (for indefinite)
+
+=[$res-i]
+  <$add>
+
+
+// rule precondition (plural indefinite)
+
+=[$cond-s]
+  <%obj-s>
+
+
+// rule result (for plural indefinite)
+
+=[$res-s]
+  <vp> ((<np-s>) <np-s>)
+  <vp> (<np-s>) to <cmd>
+  <$add>
+
+
+// term redefinition (for verb related elements)
+
+=[$macro]
+  <ACT> <equiv> <ACT>
+  <DIR> <equiv> <DIR>
+  <MOD> <equiv> <MOD>
+
+
+// directional equivalence relation 
+
+=[equiv]
+  means
+
+
+// --------------------------------------------------
+
+// procedural memory operator
+
+=[%Operator]
+  <$trig> (<then>) <$proc>
+  <$trig-n> ((but) instead (<PREF>) <$proc>)
+ 
+
+// operator trigger goal
+
+=[$trig]
+  <inf> <cmd>
+  <BEFORE> <cmd>
+  <AFTER> <cmd>
+  <if> <fact>
+  <if> <%obj-i> <$add>
+
+
+// operator procedure to follow
+
+=[$proc]
+ <chain>
+
+
+// sequence of activites
+
+=[chain]
+  <step>
+  <step> (<mid-step> (<mid-step> (<mid-step> (<mid-step>)))) <seq> <step>
+
+
+// middle of sequence of activities
+
+=[mid-step]
+  (<seq>) <step>
+
+
+// sequential continuation
+
+=[seq]
+  then
+
+
+// sequential step in chain
+
+=[step]
+  <cmd>
+  <%play>
+
+
+// parallel set of activities
+
+=[%play]
+  <cmd> ((<par>) <cmd> ((<par>) <cmd>)) <par> <cmd>
+
+
+// parallel addition
+ 
+=[par]
+  and (also)
+
+
+// advice not to do something
+
+=[$trig-n]
+  <dont> <cmd>
+  <if> <fact> (<then>) <punt>
+
+
+// prohibition phrases
+
+=[dont]
+  don't
+  do not
+  never
+  you should not
+  you should never
+
+
+// probibition actions
+
+=[punt]
+  don't 
+  do not
+
+
+
+
+
+
+

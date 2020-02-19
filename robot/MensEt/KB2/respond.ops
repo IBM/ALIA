@@ -1,0 +1,96 @@
+// Language-based communication with user
+
+// OP 1 - Accept user statement
+trig:
+  NOTE[ say-1 -lex-   say
+              -agt--> agt-3
+              -fact-> fact-4 ]
+---------------
+  NOTE[ fact-4 ]
+
+
+// OP 2 - Do what user commands
+trig:
+  NOTE[ req-1 -lex-  ask
+              -agt-> agt-3
+              -cmd-> cmd-4 ]
+---------------
+    DO[ cmd-4 ]
+
+
+// OP 3 - Accept a yes/no question
+trig:
+  NOTE[ ask-1 -lex-   ask
+              -agt--> agt-3
+              -ynq--> fact-4 ]
+---------------
+    DO[ act-5 -lex-   tell 
+              -dest-> agt-3
+              -ynq--> fact-4 ]
+
+
+// OP 4 - Make an effort to find yes/no answer
+trig:
+  ANTE[ act-1 -lex-   tell 
+              -dest-> agt-3
+              -ynq--> fact-4 ]
+---------------
+   CHK[ fact-4 ]
+
+
+// OP 5 - Generate a language response to yes/no question
+trig:
+    DO[ act-1 -lex-   tell 
+              -dest-> agt-3
+              -ynq--> fact-4 ]
+---------------
+   FCN[ fcn-5 -lex-   text_verify
+              -arg--> act-1 ]
+
+
+// OP 6 - Accept a wh- question
+trig:
+  NOTE[ ask-1 -lex-   ask
+              -agt--> agt-3
+              -whq--> fact-4 ]
+---------------
+    DO[ act-5 -lex-   tell
+              -dest-> agt-3
+              -whq--> fact-4 ]
+
+
+// OP 7 - Make an effort to find wh- answer
+trig:
+  ANTE[ act-1 -lex-   tell
+              -dest-> agt-3
+              -whq--> fact-4 ]
+---------------
+  FIND[ fact-4 ]
+
+
+// OP 8 - Generate a language response to wh- question
+trig:
+    DO[ act-1 -lex-   tell
+              -dest-> agt-3
+              -whq--> fact-4 ]
+---------------
+   FCN[ fcn-5 -lex-   text_describe
+              -arg--> act-1 ]
+
+
+// OP 9 - Generate a language output statement
+trig:
+    DO[ act-1 -lex-   say
+              -obj--> fact-3 ]
+---------------
+   FCN[ fcn-4 -lex-   text_assert
+              -arg--> act-1 ]
+      
+
+// OP 10 - Generate a language output question
+trig:
+    DO[ act-1 -lex-   ask
+              -obj--> fact-3 ]
+---------------
+   FCN[ fcn-4 -lex-   text_query
+              -arg--> act-1 ]
