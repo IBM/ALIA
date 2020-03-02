@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2018-2019 IBM Corporation
+// Copyright 2018-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -88,14 +88,21 @@ public:
   jhcNetNode *AddProp (jhcNetNode *head, const char *role, const char *word,
                        int neg =0, double def =1.0, const char *kind =NULL);
   jhcNetNode *AddLex (jhcNetNode *head, const char *word, int neg =0, double blf =1.0);
-  bool InPool (const jhcNetNode *n) const;
-  bool Recent (const jhcNetNode *n) const {return(n->gen == ver);}
+  bool InPool (const jhcNetNode *n) const {return InList(n);}
+  bool Recent (const jhcNetNode *n) const 
+    {return((n != NULL) && (n->gen == ver));}
+  void MarkBelief (jhcNetNode *n, double blf) const 
+    {if (n == NULL) return; n->SetBelief(blf); n->gen = ver;}
+
+  // searching
+  jhcNetNode *FindName (const char *full) const;
   jhcNetNode *FindNode (const char *desc, int make =0);
 
   // list access (overrides virtual)
   virtual jhcNetNode *NextNode (const jhcNetNode *prev =NULL) const
     {return((prev == NULL) ? Pool() : Next(prev));}
   virtual int Length () const {return NodeCnt();}
+  virtual bool InList (const jhcNetNode *n) const;
 
   // writing functions
   int Save (const char *fname, int lvl =0) const;

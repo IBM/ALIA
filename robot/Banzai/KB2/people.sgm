@@ -1,0 +1,76 @@
+// terms associated with person identification and proximity events
+// ================================================
+
+// singular noun
+
+=[AKO]
+
+
+
+// adjective
+
+=[HQ]
+
+
+
+// -----------------------------------------
+
+// imperative verb
+
+=[ACT]
+  see
+  greet
+  offer
+  serve
+  come
+
+
+// ================================================
+
+// plural noun
+
+=[AKO-S]
+
+
+
+// comparative adjectives
+
+=[HQ-ER]
+
+
+// superlative adjectives
+
+=[HQ-EST]
+
+
+
+// -----------------------------------------
+
+// present verb
+
+=[ACT-S]
+  sees
+  greets
+  offers
+  serves
+  comes
+
+
+// progressive verb
+
+=[ACT-G]
+  seeing
+  greeting
+  offering
+  serving
+  coming
+
+
+// past or passive verb
+
+=[ACT-D]
+  saw
+  greeted
+  offered
+  served
+  came

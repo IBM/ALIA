@@ -45,7 +45,7 @@ jhcAliaCore::~jhcAliaCore ()
 jhcAliaCore::jhcAliaCore ()
 {
   // global variables
-  ver = 1.50;
+  ver = 1.60;
   noisy = 1;
 
   // add literal text output to function repertoire
@@ -65,11 +65,11 @@ jhcAliaCore::jhcAliaCore ()
 ///////////////////////////////////////////////////////////////////////////
 
 //= Loads grammars, rules, and operators associated with current kernels.
+// each kernel has a BaseTag like "Social" and then files *.sgm, *.ops, and *.rules
 // grammar for speech altered separately (jhcAliaSpeech::kern_gram)
 
 void jhcAliaCore::KernExtras (const char *kdir)
 {
-  char fname[200];
   const jhcAliaKernel *k = &kern;
   const char *tag; 
   int nr0 = amem.NumRules(), nop0 = pmem.NumOperators();
@@ -77,21 +77,96 @@ void jhcAliaCore::KernExtras (const char *kdir)
   jprintf(1, noisy, "Loading kernel rules and operators:\n");
   while (k != NULL)
   {
-    // read files based on tags in each kernel class
+    // read files based on tags in each kernel class (0 = kernel level)
     tag = k->BaseTag();
     if (*tag != '\0')
-    {
-      if (readable(fname, 200, "%s%s.sgm", kdir, tag))
-        gr.LoadGrammar(fname);
-      if (readable(fname, 200, "%s%s.ops", kdir, tag))
-        pmem.Load(fname, 1, noisy + 1, 0);        // 0 = kernel level     
-      if (readable(fname, 200, "%s%s.rules", kdir, tag))
-        amem.Load(fname, 1, noisy + 1, 0);        // 0 = kernel level
-    }    
+      add_info(kdir, tag, noisy + 1, 0);
     k = k->NextPool();
   }
   jprintf(1, noisy, " TOTAL = %d operators, %d rules\n\n", 
           pmem.NumOperators() - nop0, amem.NumRules() - nr0);
+}
+
+
+//= Loads up a bunch of rules and operators as listed in file.
+// new ones are added with level = 0 to separate from customized stuff
+// sample "KB2/baseline.lst" file contains the text:
+//   animals
+//   colors
+//   acknowledge
+//   investigate
+// for each base name there can be files *.sgm, *.ops, and *.rules
+// all the named files should be in this same directory
+// grammar for speech altered separately (jhcAliaSpeech::base_gram)
+// returns number of individual files read
+
+int jhcAliaCore::Baseline (const char *list, int add, int rpt)
+{
+  char dir[80], line[80];
+  FILE *in;
+  char *end;
+  int n, cnt = 0;
+
+  // possibly clear old stuff then try to open file
+  if (add <= 0)
+  {
+    amem.ClearRules();
+    pmem.ClearOps();
+  }
+  if (fopen_s(&in, list, "r") != 0)
+    return jprintf(1, rpt, ">>> Could not open baseline knowledge file: %s !\n", list);
+  jprintf(1, rpt, "Adding baseline knowledge from: %s\n", list);
+
+  // save directory part of path
+  strcpy_s(dir, list);
+  if ((end = strrchr(dir, '/')) == NULL)
+    end = strrchr(dir, '\\');
+  if (end != NULL)
+    *(end + 1) = '\0';
+  else
+    *dir = '\0';
+
+  // read list of local file names
+  while (fgets(line, 80, in) != NULL)
+  {
+    // ignore commented out lines and blank ones
+    if (strncmp(line, "//", 2) == 0)
+      continue;
+    if ((n = (int) strlen(line)) <= 0)
+      continue;
+
+    // read various types of input (1 = extras level)
+    if (line[n - 1] == '\n')
+      line[n - 1] = '\0';
+    cnt += add_info(dir, line, rpt, 1);        
+  } 
+
+  // clean up
+  fclose(in);
+  jprintf(1, rpt, "  TOTAL = %d operators, %d rules\n\n", pmem.NumOperators(), amem.NumRules());
+  return cnt;
+}
+
+
+//= Read in lexical terms, operators, and rules associated with base string.
+// "rpt" is for messages, "level" is marking for additions: 0 = kernel, 1 = extras
+// returns total number of files read
+
+int jhcAliaCore::add_info (const char *dir, const char *base, int rpt, int level)
+{
+  char fname[200];
+  int cnt = 0;
+
+  if (readable(fname, 200, "%s%s.sgm", dir, base))
+    if (gr.LoadGrammar(fname) > 0)
+      cnt++;
+  if (readable(fname, 200, "%s%s.ops", dir, base))
+    if (pmem.Load(fname, 1, rpt, level) > 0)      
+      cnt++;
+  if (readable(fname, 200, "%s%s.rules", dir, base))
+    if (amem.Load(fname, 1, rpt, level) > 0)      
+      cnt++;
+  return cnt;
 }
 
 
@@ -111,77 +186,6 @@ bool jhcAliaCore::readable (char *fname, int ssz, const char *msg, ...) const
     return false;
   fclose(in);
   return true;
-}
-
-
-//= Loads up a bunch of rules and operators as listed in file.
-// new ones are added with level = 0 to separate from customized stuff
-// sample "baseline/simple.lst" file contains the text:
-//   animals.rules
-//   colors.rules
-//   acknowledge.ops
-//   investigate.ops
-// all the named files should be in this same directory
-// returns number of individual files read
-
-int jhcAliaCore::Baseline (const char *fname, int add, int rpt)
-{
-  char dir[80], line[80], name[200];
-  FILE *in;
-  char *end;
-  int n, cnt = 0;
-
-  // possibly clear old stuff then try to open file
-  if (add <= 0)
-  {
-    amem.ClearRules();
-    pmem.ClearOps();
-  }
-  if (fopen_s(&in, fname, "r") != 0)
-    return jprintf(1, rpt, ">>> Could not open baseline knowledge file: %s !\n", fname);
-  jprintf(1, rpt, "Adding baseline knowledge from: %s\n", fname);
-
-  // save directory part of path
-  strcpy_s(dir, fname);
-  if ((end = strrchr(dir, '/')) == NULL)
-    end = strrchr(dir, '\\');
-  if (end != NULL)
-    *(end + 1) = '\0';
-  else
-    *dir = '\0';
-
-  // read list of local file names
-  while (fgets(line, 80, in) != NULL)
-  {
-    // ignore commented out lines
-    if (strncmp(line, "//", 2) == 0)
-      continue;
-
-    // strip off any carriage return
-    n = (int) strlen(line);
-    if (line[n - 1] == '\n')
-      line[n - 1] = '\0';
-
-    // get fuller path then dispatch based on kind 
-    sprintf_s(name, "%s%s", dir, line);
-    if ((end = strrchr(name, '.')) == NULL)
-      continue;
-    if (strcmp(end + 1, "rules") == 0)
-    {
-      if (amem.Load(name, 1, rpt, 1) >= 0)     // 1 = extras level
-        cnt++;
-    }
-    else if (strcmp(end + 1, "ops") == 0)
-    {
-      if (pmem.Load(name, 1, rpt, 1) >= 0)     // 1 = extras level
-        cnt++;
-    }
-  } 
-
-  // clean up
-  fclose(in);
-  jprintf(1, rpt, "  TOTAL = %d operators, %d rules\n\n", pmem.NumOperators(), amem.NumRules());
-  return cnt;
 }
 
 
@@ -377,9 +381,10 @@ int jhcAliaCore::Interpret (const char *input, int awake, int amode)
 
 
 //= Run all focal elements in priority order.
+// must mark all seed nodes to retain before calling with gc > 0
 // tells how many foci were processed on this cycle
 
-int jhcAliaCore::RunAll ()
+int jhcAliaCore::RunAll (int gc)
 {
   char time[40];
   jhcAliaChain *s;
@@ -388,7 +393,7 @@ int jhcAliaCore::RunAll ()
   // get any observations, check expired attentional foci, and recompute halo
   jprintf(3, noisy, "\nSTEP %d ----------------------------------------------------\n\n", attn.Version());
   kern.Volunteer();
-  attn.Update();
+  attn.Update(gc);
   if (attn.Active() > 0)
     jprintf(2, noisy, "============================= %s =============================\n\n", jms_elapsed(time, t0));
 

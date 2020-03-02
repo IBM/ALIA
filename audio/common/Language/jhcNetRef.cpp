@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ jhcNetNode *jhcNetRef::FindMake (jhcNodePool& add, int find, jhcNetNode *f0)
 
   // possibly look for compatible existing node
   b.expect = cond.NumItems();
+  bth = 0.0;                                                   // abstract
   if ((find <= 0) || (MatchGraph(&b, mc, cond, add) <= 0))
     add.Assert(cond, win, -1.0);                               // force to true
   return add.MarkRef(win.LookUp(focus));

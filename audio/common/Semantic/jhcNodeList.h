@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2018 IBM Corporation
+// Copyright 2018-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ public:
   // main functions (override in derived classes)
   virtual jhcNetNode *NextNode (const jhcNetNode *prev =NULL) const =0;
   virtual int Length () const =0;
+  virtual bool InList (const jhcNetNode *n) const =0;
 
 
 };

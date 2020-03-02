@@ -78,6 +78,7 @@ int jhcFaceName::Defaults (const char *fname, int local)
   int ok = 1;
 
   ok &= name_params(fname);
+  ok &= fr.Defaults(fname);
   ok &= jhcHeadGaze::Defaults(fname);
   if ((local <= 0) && (s3 != NULL))
     ok &= s3->Defaults(fname);
@@ -88,11 +89,12 @@ int jhcFaceName::Defaults (const char *fname, int local)
 //= Write current processing variable values to a file.
 // saves depth-based person finder/track also if local <= 0
 
-int jhcFaceName::SaveVals (const char *fname, int local) const
+int jhcFaceName::SaveVals (const char *fname, int local)
 {
   int ok = 1;
 
   ok &= nps.SaveVals(fname);
+  ok &= fr.SaveVals(fname);
   ok &= jhcHeadGaze::SaveVals(fname);
   if ((local <= 0) && (s3 != NULL))
     ok &= s3->SaveVals(fname);
@@ -138,6 +140,7 @@ void jhcFaceName::Reset (int local)
 
 void jhcFaceName::SetCam (const jhcMatrix& pos, const jhcMatrix& dir)
 {
+  SetAttn(pos);
   if (s3 != NULL)
     s3->SetCam(0, pos, dir);
 }

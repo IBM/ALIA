@@ -447,6 +447,12 @@
     <ClCompile Include="..\common\Body\jhcBackgRWI.cpp">
       <Filter>Source Files\common robot\Body</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\audio\common\Language\jhcMorphFcns.cpp">
+      <Filter>Source Files\common audio\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp">
+      <Filter>Source Files\common audio\Language</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MensEtDoc.h">
@@ -793,6 +799,12 @@
     </ClInclude>
     <ClInclude Include="..\common\Body\jhcBackgRWI.h">
       <Filter>Header Files\common robot\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Language\jhcMorphFcns.h">
+      <Filter>Header Files\common audio\Language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Language\jhcNetBuild.h">
+      <Filter>Header Files\common audio\Language</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

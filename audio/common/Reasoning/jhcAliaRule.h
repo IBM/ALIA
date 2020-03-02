@@ -39,7 +39,7 @@
 class jhcAliaRule : public jhcSituation, public jhcNodePool
 {
 friend class jhcAssocMem;              // collection
-friend class jhcGraphizer;             // creation
+friend class jhcNetBuild;              // creation
 
 // PRIVATE MEMBER VARIABLES
 private:

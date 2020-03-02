@@ -168,6 +168,7 @@ public:
   int Ready () const {if (__min(__min(r_ok, p_ok), t_ok) <= 0) return 0; return 1;}
   bool Escape ();
   bool Paused () const {return(suspend > 0);}
+  void Dictation (double wt =1.0) {dict_wt = wt;}
 
   // configuration
   int Defaults (const char *fname =NULL);

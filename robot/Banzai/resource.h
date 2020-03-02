@@ -120,6 +120,7 @@
 #define ID_ATTENTION_ENROLLPHOTO        32848
 #define ID_ATTENTION_ENROLLLIVE         32849
 #define ID_PEOPLE_SOCIALEVENTS          32850
+#define ID_PEOPLE_SOCIALMOVE            32851
 
 // Next default values for new objects
 // 
@@ -127,7 +128,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        131
-#define _APS_NEXT_COMMAND_VALUE         32851
+#define _APS_NEXT_COMMAND_VALUE         32852
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -293,6 +293,8 @@
     <ClCompile Include="MensEtFrm.cpp" />
     <ClCompile Include="MensEtView.cpp" />
     <ClCompile Include="jhcMensCoord.cpp" />
+    <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp" />
+    <ClCompile Include="..\..\audio\common\Language\jhcMorphFcns.cpp" />
     <ClCompile Include="..\common\Body\jhcBackgRWI.cpp" />
     <ClCompile Include="..\common\Geometry\jhcMatrix.cpp" />
     <ClCompile Include="..\common\Grounding\jhcBasicAct.cpp" />
@@ -402,6 +404,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\audio\common\Acoustic\jhcAliaSpeech.h" />
     <ClInclude Include="..\..\audio\common\Comm\zmq.h" />
+    <ClInclude Include="..\..\audio\common\Language\jhcMorphFcns.h" />
+    <ClInclude Include="..\..\audio\common\Language\jhcNetBuild.h" />
     <ClInclude Include="..\..\audio\common\Reasoning\jhcAliaNote.h" />
     <ClInclude Include="..\..\audio\common\Semantic\jhcAliaDesc.h" />
     <ClInclude Include="..\..\video\common\Data\jhcBBox.h" />

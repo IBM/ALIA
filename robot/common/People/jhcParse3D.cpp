@@ -59,6 +59,14 @@ jhcParse3D::jhcParse3D ()
   hist.SetSize(256);
   dbg = 0;
 
+  // initial parameter values
+  SetChest(100.0, 38.0, 1.5, 180, 25.0, 700.0, 44.0, 74.0);
+  SetHead(7.0, 10.0, 4.0, 5.0, 13.0, 6.5, 2.0, 20);
+  SetShoulder(10.0, 40.0, 8.0, 8.0, 1.05, 10.0, 75.0);
+  SetArm(30.0, 1.5, 180, 10.0, 0, 20.0, 50.0);
+  SetHand(11, 0.1, 2.0, 0.9, 12.0, 16.0, 40.0, 0.0);
+  SetAim(0.0, 1.0, 15.0, 4.0, 22.0);
+
   // processing parameters
   Defaults();
   SetScale();
@@ -134,15 +142,15 @@ int jhcParse3D::chest_params (const char *fname)
   int ok;
 
   ps->SetTag("p3d_chest", 0);
-  ps->NextSpecF( &wall, 100.0, "Mask out above (in)");
-  ps->NextSpecF( &ch,    38.0, "Torso height cutoff (in)");  // was 36 then 30
-  ps->NextSpecF( &sm,     1.5, "Smoothing scale (in)");      // was 2
-  ps->NextSpec4( &sth,  180,   "Smooth fill threshold");     // was 80
-  ps->NextSpecF( &amin,  25.0, "Min person area (in^2)");  
-  ps->NextSpecF( &amax, 700.0, "Max person area (in^2)");    // was 250 then 300 then 500
+  ps->NextSpecF( &wall, "Mask out above (in)");
+  ps->NextSpecF( &ch,   "Torso height cutoff (in)");  // was 36 then 30
+  ps->NextSpecF( &sm,   "Smoothing scale (in)");      // was 2
+  ps->NextSpec4( &sth,  "Smooth fill threshold");     // was 80
+  ps->NextSpecF( &amin, "Min person area (in^2)");  
+  ps->NextSpecF( &amax, "Max person area (in^2)");    // was 250 then 300 then 500
 
-  ps->NextSpecF( &h0,    44.0, "Min head height (in)");      // was 43
-  ps->NextSpecF( &h1,    74.0, "Max head height (in)");      // was 78
+  ps->NextSpecF( &h0,   "Min head height (in)");      // was 43
+  ps->NextSpecF( &h1,   "Max head height (in)");      // was 78
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -157,15 +165,15 @@ int jhcParse3D::head_params (const char *fname)
   int ok;
 
   ps->SetTag("p3d_head", 0);
-  ps->NextSpecF( &chop,    7.0, "Head slice drop (in)");      // was 5 then 6
-  ps->NextSpecF( &hmin,   10.0, "Min head area (in^2)");      // was 20
-  ps->NextSpecF( &hecc,    4.0, "Max head elongation");       // was 2.5 then 3 
-  ps->NextSpecF( &w0,      5.0, "Min head width (in)");       // was 5.5
-  ps->NextSpecF( &w1,     13.0, "Max head width (in)");  
-  ps->NextSpecF( &edn,     6.5, "Eyeline from top (in)");     // was 5 then 7
+  ps->NextSpecF( &chop,   "Head slice drop (in)");      // was 5 then 6
+  ps->NextSpecF( &hmin,   "Min head area (in^2)");      // was 20
+  ps->NextSpecF( &hecc,   "Max head elongation");       // was 2.5 then 3 
+  ps->NextSpecF( &w0,     "Min head width (in)");       // was 5.5
+  ps->NextSpecF( &w1,     "Max head width (in)");  
+  ps->NextSpecF( &edn,    "Eyeline from top (in)");     // was 5 then 7
 
-  ps->NextSpecF( &margin,  2.0, "Min dist from edge (in)");   // was 8
-  ps->NextSpec4( &pcnt,   20,   "Points in height peak");
+  ps->NextSpecF( &margin, "Min dist from edge (in)");   // was 8
+  ps->NextSpec4( &pcnt,   "Points in height peak");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -180,20 +188,20 @@ int jhcParse3D::shoulder_params (const char *fname)
   int ok;
 
   ps->SetTag("p3d_shoulder", 0);
-  ps->NextSpecF( &shdn,  10.0,  "Shoulder slice drop (in)");       // was 12
-  ps->NextSpecF( &smin,  40.0,  "Min shoulder area (in^2)");       // was 80 then 50
-  ps->NextSpecF( &secc,   8.0,  "Max shoulder elongation");   
-  ps->NextSpecF( &sw0,    8.0,  "Min shoulder width (in)");        // was 12
-  ps->NextSpecF( &wrel,   1.05, "Min shoulder width wrt head");    // was 1.5
-  ps->NextSpecF( &arel,  10.0,  "Max area wrt head");              // was 6.0
+  ps->NextSpecF( &shdn, "Shoulder slice drop (in)");       // was 12
+  ps->NextSpecF( &smin, "Min shoulder area (in^2)");       // was 80 then 50
+  ps->NextSpecF( &secc, "Max shoulder elongation");   
+  ps->NextSpecF( &sw0,  "Min shoulder width (in)");        // was 12
+  ps->NextSpecF( &wrel, "Min shoulder width wrt head");    // was 1.5
+  ps->NextSpecF( &arel, "Max area wrt head");              // was 6.0
 
-  ps->NextSpecF( &ring,  75.0,  "Max distance from origin (in)");  // DS was 72.0
+  ps->NextSpecF( &ring, "Max distance from origin (in)");  // DS was 72.0
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
 }
 
-
+  
 //= Parameters for finding and reattaching arm blobs.
 
 int jhcParse3D::arm_params (const char *fname)
@@ -202,15 +210,15 @@ int jhcParse3D::arm_params (const char *fname)
   int ok;
 
   ps->SetTag("p3d_arm", 0);
-  ps->NextSpecF( &alev,  30.0, "Arm height cutoff (in)");        // was 20
-  ps->NextSpecF( &sm2,    1.5, "Smoothing scale (in)");          // was 2
-  ps->NextSpec4( &sth2, 180,   "Smooth fill threshold");         // was 80
-  ps->NextSpecF( &arm0,  10.0, "Min arm area (in^2)");  
+  ps->NextSpecF( &alev,  "Arm height cutoff (in)");        // was 20
+  ps->NextSpecF( &sm2,   "Smoothing scale (in)");          // was 2
+  ps->NextSpec4( &sth2,  "Smooth fill threshold");         // was 80
+  ps->NextSpecF( &arm0,  "Min arm area (in^2)");  
   ps->Skip();
-  ps->NextSpec4( &ret,    0,   "Attempt to reattach arms");
+  ps->NextSpec4( &ret,   "Attempt to reattach arms");
 
-  ps->NextSpecF( &agrab, 20.0, "Arm claim radius (in)");
-  ps->NextSpecF( &arm1,  50.0, "Max extra arm area (in^2)");     // was 2000 pel
+  ps->NextSpecF( &agrab, "Arm claim radius (in)");
+  ps->NextSpecF( &arm1,  "Max extra arm area (in^2)");     // was 2000 pel
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -225,15 +233,15 @@ int jhcParse3D::hand_params (const char *fname)
   int ok;
 
   ps->SetTag("p3d_hand", 0);
-  ps->NextSpec4( &ssm,   11,   "Radial smoothing (degs)");
-  ps->NextSpecF( &afall,  0.1, "Arm peak falloff");
-  ps->NextSpecF( &fsz,    2.0, "Fingertip region (in)");     // was 3
-  ps->NextSpecF( &fpct,   0.9, "Z histogram percentile");
-  ps->NextSpecF( &foff,  12.0, "Min hand XY offset (in)");   // was 16
-  ps->NextSpecF( &ext0,  16.0, "Min arm 3D length (in)");    // was 18
+  ps->NextSpec4( &ssm,   "Radial smoothing (degs)");
+  ps->NextSpecF( &afall, "Arm peak falloff");
+  ps->NextSpecF( &fsz,   "Fingertip region (in)");     // was 3
+  ps->NextSpecF( &fpct,  "Z histogram percentile");
+  ps->NextSpecF( &foff,  "Min hand XY offset (in)");   // was 16
+  ps->NextSpecF( &ext0,  "Min arm 3D length (in)");    // was 18
 
-  ps->NextSpecF( &ext1,  40.0, "Max arm 3D length (in)");    // was 32 then 36
-  ps->NextSpecF( &back,   0.0, "Max mid-back shift (in)");   // was 8
+  ps->NextSpecF( &ext1,  "Max arm 3D length (in)");    // was 32 then 36
+  ps->NextSpecF( &back,  "Max mid-back shift (in)");   // was 8
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -248,12 +256,12 @@ int jhcParse3D::finger_params (const char *fname)
   int ok;
 
   ps->SetTag("p3d_aim", 0);
-  ps->NextSpecF( &flen,  0.0, "Hand length (in)");             // was 12
-  ps->NextSpecF( &fecc,  1.0, "Min elongation");               // was 1.1
-  ps->NextSpecF( &flat, 15.0, "Max flatness");                 // was 6
+  ps->NextSpecF( &flen, "Hand length (in)");             // was 12
+  ps->NextSpecF( &fecc, "Min elongation");               // was 1.1
+  ps->NextSpecF( &flat, "Max flatness");                 // was 6
   ps->Skip();
-  ps->NextSpecF( &dip,   4.0, "Reduce Z angle (deg)");         // was 10
-  ps->NextSpecF( &plen, 22.0, "Min point extension (in)");     // whole arm
+  ps->NextSpecF( &dip,  "Reduce Z angle (deg)");         // was 10
+  ps->NextSpecF( &plen, "Min point extension (in)");     // whole arm
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;

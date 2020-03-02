@@ -13,15 +13,9 @@
 // valid utterances once attention established
 
 =[toplevel]
- <vocative>
- (<vocative>) <main>
- <main> <vocative>
-
-
-// calling out robot's name
-
-=[vocative]
- ? <ATTN> ?
+ (hey) <ATTN>
+ ((hey) <ATTN>) <main>
+ <main> <ATTN>
 
 
 // main categories of utterances

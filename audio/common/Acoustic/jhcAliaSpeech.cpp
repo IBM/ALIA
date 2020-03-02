@@ -85,10 +85,11 @@ int jhcAliaSpeech::time_params (const char *fname)
 
 int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
 {
-  char fname[200];
+  char extras[200];
   int ans;
 
   // remember interface choice and set attentional state
+  sprintf_s(extras, "%sbaseline.lst", kdir2);
   voice = speech;
   awake = 0;
   if (voice >= 2)
@@ -107,6 +108,7 @@ int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
 
     // add kernel terms and robot name as attention word (speech only)
     kern_gram();
+    base_gram(extras);
     self_name(rname);
     sp.MarkRule("toplevel");          
     sp.Listen(1);
@@ -118,6 +120,7 @@ int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
   if ((voice > 0) && (vname != NULL) && (*vname != '\0'))
     sp.SetVoice(vname);
   sp.Reset();
+  sp.LoadAlt("pronounce.map");
 
   // set basic grammar for core and clear state (speech already set)
   jprintf("Initializing ALIA core %4.2f\n\n", Version());
@@ -126,8 +129,7 @@ int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
 
   // load rules, operators, and words for kernels (speech already set)
   KernExtras(kdir);
-  sprintf_s(fname, "%sbaseline.lst", kdir2);
-  Baseline(fname, 1, 2);
+  Baseline(extras, 1, 2);
   if (acc > 0)
     LoadLearned();
 
@@ -172,6 +174,48 @@ void jhcAliaSpeech::kern_gram ()
     k = k->NextPool();
   }
   sp.Listen(1);
+}
+
+
+//= Load speech system with extra grammar pieces associated with baseline knowledge.
+
+void jhcAliaSpeech::base_gram (const char *list)
+{
+  char dir[80], line[80];
+  FILE *in;
+  char *end;
+  int n;
+
+  // make list of files exists
+  if (fopen_s(&in, list, "r") != 0)
+    return;
+
+  // save directory part of path
+  strcpy_s(dir, list);
+  if ((end = strrchr(dir, '/')) == NULL)
+    end = strrchr(dir, '\\');
+  if (end != NULL)
+    *(end + 1) = '\0';
+  else
+    *dir = '\0';
+
+  // read list of local file names
+  while (fgets(line, 80, in) != NULL)
+  {
+    // ignore commented out lines and blank ones
+    if (strncmp(line, "//", 2) == 0)
+      continue;
+    if ((n = (int) strlen(line)) <= 0)
+      continue;
+
+    // read various types of input (1 = extras level)
+    if (line[n - 1] == '\n')
+      line[n - 1] = '\0';
+    sp.LoadGrammar("%s%s.sgm", dir, line);     
+  } 
+
+  // clean up
+  fclose(in);
 }
 
 
@@ -226,6 +270,7 @@ int jhcAliaSpeech::UpdateSpeech ()
 
 //= Generate actions in response to update sensory information.
 // if "alert" > 0 then forces system to pay attention to input
+// should mark all seed nodes to retain before calling this
 // returns 1 if happy, 0 to end interaction 
 // NOTE: should call UpdateSpeech before this and DayDream after this
 
@@ -240,7 +285,7 @@ int jhcAliaSpeech::Respond (int alert)
   xfer_input();
 
   // process current foci to generate commands for body
-  RunAll();
+  RunAll(1);
   bid = Response(output);
 
   // send commands to body and language output channel (no delay)
@@ -320,7 +365,7 @@ void jhcAliaSpeech::DayDream ()
 
   // possibly catch up on thinking (commands will be ignored)
   for (i = cyc - 1; i > 0; i--)
-    RunAll();
+    RunAll(0);
   think += __max(1, cyc);
   sense++;
 }
@@ -375,11 +420,13 @@ const char *jhcAliaSpeech::NewInput ()
   fix = gr.Clean();
 
   // show input even if not parsed correctly
-  if ((last == NULL) || (*last == '\0') || (awake == 0))
+  if ((last == NULL) || (*last == '\0'))
     return NULL;
-  if ((fix == NULL) || (*fix == '\0'))          
-    return last;
-  return fix;
+  if ((voice > 1) && (awake == 0))
+    return NULL;
+  if ((fix != NULL) && (*fix != '\0'))          
+    return fix;
+  return last;
 }
 
 

@@ -42,6 +42,8 @@ jhcHeadGaze::~jhcHeadGaze ()
 jhcHeadGaze::jhcHeadGaze ()
 {
   s3 = NULL;
+  SetGaze(0.0, 0.0, 14.0, 6.0, 20.0, 10.0);
+  SetAttn(0.0, 64.0, 96.0);
   Defaults();
   Reset();
 }
@@ -60,23 +62,6 @@ void jhcHeadGaze::Bind (jhcStare3D *stare)
 //                         Processing Parameters                         //
 ///////////////////////////////////////////////////////////////////////////
 
-//= Parameters used to define attention point for talking to.
-
-int jhcHeadGaze::attn_params (const char *fname)
-{
-  jhcParam *ps = &zps;
-  int ok;
-
-  ps->SetTag("gaze_attn", 0);
-  ps->NextSpecF( &xme,  0.0, "Attention point X (in)");  
-  ps->NextSpecF( &yme, 64.0, "Attention point Y (in)");  
-  ps->NextSpecF( &zme, 96.0, "Attention point Z (in)");  
-  ok = ps->LoadDefs(fname);
-  ps->RevertAll();
-  return ok;
-}
-
-
 //= Parameters used for computing gaze direction from face position.
 
 int jhcHeadGaze::gaze_params (const char *fname)
@@ -85,14 +70,31 @@ int jhcHeadGaze::gaze_params (const char *fname)
   int ok;
 
   ps->SetTag("gaze_vals", 0);
-  ps->NextSpecF( &hadj,  0.0, "Eye height adjust (in)");    
-  ps->NextSpecF( &dadj,  0.0, "Head depth adjust (in)");       // suggest 2
-  ps->NextSpecF( &diam, 14.0, "Face search diameter (in)");  
-  ps->NextSpecF( &fwid,  6.0, "Min face width (in)");          // was 5 
+  ps->NextSpecF( &hadj, "Eye height adjust (in)");    
+  ps->NextSpecF( &dadj, "Head depth adjust (in)");       // suggest 2
+  ps->NextSpecF( &diam, "Face search diameter (in)");  
+  ps->NextSpecF( &fwid, "Min face width (in)");          // was 5 
   ps->Skip(2);
 
-  ps->NextSpecF( &ptol, 20.0, "Attn pan tolerance (deg)");
-  ps->NextSpecF( &ttol, 10.0, "Attn tilt tolerance (deg)");
+  ps->NextSpecF( &ptol, "Attn pan tolerance (deg)");
+  ps->NextSpecF( &ttol, "Attn tilt tolerance (deg)");
+  ok = ps->LoadDefs(fname);
+  ps->RevertAll();
+  return ok;
+}
+
+
+//= Parameters used to define attention point for talking to.
+
+int jhcHeadGaze::attn_params (const char *fname)
+{
+  jhcParam *ps = &zps;
+  int ok;
+
+  ps->SetTag("gaze_attn", 0);
+  ps->NextSpecF( &xme, "Attention point X (in)");  
+  ps->NextSpecF( &yme, "Attention point Y (in)");  
+  ps->NextSpecF( &zme, "Attention point Z (in)");  
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;

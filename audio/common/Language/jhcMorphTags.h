@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ enum JTAG_VAL
   JTV_NPL,    // plural noun
   JTV_NMASS,  // mass noun
 
+  JTV_PROP,   // normal adjective
   JTV_COMP,   // comparative adjective (-er)
   JTV_SUP,    // superlative adjective (-est)
 
@@ -69,6 +70,7 @@ const char JTAG_STR[JTV_MAX][10] =
   "npl", 
   "nmass", 
 
+  "prop", 
   "comp",
   "sup",
 
@@ -95,6 +97,7 @@ enum JTAG_MASK
   JTAG_NPL   = (0x01 << JTV_NPL),
   JTAG_NMASS = (0x01 << JTV_NMASS),
 
+  JTAG_PROP  = (0x01 << JTV_PROP),
   JTAG_COMP  = (0x01 << JTV_COMP),
   JTAG_SUP   = (0x01 << JTV_SUP),
 
@@ -116,6 +119,11 @@ const UL32 JTAG_NOUN = (JTAG_DEF | JTAG_ALT | JTAG_NZERO | JTAG_NSING | JTAG_NPL
 //= All mask bits associated with verbs.
 
 const UL32 JTAG_VERB = (JTAG_VIMP | JTAG_VPRES | JTAG_VPAST | JTAG_VPROG | JTAG_VFUT | JTAG_VINF);
+
+
+//= All mask bits associated with adjectives.
+
+const UL32 JTAG_ADJ = (JTAG_PROP | JTAG_COMP | JTAG_SUP);
 
 
 #endif  // once

@@ -1,10 +1,10 @@
-// jhcGraphizer.h : turns parser alist into network structures
+// jhcGraphizer.h : adds speech acts to language-derived semantic nets
 //
 // Written by Jonathan H. Connell, jconnell@alum.mit.edu
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2018-2019 IBM Corporation
+// Copyright 2018-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,41 +27,32 @@
 
 #include "jhcGlobal.h"
 
-#include "Parse/jhcSlotVal.h"          // common audio
-#include "Reasoning/jhcAliaOp.h"
-#include "Reasoning/jhcAliaRule.h"
-#include "Semantic/jhcGraphlet.h"
+#include "Language/jhcNetBuild.h"          
 
 
-//= Turns parser alist into network structures.
+//= Adds speech acts to language-derived semantic nets
 
-class jhcGraphizer : private jhcSlotVal
+class jhcGraphizer : public jhcNetBuild
 {
 // PRIVATE MEMBER VARIABLES
 private:
-  class jhcAliaCore *core;
+  // max number of words to harvest in each class
+  static const int wmax = 100; 
 
-
-// PUBLIC MEMBER VARIABLES
-public:
-  // suggestions to add
-  jhcAliaRule *rule;
-  jhcAliaOp *op;
+  // harvested words (allocated on heap not stack)
+  char noun[wmax][40], adj[wmax][40], tag[wmax][40];
+  char verb[wmax][40], mod[wmax][40], dir[wmax][40];
+  int nn, na, nt, nv, nm, nd;
 
 
 // PUBLIC MEMBER FUNCTIONS
 public:
-  // creation and initialization
-  ~jhcGraphizer ();
-  jhcGraphizer ();
-  void Bind (class jhcAliaCore *all) {core = all;}
-
   // main functions
   int NameSaid (const char *alist, int mode =2) const;
   int Convert (const char *alist);
-  
-  // debugging
-  void PrintLast ();
+
+  // utilities
+  int HarvestLex (const char *kern);
 
 
 // PRIVATE MEMBER FUNCTIONS
@@ -72,58 +63,14 @@ private:
   int greet_tag () const;
   int farewell_tag () const;
   int add_tag (int rule, const char *alist) const;
-  int attn_tag (jhcAliaChain *bulk, const char *alist) const;
+  int attn_tag (const char *alist) const;
   jhcAliaChain *build_tag (jhcNetNode **node, const char *alist) const;
   void attn_args (jhcNetNode *input, const jhcAliaChain *bulk) const;
 
-  // attention items
-  int cvt_attn (const char *alist) const;
-  double belief_val (const char *word) const;
-  const char *add_evt (jhcNetNode *obj, const char *alist, 
-                       jhcNodePool& pool, int neg =0, double blf =1.0) const;
-
-  // rules
-  int cvt_rule (const char *alist);
-  int build_macro (const char *alist);
-  int build_fwd (const char *alist);
-  int build_rev (const char *alist);
-  int build_ifwd (const char *alist);
-  int build_sfwd (const char *alist);
-
-  // operators
-  int cvt_op (const char *alist);
-  jhcAliaOp *create_op (const char **after, char *entry, const char *alist, int ssz) const;
-  double pref_val (const char *word) const;
-  const char *build_trig (jhcAliaOp *op, const char *entry, const char *alist) const;
-  int build_proc (jhcAliaOp *op, const char *alist) const;
-  jhcNetNode *query_ako (const char *alist, jhcNodePool& pool) const;
-  jhcNetNode *query_hq (const char *alist, jhcNodePool& pool) const;
-
-  // command sequences
-  jhcAliaChain *build_chain (const char *alist, jhcAliaChain *final, jhcNodePool& pool) const;
-  jhcAliaChain *dir_step (const char *kind) const;
-  const char *build_dir (jhcGraphlet& gr, const char *entry, const char *alist, jhcNodePool& pool) const;
-
-  // action phrases
-  jhcNetNode *build_cmd (const char *alist, jhcNodePool& pool) const;
-  const char *build_fact (jhcNetNode *subj, const char *alist, jhcNodePool& pool) const;
-  char *base_verb (UL32& tags, char *entry) const;
-  const char *act_deg (jhcNetNode *act, const char *amt, const char *alist, jhcNodePool& pool) const;
-  jhcNetNode *add_args (jhcNetNode *v, const char *alist, jhcNodePool& pool) const;
-  int add_quote (jhcNetNode *v, const char *alist, jhcNodePool& pool) const;
-
-  // object phrases
-  jhcNetNode *build_obj (const char **after, const char *alist, 
-                         jhcNodePool& pool, jhcNetNode *f0 =NULL, double blf =1.0) const;
-  void ref_props (jhcNetNode *n, jhcNodePool& pool, const char *pron) const;
-  char *base_noun (UL32& tags, char *entry) const;
-  const char *obj_deg (jhcNetNode *obj, const char *deg, const char *alist, 
-                       jhcNodePool& pool, int neg =0, double blf =1.0) const;
-  const char *obj_loc (jhcNetNode *obj, char *pair, const char *alist, 
-                       jhcNodePool& pool, int neg =0, double blf =1.0) const;
-  const char *obj_has (jhcNetNode *obj, const char *prep, const char *alist, 
-                       jhcNodePool& pool, int neg =0, double blf =1.0) const;
-  const char *add_cop (jhcNetNode *obj, const char *alist, jhcNodePool& pool) const;
+  // utilities
+  int scan_lex (const char *fname);
+  void save_word (char (*list)[40], int& cnt, const char *term) const;
+  int gram_cats (const char *fname, const char *label) const;
 
 
 };

@@ -151,6 +151,20 @@ public:
   double ParseScale () const {return ipp;}
   const jhcMatrix& ToMap () const {return w2m;}
 
+  // parameter utilites
+  void SetChest (double wz, double ht, double sc, int th, double a0, double a1, double lo, double hi)
+    {wall = wz; ch = ht; sm = sc; sth = th; amin = a0; amax = a1; h0 = lo; h1 = hi;}
+  void SetHead (double hz, double a, double e, double sm, double big, double dz, double ej, int pk)
+    {chop = hz; hmin = a; hecc = e; w0 = sm; w1 = big; edn = dz; margin = ej; pcnt = pk;}
+  void SetShoulder (double dz, double a, double e, double w, double wr, double ar, double r)
+    {shdn = dz; smin = a; secc = e; sw0 = w; wrel = wr; arel = ar; ring = r;}
+  void SetArm (double z, double sc, int th, double a0, int add, double r, double a1)
+    {alev = z; sm2 = sc; sth2 = th; arm0 = a0; ret = add; agrab = r; arm1 = a1;}
+  void SetHand (int sm, double dn, double reg, double pc, double xy, double r0, double r1, double dr)
+    {ssm = sm; afall = dn; fsz = reg; fpct = pc; foff = xy; ext0 = r0; ext1 = r1; back = dr;}
+  void SetAim (double hr, double e, double f, double dt, double r0)
+    {flen = hr; fecc = e; flat = f; dip = dt; plen = r0;}
+
   // processing parameter manipulation 
   int Defaults (const char *fname =NULL);
   int SaveVals (const char *fname) const;

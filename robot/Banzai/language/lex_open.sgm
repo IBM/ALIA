@@ -15,7 +15,8 @@
 // adjective
 
 =[HQ]
-  close
+  orange
+  striped
 
 
 // proper noun
@@ -26,7 +27,7 @@
 // robot name
 
 =[ATTN]
-
+  robot
 
 
 // -----------------------------------------
@@ -44,10 +45,4 @@
 // imperative verb
 
 =[ACT]
-  nod
-  shake
-  assent
-  bobble
-  wave
-  runaway
 

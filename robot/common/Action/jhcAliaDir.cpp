@@ -248,7 +248,7 @@ void jhcAliaDir::MarkSeeds ()
     {
       n = m0[i].GetSub(j);
       jprintf(5, noisy, "      %s\n", n->Nick());
-      n->mark = 1;
+      n->keep = 1;
     }
   }
 
@@ -259,7 +259,7 @@ void jhcAliaDir::MarkSeeds ()
   {
     n = key.Item(i);
     jprintf(5, noisy, "      %s\n", n->Nick());
-    n->mark = 1;
+    n->keep = 1;
   }
 
   // see if some current expansion (even if finished)
@@ -280,8 +280,10 @@ void jhcAliaDir::MarkSeeds ()
 // so generally Start() should NOT fail, which imples FcnStart() should never fail
 // always returns: 0 = working
 
-int jhcAliaDir::Start (class jhcAliaCore& all)
+int jhcAliaDir::Start (jhcAliaCore& all)
 {
+  int ver = (all.attn).Version();
+
   // set up internal state, assume something needs to run
   core = &all;
   noisy = core->noisy;
@@ -299,7 +301,7 @@ int jhcAliaDir::Start (class jhcAliaCore& all)
     inst = core->FcnStart(key.Main());     // negative inst records fail
   else if (kind == JDIR_NOTE)
   {
-    key.ActualizeAll();                    // assert pending truth values
+    key.ActualizeAll(ver);                 // assert pending truth values
     own = all.Percolate(*this);
   }
 
@@ -405,7 +407,7 @@ int jhcAliaDir::do_status (int res)
   // mark failure or success of DO (checked later) 
   if (res < 0)
     key.Main()->SetNeg(1);
-  key.Main()->SetBelief(1.0);
+  (core->attn).MarkBelief(key.Main(), 1.0);
 
   // advance to POST cleanup phase (only after all DO operators tried)
   jprintf(2, noisy, "Converting DO->POST[ %s ] - %s\n\n", key.Main()->Word(), ((res < 0) ? "failure" : "success"));

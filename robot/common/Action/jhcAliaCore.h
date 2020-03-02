@@ -108,7 +108,7 @@ public:
   int MainGrammar (const char *gfile, const char *top, const char *rname =NULL);
   void Reset (int forget =0, const char *rname =NULL);
   int Interpret (const char *input =NULL, int awake =1, int amode =2);
-  int RunAll ();
+  int RunAll (int gc =1);
   int Response (char *out, int ssz) {return talk.Output(out, ssz);}
   void StopAll ();
 
@@ -153,6 +153,7 @@ public:
 // PRIVATE MEMBER FUNCTIONS
 private:
   // main functions
+  int add_info (const char *dir, const char *base, int rpt, int level);
   bool readable (char *fname, int ssz, const char *msg, ...) const;
 
 

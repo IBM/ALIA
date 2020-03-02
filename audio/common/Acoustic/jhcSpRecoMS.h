@@ -92,7 +92,7 @@ private:
   char phonetic[1500];  /** Cached last phonetic result (3x).   */
   int attn;             /** Whether system currently listening. */
   int ready;            /** Whether text result ready yet.      */
-  int noisy;            /** Allow to show partial reocgnition.  */
+  int noisy;            /** Allow to show partial recognition.  */
 
 
 // PRIVATE MEMBER VARIABLES (parsing)
@@ -111,6 +111,7 @@ protected:
   char rfile[200];                /** Recognizer DLL name (not used).     */
   char mic[80];                   /** Name of live audio source (if any). */
   char tag[20];                   /** Prefix for debugging messages.      */
+  double dict_wt;                 /** Relative weight for dictation arcs. */
 
 
 // PROTECTED MEMBER VARIABLES (parsing)

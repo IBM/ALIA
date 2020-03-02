@@ -25,8 +25,6 @@
   give
   ask
   tell
-  acknowledge
-  announce
 
 
 // ================================================
@@ -74,8 +72,6 @@
   giving
   asking
   telling
-  acknowledging
-  announcing
 
 
 // past or passive verb
@@ -87,5 +83,3 @@
   gave
   asked
   told
-  acknowledged
-  announced

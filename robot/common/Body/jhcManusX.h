@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ class jhcManusX
 {
 // PROTECTED MEMBER VARIABLES
 protected:
-public:
   // state
   int mok;
 
@@ -70,6 +69,7 @@ public:
   // creation and initialization
   ~jhcManusX ();
   jhcManusX ();
+  virtual void SetSize (int w, int h);
 
   // processing parameter bundles (override these)
   virtual int Defaults (const char *fname =NULL) {return 0;}

@@ -1058,6 +1058,7 @@ void jhcEliBase::AdjustXY (double& tx, double& ty, double tx0, double ty0) const
 
 
 //= Changes a static target location (in place) based on recent motion of the base.
+// assumes origin of coordinate system for given vector is midway between wheels
 // does not alter Z (no interaction with lift stage)
 
 void jhcEliBase::AdjustTarget (jhcMatrix& pos) const

@@ -52,8 +52,11 @@ private:
   char wtarg[9][20];
   jhcMatrix src;
   double prand, trand;
-  int twin, gwin, fwin, hwin, seek, delay;
-  UL32 twait, swait, gwait, fwait, hwait, rwait, idle;
+  int seek, slew, delay;
+  UL32 idle;
+
+  // high-level commands
+  int wlock, wwin;
 
 
 // PUBLIC MEMBER VARIABLES
@@ -73,16 +76,16 @@ public:
 
   // watching behaviors bids
   jhcParam wps;
-  int freeze, speak, sound, close, stare, face, twitch, neutral;
+  int freeze, speak, close, sound, stare, face, twitch, rise;
 
   // self-orientation parameters
   jhcParam ops;
-  double bored, edge, hnear, hfar, dwell, side, tfix;
+  double edge, hnear, center, pdev, aimed, pdist, hdec;
   int fmin;
 
-  // idle activity parameters
-  jhcParam ips;
-  double center, aim, relax, rdev, pdist, pht;
+  // behavior timing parameters
+  jhcParam tps;
+  double bored, relax, rdev, gtime, ttime, rtime, side, btime;
   
 
 // PUBLIC MEMBER FUNCTIONS
@@ -105,6 +108,10 @@ public:
   int Update (int voice =0, UL32 resume =0);
   void Stop ();
 
+  // high-level commands
+  int WatchPerson (int id, int bid =10);
+  double PersonErr (int id) const;
+
 
 // PRIVATE MEMBER FUNCTIONS
 private:
@@ -113,9 +120,12 @@ private:
   
   // processing parameters
   int watch_params (const char *fname);
-  int sound_params (const char *fname);
   int orient_params (const char *fname);
-  int idle_params (const char *fname);
+  int time_params (const char *fname);
+
+  // high-level commands
+  void assert_watch ();
+  void orient_toward (const jhcMatrix *targ, int bid);
 
   // interaction overrrides
   void body_update ();
@@ -124,14 +134,12 @@ private:
   // innate behaviors
   void cmd_freeze ();
   void watch_talker ();
+  void watch_closest ();
   void gaze_sound ();
   void gaze_stare ();
   void gaze_face ();
-  void watch_closest ();
   void gaze_random ();
-  void head_neutral ();
-  void set_target (int& targ, UL32& timer, int i, int th =0) const;
-  void orient_toward (const jhcMatrix *targ, int bid);
+  void head_rise ();
 
   // debugging graphics
   void interest_img ();

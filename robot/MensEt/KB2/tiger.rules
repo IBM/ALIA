@@ -1,8 +1,0 @@
-// RULE 1 - Orange striped things are tigers
-    if:  hq-2 -lex-  orange
-              -hq--> obj-1
-         hq-4 -lex-  striped
-              -hq--> obj-1
-  then: ako-6 -lex-  tiger
-              -ako-> obj-1
-

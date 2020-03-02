@@ -174,6 +174,7 @@ public:
   afx_msg void OnAttentionEnrollphoto();
   afx_msg void OnAttentionEnrolllive();
   afx_msg void OnPeopleSocialevents();
+  afx_msg void OnPeopleSocialmove();
 };
 
 /////////////////////////////////////////////////////////////////////////////

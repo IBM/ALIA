@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1998-2019 IBM Corporation
+// Copyright 1998-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ public:
   int DoubleRGB (jhcImg& dest, const jhcImg& src) const;
   int Decimate (jhcImg& dest, const jhcImg& src, int factor) const;
   int DecimateRGB (jhcImg& dest, const jhcImg& src, int factor) const;
+  int Decimate_16 (jhcImg& dest, const jhcImg& src, int factor) const;
   jhcImg *Smallest (jhcImg& alt, jhcImg& src) const;
 
   // averaging methods
@@ -63,6 +64,7 @@ public:
   int AvgHalfRGB (jhcImg& dest, const jhcImg& src) const;
   int AvgThird (jhcImg& dest, const jhcImg& src) const;
   int AvgThirdRGB (jhcImg& dest, const jhcImg& src) const;
+  int MinHalf_16 (jhcImg& dest, const jhcImg& src) const;
   int Blocks (jhcImg& dest, const jhcImg& src, int sx, int sy, int bw, int bh) const;
   int Blocks_16 (jhcImg& dest, const jhcImg& src, int sx, int sy, int bw, int bh) const;
 

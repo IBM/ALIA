@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -81,6 +81,15 @@ jhcManusBody::jhcManusBody ()
   // set processing parameters and initial state
   Defaults();
   clr_state();
+}
+
+
+//= Set image sizes directly.
+
+void jhcManusBody::SetSize (int x, int y)
+{
+  jhcManusX::SetSize(x, y);
+  now.SetSize(frame);
 }
 
 
@@ -377,7 +386,7 @@ int jhcManusBody::Reset (int noisy, const char *dir, int prefer)
     }
 
   // create image rectification pattern and rewind video (if file)
-  wp.InitSize(640, 360, 3);
+  wp.InitSize(frame.XDim(), frame.YDim(), 3);
   wp.Rectify(w2, w4, mag, roll);
   if (vid != NULL)
     if (vid->Rewind() <= 0)

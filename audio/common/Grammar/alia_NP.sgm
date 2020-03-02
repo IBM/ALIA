@@ -79,10 +79,17 @@
 
 =[comp]
   <HAS> <np>
+  that <be> <HQ>
+  <place>
+ 
+
+// types of location phrases
+
+=[place]
   (<DEG>) <LOC> <np>
   <LOC-2> <np> and <np>
-  that <be> <HQ>
- 
+  <LOC-0>
+
 
 // --------------------------------------------------
 

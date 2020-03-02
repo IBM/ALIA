@@ -56,7 +56,7 @@ jhcFFindOCV::jhcFFindOCV ()
   cv::CascadeClassifier *cascade;
 
   // current code version
-  ver = 1.01;
+  ver = 1.02;
 
   // assume module is current executable
   hmod = NULL;

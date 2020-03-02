@@ -12,7 +12,7 @@ trig:
               -obj-> input-1 ]
 
 
-// OP 2 - "To acknowledge that someone hailed you say I'm here"
+// OP 2 - "To acknowledge that someone hailed you say to them I'm here whoever"
 trig:
     DO[   act-1 -lex-   acknowledge
                 -obj--> input-1
@@ -21,12 +21,13 @@ trig:
                 -dest-> obj-2  
           obj-2 -lex-   you ]
 -----------------
-    DO[ act-2 -lex-  say
-              -obj-> txt-1
-        txt-1 -str-  I'm here ]
+    DO[ act-2 -lex-   say
+              -dest-> obj-1
+              -obj--> txt-1
+        txt-1 -str-   I'm here ?0 ]
 
 
-// OP 3 - "To acknowledge that someone hailed you say I'm listening"
+// OP 3 - "To acknowledge that someone hailed you say to them I'm listening"
 trig:
     DO[   act-1 -lex-   acknowledge
                 -obj--> input-1
@@ -35,9 +36,10 @@ trig:
                 -dest-> obj-2  
           obj-2 -lex-   you ]
 -----------------
-    DO[ act-2 -lex-  say
-              -obj-> txt-1
-        txt-1 -str-  I'm listening ]
+    DO[ act-2 -lex-   say
+              -dest-> obj-1
+              -obj--> txt-1
+        txt-1 -str-   I'm listening ]
 
 
 // ----------------------------------------
@@ -53,7 +55,7 @@ trig:
               -obj-> input-1 ]
 
 
-// OP 5 - "To acknowledge that someone greeted you say hello there"
+// OP 5 - "To acknowledge that someone greeted you say to them hello there whoever"
 trig:
     DO[   act-1 -lex-   acknowledge
                 -obj--> input-1
@@ -62,12 +64,13 @@ trig:
                 -dest-> obj-2  
           obj-2 -lex-   you ]
 -----------------
-    DO[ act-2 -lex-  say
-              -obj-> txt-1
-        txt-1 -str-  Hello there ]
+    DO[ act-2 -lex-   say
+              -dest-> obj-1
+              -obj--> txt-1
+        txt-1 -str-   Hello there ?0 ]
 
 
-// OP 6 - "To acknowledge that someone greeted you say Nice to see you again"
+// OP 6 - "To acknowledge that someone greeted you say to them nice to see you again"
 trig:
     DO[   act-1 -lex-   acknowledge
                 -obj--> input-1
@@ -76,9 +79,10 @@ trig:
                 -dest-> obj-2  
           obj-2 -lex-   you ]
 -----------------
-    DO[ act-2 -lex-  say
-              -obj-> txt-1
-        txt-1 -str-  Nice to see you again ]
+    DO[ act-2 -lex-   say
+              -dest-> obj-1
+              -obj--> txt-1
+        txt-1 -str-   Nice to see you again ]
 
 
 // ----------------------------------------
@@ -94,7 +98,7 @@ trig:
               -obj-> input-1 ]
 
 
-// OP 8 - "To acknowledge that someone dismissed you say goodbye for now"
+// OP 8 - "To acknowledge that someone dismissed you say to them goodbye for now whoever"
 trig:
     DO[   act-1 -lex-   acknowledge
                 -obj--> input-1
@@ -103,12 +107,13 @@ trig:
                 -dest-> obj-2  
           obj-2 -lex-   you ]
 -----------------
-    DO[ act-2 -lex-  say
-              -obj-> txt-1
-        txt-1 -str-  goodbye for now ]
+    DO[ act-2 -lex-   say
+              -dest-> obj-1
+              -obj--> txt-1
+        txt-1 -str-   goodbye for now ?0 ]
 
 
-// OP 9 - "To acknowledge that someone dismissed you say Ta ta, see you later"
+// OP 9 - "To acknowledge that someone dismissed you say to them ta ta, see you later"
 trig:
     DO[   act-1 -lex-   acknowledge
                 -obj--> input-1
@@ -117,6 +122,7 @@ trig:
                 -dest-> obj-2  
           obj-2 -lex-   you ]
 -----------------
-    DO[ act-2 -lex-  say
-              -obj-> txt-1
-        txt-1 -str-  Ta ta, see you later ]
+    DO[ act-2 -lex-   say
+              -dest-> obj-1
+              -obj--> txt-1
+        txt-1 -str-   ta ta, see you later ]

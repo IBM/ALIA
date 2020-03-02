@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,18 +59,17 @@ jhcManusRWI::jhcManusRWI ()
 
 void jhcManusRWI::BindBody (jhcManusX *b)
 {
-  const jhcImg *src;
-
-  // pass body onto parts that need it
   body = b;
   fsm->BindBody(b);
-  if (body == NULL)
-    return;
+}
 
-  // configure visual analysis for camer images
-  src = body->View();
-  seg->SetSize(*src);
-  ext->SetSize(*src);
+
+//= Set image sizes even if no body.
+
+void jhcManusRWI::SetSize (int x, int y)
+{
+  seg->SetSize(x, y);
+  ext->SetSize(x, y);
 }
 
 
@@ -137,12 +136,21 @@ int jhcManusRWI::SaveCfg (const char *fname) const
 
 void jhcManusRWI::Reset ()
 {
+  const jhcImg *src;
+
   // reset components
   seg->Reset();
 
-  // after body reset, sensor info will be waiting and need to be read
   if (body != NULL)
+  {
+    // configure visual analysis for camera images
+    src = body->View();
+    seg->SetSize(*src);
+    ext->SetSize(*src);
+
+    // after body reset, sensor info will be waiting and need to be read
     body->Update(1);
+  }
 
   // restart background loop, which first generates a body Issue call
   jhcBackgRWI::Reset();

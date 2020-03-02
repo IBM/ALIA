@@ -165,10 +165,10 @@ int jhcBallistic::lift_params (const char *fname)
   ps->NextSpecF( &qlf,     2.0,  "Fast multiplier");  
   ps->NextSpecF( &lift,    6.0,  "Lift distance (in)");
   ps->Skip(2);  
-  ps->NextSpecF( &lprog,   0.1,  "Lift progress (in)");  
+  ps->NextSpecF( &lprog,   0.2,  "Lift progress (in)");  
 
   ps->NextSpec4( &lstart, 20,    "Lift start cycles");
-  ps->NextSpec4( &lmid,    5,    "Lift stall cycles");
+  ps->NextSpec4( &lmid,   10,    "Lift stall cycles");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;

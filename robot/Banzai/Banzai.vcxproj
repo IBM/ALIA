@@ -154,8 +154,8 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>.;..\..\robot\common;..\..\video\common;..\..\audio\common;..\..\OpenCV 2.4.5\sources\include;..\..\OpenCV 2.4.5\build\include;../../OpenCV 2.4.5/3rdparty/include/ffmpeg_;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN64;JHC_GVID;JHC_MSIO;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\robot\common;..\..\video\common;..\..\audio\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN64;JHC_GVID;JHC_MSIO;FFIND_DLL;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -176,7 +176,7 @@
       <AdditionalDependencies>..\..\video\common\Interface\rdrand64.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>Banzai.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>.;../../video/common/Video;../../robot/common/Peripheral;../../audio/common/Acoustic;../../OpenCV 2.4.5/build/x64/vc10/staticlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.;../../video/common/Video;../../video/common/Face;../../robot/common/Peripheral;../../audio/common/Acoustic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -250,8 +250,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.;..\..\robot\common;..\..\video\common;..\..\audio\common;..\..\OpenCV 2.4.5\sources\include;..\..\OpenCV 2.4.5\build\include;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN64;JHC_GVID;JHC_MSIO;JHC_MEM_LEAK;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\robot\common;..\..\video\common;..\..\audio\common;C:\Program Files (x86)\Visual Leak Detector\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN64;JHC_GVID;JHC_MSIO;FFIND_DLL;JHC_MEM_LEAK;WINVER=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -274,7 +274,7 @@
       <AdditionalDependencies>..\..\video\common\Interface\rdrand64.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>Banzai_d.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>.;../../video/common/Video;../../robot/common/Peripheral;../../audio/common/Acoustic;../../OpenCV 2.4.5/build/x64/vc10/staticlib;C:\Program Files (x86)\Visual Leak Detector\bin\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>.;../../video/common/Video;../../video/common/Face;../../robot/common/Peripheral;../../audio/common/Acoustic;C:\Program Files (x86)\Visual Leak Detector\bin\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>./Banzai_d.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -294,6 +294,8 @@
     <ClCompile Include="BanzaiDoc.cpp" />
     <ClCompile Include="BanzaiFrm.cpp" />
     <ClCompile Include="BanzaiView.cpp" />
+    <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp" />
+    <ClCompile Include="..\..\audio\common\Language\jhcMorphFcns.cpp" />
     <ClCompile Include="..\common\Grounding\jhcSocial.cpp" />
     <ClCompile Include="..\common\Eli\jhcEliGrok.cpp" />
     <ClCompile Include="..\..\audio\common\Parse\jhcNameList.cpp" />
@@ -302,7 +304,6 @@
     <ClCompile Include="..\..\video\common\Face\jhcFaceVect.cpp" />
     <ClCompile Include="..\..\video\common\Face\jhcFRecoDLL.cpp" />
     <ClCompile Include="..\..\video\common\Face\jhcFFind.cpp" />
-    <ClCompile Include="..\..\video\common\Face\jhcFFindOCV.cpp" />
     <ClCompile Include="..\..\video\common\Face\jhcFrontal.cpp" />
     <ClCompile Include="..\common\People\jhcHeadGaze.cpp" />
     <ClCompile Include="..\common\People\jhcSpeaker.cpp" />
@@ -429,7 +430,9 @@
     <ClInclude Include="..\..\audio\common\Acoustic\jhcGenIO.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcDegrapher.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcGraphizer.h" />
+    <ClInclude Include="..\..\audio\common\Language\jhcMorphFcns.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcMorphTags.h" />
+    <ClInclude Include="..\..\audio\common\Language\jhcNetBuild.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcNetRef.h" />
     <ClInclude Include="..\..\audio\common\Parse\jhcGenParse.h" />
     <ClInclude Include="..\..\audio\common\Parse\jhcGramExec.h" />
@@ -454,11 +457,12 @@
     <ClInclude Include="..\..\audio\common\Semantic\jhcSituation.h" />
     <ClInclude Include="..\..\video\common\Data\jhcBBox.h" />
     <ClInclude Include="..\..\video\common\Data\jhcBlob.h" />
+    <ClInclude Include="..\..\video\common\Face\ffind_ocv.h" />
     <ClInclude Include="..\..\video\common\Face\freco_nkr.h" />
     <ClInclude Include="..\..\video\common\Face\jhcFaceOwner.h" />
     <ClInclude Include="..\..\video\common\Face\jhcFaceVect.h" />
     <ClInclude Include="..\..\video\common\Face\jhcFFind.h" />
-    <ClInclude Include="..\..\video\common\Face\jhcFFindOCV.h" />
+    <ClInclude Include="..\..\video\common\Face\jhcFFindDLL.h" />
     <ClInclude Include="..\..\video\common\Face\jhcFRecoDLL.h" />
     <ClInclude Include="..\..\video\common\Face\jhcFrontal.h" />
     <ClInclude Include="..\..\video\common\Interface\jms_x.h" />
@@ -563,7 +567,6 @@
   <ItemGroup>
     <None Include="res\Banzai.ico" />
     <None Include="res\Banzai.rc2" />
-    <None Include="res\lbpcascade_frontalface.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

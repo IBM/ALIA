@@ -4,6 +4,7 @@
 // plural noun
 
 =[AKO-S]
+  tigers
 
 
 // comparative adjectives
@@ -16,32 +17,20 @@
 =[HQ-EST]
 
 
-
 // -----------------------------------------
 
 // present verb
 
 =[ACT-S]
-  nods
-  shakes
-  assents
-  bobbles
 
 
 // progressive verb
 
 =[ACT-G]
-  nodding
-  shaking
-  assenting
-  bobbling
 
 
 // past or passive verb
 
 =[ACT-D]
-  nodded
-  shook
-  assented
-  bobbled
+
 

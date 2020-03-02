@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2015-2019 IBM Corporation
+// Copyright 2015-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,22 @@
 ///////////////////////////////////////////////////////////////////////////
 //                              Main Functions                           //
 ///////////////////////////////////////////////////////////////////////////
+
+//= General conditional debugging message removes tabs from alist.
+// mostly used by jhcNetBuild
+
+void jhcSlotVal::CallList (int lvl, const char *fcn, const char *alist, const char *entry) const
+{
+  if (dbg < lvl)
+    return;
+  if (entry == NULL)
+    jprintf("%s\n  ", fcn);
+  else
+    jprintf("%s [%s]\n  ", fcn, entry);
+  PrintList(alist);
+  jprintf("\n");
+}
+
 
 //= Print a shortened "pretty" version of association list (no tabs).
 
@@ -308,6 +324,16 @@ const char *jhcSlotVal::NextSlot (const char *alist, char *slot, char *val, int 
 }
 
 
+//= See if slot-value pair has exactly the given slot.
+
+bool jhcSlotVal::SlotMatch (const char *pair, const char *slot) const
+{
+  int n = SlotStart(pair, slot);
+
+  return((n > 0) && (pair[n] == '='));
+}
+
+
 //= See if slot-value pair begins with the given prefix (if any).
 // returns length of prefix if matched, negative otherwise
 
@@ -321,6 +347,19 @@ int jhcSlotVal::SlotStart (const char *pair, const char *prefix) const
   if (strncmp(pair, prefix, n) != 0)
     return -1;
   return n;
+}
+
+
+//= Simple parsing of slot-value pair to return value part.
+// return pointer allows "pair" itself to be altered (!)
+
+char *jhcSlotVal::SlotRef (char *pair) const
+{
+  char *val;
+
+  if ((val = strchr(pair, '=')) == NULL)
+    return NULL;
+  return(val + 1);
 }
 
 

@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2018-2019 IBM Corporation
+// Copyright 2018-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -145,6 +145,7 @@ int jhcNodePool::Assert (const jhcGraphlet& pat, jhcBindings& b, double conf, in
     else
       mate->SetBelief(0.0);
     mate->TopMax(tval);
+    mate->gen = ver;                             // re-check fluents
 
     // check all arguments of this item
     na = focus->NumArgs();
@@ -154,6 +155,7 @@ int jhcNodePool::Assert (const jhcGraphlet& pat, jhcBindings& b, double conf, in
       if ((arg = lookup_make(focus->Arg(j), b, src)) == NULL)
         return -2;
       arg->TopMax(tval);
+      arg->gen = ver;                            // re-check fluents
       if (!mate->HasVal(focus->Slot(j), arg))
         mate->AddArg(focus->Slot(j), arg); 
     }
@@ -201,7 +203,7 @@ jhcNetNode *jhcNodePool::MakeNode (const char *kind, const char *word, int neg, 
     return NULL;
   
   // bind some other fields
-  item->gen = ver;                  // useful for CHK directive
+  item->gen = ver;                  // useful for CHK directive and fluents
   item->SetNeg(neg);
   item->SetDefault(fabs(def));      // usually needs to be actualized
   if (def < 0.0)
@@ -213,7 +215,7 @@ jhcNetNode *jhcNodePool::MakeNode (const char *kind, const char *word, int neg, 
 
 
 //= Create a new node with the given base kind and exact instance number.
-// keeps the pool list in sorted order, lowest absolute ids toward head
+// keeps the pool list in sorted order, HIGHEST absolute ids toward head
 // returns NULL if a node with the given id already exists
 
 jhcNetNode *jhcNodePool::create_node (const char *kind, int id)
@@ -224,10 +226,10 @@ jhcNetNode *jhcNodePool::create_node (const char *kind, int id)
   if (((id < 0) && (dn <= 0)) || ((id > 0) && (dn > 0)))
     return NULL;
 
-  // find appropriate insertion point (ids go from low to high)
+  // find appropriate insertion point (ids go from high to low)
   while (n != NULL)
   {
-    if (abs(n->Inst()) > abs(id))
+    if (abs(n->Inst()) < abs(id))
       break;
     last = n;
     n = n->next;
@@ -289,22 +291,82 @@ jhcNetNode *jhcNodePool::AddLex (jhcNetNode *head, const char *word, int neg, do
 }
 
 
-//= Tell if particular node is a member of this pool.
-// simply chases linearly down list to end
+///////////////////////////////////////////////////////////////////////////
+//                             List Editing                              //
+///////////////////////////////////////////////////////////////////////////
 
-bool jhcNodePool::InPool (const jhcNetNode *n) const
+//= Delete a particular node from the pool.
+// returns 1 if found, 0 if not in pool
+
+int jhcNodePool::RemNode (jhcNetNode *n)
 {
-  const jhcNetNode *p = pool;
+  jhcNetNode *last = NULL, *now = pool;
 
-  if (n == NULL)
-    return false;
-  while (p != NULL)
+  // find preceding node in list
+  while (now != NULL)
   {
-    if (p == n)
-      return true;
-    p = p->next;
+    if (now == n)
+      break;
+    last = now;
+    now = now->next;
   }
-  return false;
+
+  // splice out of list
+  if (now == NULL)
+    return 0;
+  if (last == NULL)
+    pool = n->next;
+  else
+    last->next = n->next;
+
+  // delete node
+  delete n;
+  del++;
+  return 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//                               Searching                               //
+///////////////////////////////////////////////////////////////////////////
+
+//= Find a node associated with the particular person's name.
+// checks first for full name then for just first name (part before space)
+// return most recent matching node, NULL if none
+
+jhcNetNode *jhcNodePool::FindName (const char *full) const
+{
+  char first[80];
+  jhcNetNode *n;
+  char *sep;
+
+  // sanity check
+  if ((full == NULL) || (*full == '\0'))
+    return NULL;
+
+  // search for full name (most recent at HEAD of list)
+  n = pool;
+  while (n != NULL)
+  {
+    if (n->HasWord(full))
+      return n;
+    n = n->next;
+  }
+
+  // get just first name
+  strcpy_s(first, full);
+  if ((sep = strchr(first, ' ')) == NULL)
+    return NULL;
+
+  // search for first name (most recent at end of list)
+  n = pool;
+  while (n != NULL)
+  {
+    if (n->HasWord(first))
+      return n;
+    n = n->next;
+  }
+  return NULL;
 }
 
 
@@ -402,37 +464,25 @@ const char *jhcNodePool::extract_kind (char *kind, const char *desc, int ssz)
 
 
 ///////////////////////////////////////////////////////////////////////////
-//                             List Editing                              //
+//                           Virtual Overrides                           //
 ///////////////////////////////////////////////////////////////////////////
 
-//= Delete a particular node from the pool.
-// returns 1 if found, 0 if not in pool
+//= Tell if particular node is a member of this pool.
+// simply chases linearly down list to end
 
-int jhcNodePool::RemNode (jhcNetNode *n)
+bool jhcNodePool::InList (const jhcNetNode *n) const
 {
-  jhcNetNode *last = NULL, *now = pool;
+  const jhcNetNode *p = pool;
 
-  // find preceding node in list
-  while (now != NULL)
+  if (n == NULL)
+    return false;
+  while (p != NULL)
   {
-    if (now == n)
-      break;
-    last = now;
-    now = now->next;
+    if (p == n)
+      return true;
+    p = p->next;
   }
-
-  // splice out of list
-  if (now == NULL)
-    return 0;
-  if (last == NULL)
-    pool = n->next;
-  else
-    last->next = n->next;
-
-  // delete node
-  delete n;
-  del++;
-  return 1;
+  return false;
 }
 
 
@@ -470,7 +520,7 @@ int jhcNodePool::save_nodes (FILE *out, int lvl) const
   while (n != NULL)
   {
     n->TxtSizes(kmax, nmax, rmax);
-    n->mark = 0;
+//    n->mark = 0;
     n = n->next;
   }
 
@@ -479,7 +529,7 @@ int jhcNodePool::save_nodes (FILE *out, int lvl) const
   while (n != NULL)
   {
     if ((n->NumArgs() > 0) || !n->Blank() || (n->tags != 0) || (n->quote != NULL))
-      n->Save(out, lvl, kmax, nmax, rmax, NULL, 3);
+      n->Save(out, lvl, kmax, nmax, rmax, NULL, 3);       
     n = n->next;
   }
 

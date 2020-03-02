@@ -107,12 +107,14 @@ public:
   // --------------------- NECK MAIN ----------------------------
 
   // current neck information
-  void HeadPose (jhcMatrix& pos, jhcMatrix& aim, double lift); 
+  void HeadPose (jhcMatrix& pos, jhcMatrix& aim, double lift) const; 
+  void HeadLoc (jhcMatrix& pos, double lift) const;
   double Pan () const  {return jt[0].Angle();}
   double Tilt () const {return jt[1].Angle();}
   void Gaze (double& p, double& t) const {p = Pan(); t = Tilt();}
+  void AimFor (double& p, double& t, const jhcMatrix& targ, double lift) const;
 
-  // hand goal specification commands
+  // viewing goal specification commands
   void GazeClear () {jt[0].RampReset(); jt[1].RampReset();}
   int GazeTarget (double pan, double tilt, double p_rate =1.0, double t_rate =0.0, int bid =10);
   int PanTarget (double pan, double rate =1.0, int bid =10);
@@ -128,6 +130,7 @@ public:
   double TiltErr (double tilt, int abs =1, int lim =1) const;
   double GazeErr (double pan, double tilt, int lim =1) const
     {return __max(PanErr(pan, 1, lim), TiltErr(tilt, 1, lim));}
+  double GazeErr (const jhcMatrix& targ, double lift) const;
   bool GazeClose (double tol =0.5) const {return(PanClose(tol) && TiltClose(tol));}
   bool PanClose (double tol =0.5) const  {return(jt[0].RampDist(Pan()) <= tol);}
   bool TiltClose (double tol =0.5) const {return(jt[1].RampDist(Tilt()) <= tol);}

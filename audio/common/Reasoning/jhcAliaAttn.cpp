@@ -193,8 +193,8 @@ int jhcAliaAttn::ClrFoci (int init, const char *rname)
   self = NULL;
 
   // make nodes for participants in conversation
-  ShiftUser();
   self = MakeNode("self", "you", 0, -1.0);
+  AddProp(self, "ako", "person", 0, -1.0);
   if ((rname != NULL) && (*rname != '\0'))
   {
     // copy robot's name (if any) to "self" node
@@ -206,6 +206,7 @@ int jhcAliaAttn::ClrFoci (int init, const char *rname)
       AddLex(self, first, 0, -1.0);
     }
   }
+  ShiftUser();
   return 1;
 }
 
@@ -225,7 +226,7 @@ jhcNetNode *jhcAliaAttn::ShiftUser (const char *name)
         return SetUser(n);
 
   // make up a new user node and add pronouns
-  n = MakeNode("user", NULL, 0, -1.0);
+  n = MakeNode("dude", NULL, 0, -1.0);
   if ((name != NULL) && (*name != '\0'))
     AddLex(n, name, 0, -1.0);
   return SetUser(n);
@@ -236,9 +237,13 @@ jhcNetNode *jhcAliaAttn::ShiftUser (const char *name)
 
 jhcNetNode *jhcAliaAttn::SetUser (jhcNetNode *n)
 {
+  // reassign "I" and "me" to new node
   set_prons(0);
   user = n;
   set_prons(1);
+
+  // make sure that personhood is marked
+  AddProp(user, "ako", "person", 0, -1.0);
   return user;
 }
 
@@ -389,13 +394,15 @@ int jhcAliaAttn::FinishNote (int keep)
 ///////////////////////////////////////////////////////////////////////////
 
 //= Discards old foci, removes unused nodes, and enforces local consistency.
+// must mark all seed nodes to retain before calling with gc > 0
 // returns 1 if working memory has changed, 0 if same as last cycle
 
-int jhcAliaAttn::Update ()
+int jhcAliaAttn::Update (int gc)
 {
   prune_foci();
   fluent_scan(0);
-  clean_mem();
+  if (gc > 0)
+    clean_mem();
   ver++;                         // increase generation count
   return(Changed() ? 1 : 0);
 }
@@ -475,16 +482,14 @@ int jhcAliaAttn::fluent_scan (int dbg)
   jhcNetNode *n2, *n = NULL;
   int cnt = 0;
 
-  // look only at predicate nodes added this cycle (always at head of list)
+  // look only at predicate nodes changed this cycle (might not be at head)
   while ((n = NextNode(n)) != NULL)
-    if (!Recent(n))  
-      break;
-    else if (!n->Hyp() && !n->ObjNode())
+    if (Recent(n) && !n->Hyp() && !n->ObjNode())
     {
-      // scan through all older predicates for any matches
-      n2 = n;
+      // scan through all older predicates for any matches (might be earlier in list)
+      n2 = NULL;
       while ((n2 = NextNode(n2)) != NULL)
-        if (!n2->Hyp() && !n2->ObjNode())
+        if (!Recent(n2) && !n2->Hyp() && !n2->ObjNode())
           if (n->SameArgs(n2) && (n->LexMatch(n2) || n->SharedWord(n2)))
           {
             if (cnt++ <= 0)
@@ -504,6 +509,7 @@ int jhcAliaAttn::fluent_scan (int dbg)
 ///////////////////////////////////////////////////////////////////////////
 
 //= Keep only semantic network nodes attached to foci or active directives.
+// generally additional seeds will have been marked by other components
 // returns number of nodes removed
 
 int jhcAliaAttn::clean_mem ()
@@ -514,21 +520,21 @@ int jhcAliaAttn::clean_mem ()
   // all things are potential garbage
   jprintf(1, dbg, "\nCleaning memory ...\n");
   while ((n = NextNode(n)) != NULL)
-    n->mark = 0;           
+    n->keep = ((n->keep > 0) ? 1 : 0);           // normalize values
 
   // mark definite keepers              
   for (i = 0; i < fill; i++)
     focus[i]->MarkSeeds();       
   if (self != NULL)
-    self->mark = 1;
+    self->keep = 1;
   if (user != NULL)
-    user->mark = 1;         
+    user->keep = 1;         
 
   // scan all and expand marks to related nodes
   jprintf(1, dbg, "\n  retaining nodes:\n");
   n = NULL;
   while ((n = Next(n)) != NULL)
-    if (n->mark == 1)
+    if (n->keep == 1)
       keep_from(n, dbg);
   return rem_unmarked(dbg);
 }
@@ -543,12 +549,12 @@ void jhcAliaAttn::keep_from (jhcNetNode *anchor, int dbg)
   int i, n;
 
   // make sure node is not already marked or part of some other pool
-  if ((anchor == NULL) || (anchor->mark > 1) || !InPool(anchor))
+  if ((anchor == NULL) || (anchor->keep > 1) || !InPool(anchor))
     return;
-  jprintf(1, dbg, "    %s%s\n", ((anchor->mark <= 0) ? "  " : ""), anchor->Nick());  
+  jprintf(1, dbg, "    %s%s\n", ((anchor->keep <= 0) ? "  " : ""), anchor->Nick());  
 
   // mark node and all its arguments as being keepers 
-  anchor->mark = 2;
+  anchor->keep = 2;
   n = anchor->NumArgs();  
   for (i = 0; i < n; i++)
     keep_from(anchor->Arg(i), dbg);
@@ -582,9 +588,9 @@ int jhcAliaAttn::rem_unmarked (int dbg)
 
   // get rid of anything not marked (0)
   while (n != NULL)
-    if (n->mark > 0)
+    if (n->keep > 0)
     {
-      n->mark = 0;
+      n->keep = 0;           // eligible on next round
       n = Next(n);
     }
     else

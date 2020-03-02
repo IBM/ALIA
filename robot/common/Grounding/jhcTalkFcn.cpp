@@ -126,7 +126,7 @@ int jhcTalkFcn::build_string (const jhcAliaDesc *desc, int inst)
   const char *item, *in;
   char *out = full[inst];
   char args[10][80];
-  int i, j;
+  int i, j, w;
 
   // get main pattern
   if ((n = desc->Val("pat")) == NULL)
@@ -143,8 +143,12 @@ int jhcTalkFcn::build_string (const jhcAliaDesc *desc, int inst)
     if ((n = desc->Val(full[inst])) == NULL)
       break;
 
-    // use most recent word associated with node (if any)
-    if ((item = n->Word()) == NULL)
+    // use most recent real word (not pronoun) associated with node (if any)
+    w = 0;
+    while ((item = n->Word(w++, 1.0)) != NULL)
+      if ((_stricmp(item, "me") != 0) && (_stricmp(item, "I") != 0) && (_stricmp(item, "you") != 0))
+        break;
+    if (item == NULL)
       continue;
     strcpy_s(args[i], item);
 

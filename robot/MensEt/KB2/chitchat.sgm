@@ -1,0 +1,27 @@
+// terms associated with speech acts posted by jhcGraphizer
+// ================================================
+
+// imperative verb
+
+=[ACT]
+  acknowledge
+
+
+// ================================================
+
+// present verb
+
+=[ACT-S]
+  acknowledges
+
+
+// progressive verb
+
+=[ACT-G]
+  acknowledging
+
+
+// past or passive verb
+
+=[ACT-D]
+  acknowledged

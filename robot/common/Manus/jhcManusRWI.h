@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ public:
   ~jhcManusRWI ();
   jhcManusRWI ();
   void BindBody (jhcManusX *b);
+  void SetSize (int x, int y);
 
   // processing parameter bundles 
   int Defaults (const char *fname =NULL);

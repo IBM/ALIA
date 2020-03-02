@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2018-2019 IBM Corporation
+// Copyright 2018-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ jhcSituation::jhcSituation ()
 // "m" is typically an array of "mc" bindings, one for each match 
 // if "mc" > 0 then checks caveats before invoking callback function
 // "f" is a set of facts to match against first, "f2" is for remainder
-// triggering pattern "f" can be missing up to "tol" nodes wrt "pat"
+// triggering facts "f" can be missing up to "tol" nodes wrt "pat"
 // typically if f2 is present, f is the trigger clause of an operator
 // if this is not the case, then matching nodes from f need blf >= bth
 // changed from const method to let match_found alter jhcNetRef::recent
@@ -96,7 +96,7 @@ int jhcSituation::MatchGraph (jhcBindings *m, int& mc, const jhcGraphlet& pat,
   // for operator, if trigger fully matched then try rest with wmem
   if (f2 != NULL)
     return MatchGraph(m, mc, cond, *f2, NULL, tol);
-  return 0;                                       // pattern is unmatchable
+  return 0;                                                // pattern is unmatchable
 }
 
 
@@ -243,8 +243,16 @@ int jhcSituation::try_binding (const jhcNetNode *focus, jhcNetNode *mate, jhcBin
 {
   int i, nb, n = __max(0, mc - 1), cnt = 0;
 
-  // make sure superficial pairing is okay 
-  if (!consistent(mate, focus, m + n, bth))
+  // make sure superficial pairing is okay
+  if (f2 != NULL)
+  {
+    // matching operator condition against directive
+    if (!f.InList(mate))
+      return 0;
+    if (!consistent(mate, focus, m + n, 0.0))
+      return 0;
+  }
+  else if (!consistent(mate, focus, m + n, bth))     // min belief value
     return 0;
 
   // add pair to all remaining bindings (all nb are the same)

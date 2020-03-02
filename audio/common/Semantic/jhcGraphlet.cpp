@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017-2019 IBM Corporation
+// Copyright 2017-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -93,23 +93,9 @@ jhcNetNode *jhcGraphlet::AddItem (jhcNetNode *item)
     jprintf(">>> More than %d items in jhcGraphlet::Add !\n", gmax);
     return NULL;
   }
-  if (!in_list(item))
+  if (!InList(item))
     desc[ni++] = item;
   return item;
-}
-
-
-//= Determine whether a given node is already in the description list.
-// checks from 0 up to the larger of ni or rng
-
-bool jhcGraphlet::in_list (const jhcNetNode *n, int rng) const
-{
-  int i, sz = __max(ni, __min(rng, gmax));
-
-  for (i = 0; i < sz; i++)
-    if (desc[i] == n)
-      return true;
-  return false; 
 }
 
 
@@ -180,12 +166,12 @@ jhcNetNode *jhcGraphlet::MainProp ()
 //= Set belief of all nodes to their pending values (blf0).
 // returns number of changes made
 
-int jhcGraphlet::ActualizeAll () const
+int jhcGraphlet::ActualizeAll (int ver) const
 {
   int i, chg = 0;
 
   for (i = 0; i < ni; i++)
-    chg += desc[i]->Actualize();
+    chg += desc[i]->Actualize(ver);
   return chg;
 }
 
@@ -212,6 +198,19 @@ jhcNetNode *jhcGraphlet::NextNode (const jhcNetNode *prev) const
   if (++i < ni)
     return desc[i];
   return NULL;
+}
+
+
+//= Determine whether a given node is already in the description list.
+
+bool jhcGraphlet::InList (const jhcNetNode *n) const
+{
+  int i;
+
+  for (i = 0; i < ni; i++)
+    if (desc[i] == n)
+      return true;
+  return false; 
 }
 
 

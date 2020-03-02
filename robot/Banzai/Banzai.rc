@@ -97,9 +97,10 @@ BEGIN
     BEGIN
         MENUITEM "&Watching",                   ID_PARAMETERS_WATCHING
         MENUITEM "&Orienting",                  ID_PARAMETERS_ORIENTING
-        MENUITEM "&Idle Gaze",                  ID_PARAMETERS_TARGETTIME
+        MENUITEM "&Idle Timing",                ID_PARAMETERS_TARGETTIME
         MENUITEM SEPARATOR
-        MENUITEM "&Social Events",              ID_PEOPLE_SOCIALEVENTS
+        MENUITEM "&Social Attn",                ID_PEOPLE_SOCIALEVENTS
+        MENUITEM "Social &Move",                ID_PEOPLE_SOCIALMOVE
         MENUITEM SEPARATOR
         MENUITEM "Enroll &Photo",               ID_ATTENTION_ENROLLPHOTO
         MENUITEM "&Enroll Live",                ID_ATTENTION_ENROLLLIVE
@@ -215,8 +216,8 @@ CAPTION "About Banzai"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,15,17,20,20
-    LTEXT           "Banzai Version 2.75",IDC_STATIC,47,13,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2015-2020, IBM, All Rights Reserved",IDC_STATIC,47,36,179,8
+    LTEXT           "Banzai Version 2.82",IDC_STATIC,47,13,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2015-2020, IBM Corporation",IDC_STATIC,47,36,171,8
     DEFPUSHBUTTON   "OK",IDOK,176,7,50,14,WS_GROUP
     LTEXT           "Written by Jonathan H. Connell",IDC_STATIC,47,24,128,9
 END
@@ -379,13 +380,6 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// RCDATA
-//
-
-IDR_FACE_XML            RCDATA                  "res\\lbpcascade_frontalface.xml"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -580,15 +574,15 @@ BEGIN
     ID_PARAMETERS_WATCHING  "What human activities to innately watch"
     ID_PARAMETERS_ORIENTING "Parameters controlling details of watching behaviors"
     ID_PARAMETERS_SOUNDSRC  "Parameters for setting up a sound source location"
-    ID_PARAMETERS_TARGETTIME 
-                            "Adjust time delays and ranges of idle activities"
+    ID_PARAMETERS_TARGETTIME "Adjust timing of innate attention behaviors"
 END
 
 STRINGTABLE
 BEGIN
     ID_ATTENTION_ENROLLPHOTO "Supply an external mugshot for some person"
     ID_ATTENTION_ENROLLLIVE "Take a picture of some particular person"
-    ID_PEOPLE_SOCIALEVENTS  "When to alert about the presense of people"
+    ID_PEOPLE_SOCIALEVENTS  "Parameters for detecting and selecting people"
+    ID_PEOPLE_SOCIALMOVE    "Parameters controlling approach and following of people"
 END
 
 #endif    // English (United States) resources

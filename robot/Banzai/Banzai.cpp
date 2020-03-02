@@ -83,8 +83,8 @@ BOOL CBanzaiApp::InitInstance()
 
 	// JHC: changed to maximize window on start up (vs. SW_SHOW)
 //	m_pMainWnd->ShowWindow(SW_SHOWMAXIMIZED);  // <== remove for fixed size
-	if (doc->cmd_line > 0)
-		m_pMainWnd->ShowWindow(SW_SHOWMINIMIZED);
+//	if (doc->cmd_line > 0)                     // <== remove to show always
+//		m_pMainWnd->ShowWindow(SW_SHOWMINIMIZED);
 	m_pMainWnd->UpdateWindow();
 	m_pMainWnd->DragAcceptFiles(TRUE);
 

@@ -110,20 +110,21 @@ public:
   // external interface (jhcAliaNote virtuals)
   void StartNote ();
   jhcAliaDesc *NewNode (const char *kind, const char *word =NULL, int neg =0, double blf =1.0)
-    {return((jhcAliaDesc *) MakeNode(kind, word, neg, blf));}
+    {return MakeNode(kind, word, neg, blf);}
   jhcAliaDesc *NewProp (jhcAliaDesc *head, const char *role, const char *word,
                         int neg =0, double blf =1.0, const char *kind =NULL)
-    {return((jhcAliaDesc *) AddProp(dynamic_cast<jhcNetNode *>(head), role, word, neg, blf, kind));}
+    {return AddProp(dynamic_cast<jhcNetNode *>(head), role, word, neg, blf, kind);}
   void AddArg (jhcAliaDesc *head, const char *slot, jhcAliaDesc *val)
     {jhcNetNode *hd = dynamic_cast<jhcNetNode *>(head); hd->AddArg(slot, dynamic_cast<jhcNetNode *>(val));}
   void NewLex (jhcAliaDesc *head, const char *word, int neg =0, double blf =1.0) 
     {AddLex(dynamic_cast<jhcNetNode *>(head), word, neg, blf);}
-  jhcAliaDesc *Self () {return self;}
-  jhcAliaDesc *User () {return user;}
+  jhcAliaDesc *Person (const char *name) const {return FindName(name);}
+  jhcAliaDesc *Self () const {return self;}
+  jhcAliaDesc *User () const {return user;}
   int FinishNote (int keep =1);
 
   // maintenance
-  int Update ();
+  int Update (int gc =1);
 
   // file functions
   int LoadFoci (const char *fname, int add =0);

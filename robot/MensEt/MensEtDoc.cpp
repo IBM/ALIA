@@ -178,7 +178,7 @@ BOOL CMensEtDoc::OnNewDocument()
   //         =  2 for restricted operation, expiration enforced
   cripple = 0;
   ver = mc.Version(); 
-  LockAfter(6, 2020, 1, 2020);
+  LockAfter(7, 2020, 2, 2020);
 
   // JHC: if this function is called, app did not start with a file open
   // JHC: initializes display object which depends on document
@@ -708,7 +708,8 @@ int CMensEtDoc::interact_params (const char *fname)
   ps->NextSpec4( &cam, 0, "Camera available");
   ps->NextSpec4( &mic, 0, "Speech input (2 = attn)");  
   ps->NextSpec4( &spk, 0, "Read output always");
-  ps->Skip();
+  ps->Skip(2);
+
   ps->NextSpec4( &(mc.acc), 0, "Accumulate knowledge");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
@@ -851,6 +852,7 @@ return;
     (mc.body).BindVideo(NULL);
 
   // reset all required components
+  system("cls");
   jprintf_open();
   if (tais.Init(tid, 1) <= 0)
     return;
@@ -948,6 +950,7 @@ void CMensEtDoc::OnDemoFilelocal()
     (mc.body).BindVideo(NULL);
 
   // reset all required components
+  system("cls");
   jprintf_open();
   if (mc.Reset(spk, tid) <= 0)
     return;
@@ -1013,13 +1016,14 @@ void CMensEtDoc::OnDemoInteract()
   char in[200];
   int src = ((mic > 0) ? (mic + 1) : spk);
 
-  // possibly check for video
+  // possibly check for video 
   if ((cam > 0) && (ChkStream() > 0))
     (mc.body).BindVideo(&v);
   else
     (mc.body).BindVideo(NULL);
 
   // reset all required components
+  system("cls");
   jprintf_open();
   if (mc.Reset(src, tid) <= 0)
     return;
@@ -1038,7 +1042,9 @@ void CMensEtDoc::OnDemoInteract()
   }
 
   // keep taking sentences until ESC
+#ifndef _DEBUG
   try
+#endif
   {
     while (chat.Interact() >= 0)
     {
@@ -1057,7 +1063,9 @@ void CMensEtDoc::OnDemoInteract()
       chat.Post(mc.NewOutput());
     }
   }
+#ifndef _DEBUG
   catch (...){Tell("Unexpected exit!");}
+#endif
 
   // cleanup
   jprintf("\n:::::::::::::::::::::::::::::::::::::\n");
@@ -1181,6 +1189,7 @@ void CMensEtDoc::OnCameraparamsDewarp()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
   // process video frames
   d.Clear(1, "Dewarping ...");
@@ -1218,8 +1227,10 @@ void CMensEtDoc::OnProcessingCleanup()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
   // initialize processing and images
+  ss->SetSize(v.XDim(), v.YDim());
   ss->Reset();
   boost0.SetSize(ss->XDim(), ss->YDim(), 3);
 
@@ -1272,8 +1283,10 @@ void CMensEtDoc::OnVisionColordiffs()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
-  // initialize processing
+  // set up for analysis
+  ss->SetSize(v.XDim(), v.YDim());
   ss->Reset();
 
   // process video frames
@@ -1321,8 +1334,10 @@ void CMensEtDoc::OnVisionSimilarregions()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
   // set up for analysis
+  ss->SetSize(v.XDim(), v.YDim());
   ss->Reset();
   mono3.SetSize(ss->wk, 3);
   wkd.SetSize(ss->wk);
@@ -1393,8 +1408,10 @@ void CMensEtDoc::OnProcessingGroundplane()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
   // set up for analysis
+  ss->SetSize(v.XDim(), v.YDim());
   ss->Reset();
   mono3.SetSize(ss->wk, 3);
 
@@ -1463,8 +1480,10 @@ void CMensEtDoc::OnVisionObjects()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
   // set up for analysis
+  ss->SetSize(v.XDim(), v.YDim());
   ss->Reset();
   hint.SetSize(ss->wk);
   line.SetSize(hint);
@@ -1536,8 +1555,10 @@ void CMensEtDoc::OnVisionStackgrow()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
   // set up for analysis
+  ss->SetSize(v.XDim(), v.YDim());
   ss->Reset();
   mask.SetSize(ss->wk);
   proto.SetSize(mask);
@@ -1662,8 +1683,10 @@ void CMensEtDoc::OnVisionFeatures()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
   // set up for analysis
+  ss->SetSize(v.XDim(), v.YDim());
   ss->Reset();
   bin.SetSize(ss->wk);
   hcomp.SetSize(bin);
@@ -1784,8 +1807,10 @@ void CMensEtDoc::OnVisionBoundary()
     return;
   (mc.body).BindVideo(&v);
   (mc.body).Reset(0, NULL, 0);
+  (mc.body).SetSize(v.XDim(), v.YDim());
 
   // set up for analysis
+  ss->SetSize(v.XDim(), v.YDim());
   ss->Reset();
   ej.SetSize(ss->wk);
   ej_wk.SetSize(ej);
@@ -2079,42 +2104,7 @@ void CMensEtDoc::OnReflexesStack()
 
 void CMensEtDoc::OnUtilitiesTest()
 { 
-/*
-   jhcImg src, ej, dest, s2;
-
-   src.SetSize(640, 480, 1);
-   ej.SetSize(src);
-   dest.SetSize(src);
-   s2.SetSize(src);
-
-   src.FillArr(0);
-   RectFill(src, 100, 150, 250, 150, 128);
-   RectFill(src, 150, 200, 75, 50, 255);
-   RectFill(src, 255, 200, 50, 50, 255);
-
-   ej.FillArr(0);
-   DrawLine(ej, 120, 0, 120, 480, 5, 255);
-   DrawLine(ej, 200, 0, 200, 480, 3, 255);
-   DrawLine(ej, 320, 0, 320, 480, 1, 255);
-
-   dest.FillArr(0);
-   StopAtH(dest, src, ej, 200, 100);
-
-   UnderGate(s2, src, ej, 128, 50);
-   UnderGate(s2, s2, dest, 128, 200);
-
-   d.ShowGrid(s2, 0, 0, 2, "extended");
-*/
-
-  jhcImg map, map2, map3;
-
-  GexMap(map);
-  OppMap(map2);
-  HueMap(map3);
-
-  d.ShowGrid(map,  0, 0, 0, "Gex Color Space");
-  d.ShowGrid(map2, 1, 0, 0, "Opp Color Space");
-  d.ShowGrid(map3, 2, 0, 0, "Hue Color Space");
+//  (mc.net).HarvestLex("KB/BasicAct");
 
 }
 

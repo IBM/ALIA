@@ -117,6 +117,7 @@ BEGIN_MESSAGE_MAP(CBanzaiDoc, CDocument)
   ON_COMMAND(ID_ATTENTION_ENROLLPHOTO, &CBanzaiDoc::OnAttentionEnrollphoto)
   ON_COMMAND(ID_ATTENTION_ENROLLLIVE, &CBanzaiDoc::OnAttentionEnrolllive)
   ON_COMMAND(ID_PEOPLE_SOCIALEVENTS, &CBanzaiDoc::OnPeopleSocialevents)
+  ON_COMMAND(ID_PEOPLE_SOCIALMOVE, &CBanzaiDoc::OnPeopleSocialmove)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -196,7 +197,7 @@ BOOL CBanzaiDoc::OnNewDocument()
   //         =  2 for restricted operation, expiration enforced
   cripple = 0;
   ver = ec.Version();
-  LockAfter(6, 2020, 1, 2020);
+  LockAfter(7, 2020, 2, 2020);
 
   // JHC: if this function is called, app did not start with a file open
   // JHC: initializes display object which depends on document
@@ -547,6 +548,7 @@ int CBanzaiDoc::ChkStream (int dual)
   if (v.Valid() && ((dual <= 0) || v.Dual()))
     return 1;
   d.StatusText("Configuring Kinect sensor ...");
+  v.noisy = ((cmd_line > 0) ? 0 : 1);
   if (v.SetSource("0.kin") <= 0)
   {
     d.StatusText("");
@@ -1695,16 +1697,19 @@ void CBanzaiDoc::OnDemoTextfile()
     (ec.body).BindVideo(NULL);
 
   // reset all required components
+  system("cls");
   jprintf_open();
   if (ec.Reset(spk, 0) <= 0)
+  {
+    jprintf_close();
     return;
+  }
+  ec.SetPeople("VIPs.txt");
   chat.Reset(0);
   chat.Inject(in);
 
-  // announce start and input mode
-  d.Clear(1, "File input (ESC to quit) ...");
-
   // keep taking sentences until ESC
+  d.Clear(1, "File input (ESC to quit) ...");
   try
   {
     while (chat.Interact() >= 0)
@@ -1738,7 +1743,7 @@ void CBanzaiDoc::OnDemoTextfile()
   // cleanup
   jprintf("\n:::::::::::::::::::::::::::::::::::::\n");
   ec.PrintMem();
-  ec.Done();
+  ec.Done(fsave);
   jprintf("Done.\n\n");
   fclose(f);
   jprintf("Think %3.1f Hz, Sense %3.1f Hz\n", ec.Thinking(), ec.Sensing()); 
@@ -1762,17 +1767,30 @@ void CBanzaiDoc::OnDemoInteractive()
   int src = ((mic > 0) ? (mic + 1) : spk);
 
   // possibly check for video
-  if ((cam > 0) && (ChkStream() > 0))
-    (ec.body).BindVideo(&v);
-  else
-    (ec.body).BindVideo(NULL);
+  (ec.body).BindVideo(NULL);
+  if (cam > 0)
+  { 
+    if (ChkStream() > 0)
+      (ec.body).BindVideo(&v);
+    else if (cmd_line > 0)
+    {
+      ec.SpeakError("I can't see anything");
+      d.StatusText("Failed");
+      jprintf_close();
+      return;
+    }
+  }
 
   // reset all required components
+  system("cls");
   jprintf_open();
   d.StatusText("Connecting to robot ...");
   if (ec.Reset(src, rob) <= 0)
   {
-    Complain("Robot not functioning properly");
+    if (cmd_line > 0)
+      ec.SpeakError("My body is not working");
+    else
+      Complain("Robot not functioning properly");
     d.StatusText("Failed");
     return;
   }
@@ -1792,7 +1810,9 @@ void CBanzaiDoc::OnDemoInteractive()
   }
 
   // keep taking sentences until ESC
+#ifndef _DEBUG
   try
+#endif
   {
     while (chat.Interact() >= 0)
     {
@@ -1811,7 +1831,9 @@ void CBanzaiDoc::OnDemoInteractive()
       chat.Post(ec.NewOutput());
     }
   }
+#ifndef _DEBUG
   catch (...){Tell("Unexpected exit!");}
+#endif
 
   // cleanup
   jprintf("\n:::::::::::::::::::::::::::::::::::::\n");
@@ -1852,23 +1874,33 @@ void CBanzaiDoc::OnParametersOrienting()
 }
 
 
-// Adjust time delays and ranges of idle activities
+// Adjust timing of innate attention behaviors
 
 void CBanzaiDoc::OnParametersTargettime()
 {
 	jhcPickVals dlg;
 
-  dlg.EditParams((ec.rwi).ips); 
+  dlg.EditParams((ec.rwi).tps); 
 }
 
 
-// When to alert about the presense of people
+// Parameters for detecting and selecting people
 
 void CBanzaiDoc::OnPeopleSocialevents()
 {
 	jhcPickVals dlg;
 
-  dlg.EditParams((ec.soc).eps); 
+  dlg.EditParams((ec.soc).aps); 
+}
+
+
+// Parameters controlling approach and following of people
+
+void CBanzaiDoc::OnPeopleSocialmove()
+{
+	jhcPickVals dlg;
+
+  dlg.EditParams((ec.soc).mps); 
 }
 
 
@@ -1877,7 +1909,7 @@ void CBanzaiDoc::OnPeopleSocialevents()
 void CBanzaiDoc::OnAttentionEnrollphoto()
 {
   jhcFRecoDLL *fr = &(((ec.rwi).fn).fr);
-  jhcFFindOCV *ff = &(((ec.rwi).fn).ff);
+  jhcFFind *ff = &(((ec.rwi).fn).ff);
   char person[80] = "";
   jhcString sel, init, idir(cwd);
   CFileDialog dlg(TRUE);
@@ -1912,6 +1944,8 @@ void CBanzaiDoc::OnAttentionEnrollphoto()
   // find biggest face and try to enroll it
   ff->Reset();
   fr->Reset();
+  fr->LoadDB("VIPs.txt");
+  (ec.vip).Load("VIPs.txt");
   src = Image4(mug4, mug);
   if (ff->FindBest(det, *src, 20, 400, 0.0) > 0)
   {
@@ -1945,7 +1979,7 @@ void CBanzaiDoc::OnAttentionEnrollphoto()
 void CBanzaiDoc::OnAttentionEnrolllive()
 {
   jhcFRecoDLL *fr = &(((ec.rwi).fn).fr);
-  jhcFFindOCV *ff = &(((ec.rwi).fn).ff);
+  jhcFFind *ff = &(((ec.rwi).fn).ff);
   char person[80] = "";
   jhcPickString pick;
   jhcImg now, mark;
@@ -1963,6 +1997,8 @@ void CBanzaiDoc::OnAttentionEnrolllive()
   v.SizeFor(now);
   ff->Reset();
   fr->Reset();
+  fr->LoadDB("VIPs.txt");
+  (ec.vip).Load("VIPs.txt");
 
   // get ID to use
   if (pick.EditString(person, 0, "Person name") <= 0)
@@ -2263,6 +2299,56 @@ void CBanzaiDoc::OnPeopleSpeaking()
 
 void CBanzaiDoc::OnUtilitiesTest()
 {
+  jhcRoi roi, roi2;
+  jhcImg col, rng, d8, zmin, z8, rng2, r8;
+  int sz = 3;
+  double avg, zavg, avg2, a, za, ra;
+  
+  // define sample region
+  roi.SetRoi(170, 320, 100, 100);
+  roi2.ScaleRoi(roi, 1.0 / sz);
+
+  // set image sizes
+  v.SizeFor(col, 0);
+  v.SizeFor(rng, 1);
+  zmin.SetSize(rng);
+  rng2.SetSize(rng, 1.0 / sz);
+  d8.SetSize(rng, 1);
+  z8.SetSize(d8);
+  r8.SetSize(d8, 1.0 / sz);
+
+jtimer_clr();
+  // get various versions of depth
+  v.DualGet(col, rng);
+  avg = AvgVal_16(rng, roi);
+jtimer(1, "BoxMin16");
+  BoxMin16(zmin, rng, sz);
+jtimer_x(1);
+  zavg = AvgVal_16(zmin, roi);
+jtimer(2, "Sample");
+  Sample(rng2, zmin);
+jtimer_x(2);
+  avg2 = AvgVal_16(rng2, roi2);
+jtimer_rpt();
+
+  // make pretty images with sample region marked
+  Night8(d8, rng,  v.Shift);
+  a = AvgVal(d8, roi);
+  RectEmpty(d8, roi, 1, 0); 
+  Night8(z8, zmin, v.Shift);
+  za = AvgVal(z8, roi);
+  RectEmpty(z8, roi, 1, 0); 
+  Night8(r8, rng2, v.Shift);
+  ra = AvgVal(r8, roi2);
+  RectEmpty(r8, roi2, 1, 0); 
+
+  // show results
+  d.Clear();
+  d.ShowGrid(d8,  0, 0, 0, "Depth: %3.1f -> %3.1f", avg, a);
+  d.ShowGrid(z8,  1, 0, 0, "Min: %3.1f -> %3.1f", zavg, za);
+  
+  d.ShowGrid(col, 0, 1, 0, "Color");
+  d.ShowGrid(r8,  1, 1, 0, "Small: %3.1f -> %3.1f", avg2, ra);
 
 }
 

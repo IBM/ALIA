@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017-2019 IBM Corporation
+// Copyright 2017-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -122,6 +122,7 @@ public:
   // list access (overrides virtual)
   jhcNetNode *NextNode (const jhcNetNode *prev =NULL) const;
   int Length () const {return NumItems();}
+  bool InList (const jhcNetNode *n) const;
 
   // configuration
   void Copy (const jhcGraphlet& ref);
@@ -132,8 +133,8 @@ public:
   jhcNetNode *MainLast ();
   jhcNetNode *MainProp ();
   bool InDesc (const jhcNetNode *item) const
-    {return in_list(item);}
-  int ActualizeAll () const;
+    {return InList(item);}
+  int ActualizeAll (int ver) const;
 
   // writing functions
   int Save (FILE *out, int lvl =0, int detail =0) const;

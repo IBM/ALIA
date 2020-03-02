@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2017 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -4681,7 +4681,7 @@ int jhcArea::BoxMax (jhcImg& dest, const jhcImg& src, int wid, int ht)
 
 
 //= Finds the minimum non-zero value in a rectangular-shaped region.
-// stes output to zero if mask does not overlap any non-zero pixels
+// sets output to zero if mask does not overlap any non-zero pixels
 
 int jhcArea::BoxMin (jhcImg& dest, const jhcImg& src, int wid, int ht)
 {
@@ -4852,6 +4852,196 @@ int jhcArea::BoxMin (jhcImg& dest, const jhcImg& src, int wid, int ht)
       for (x = xhi; x < rw; x++, m++, b++)
       {
         *m = (UC8) val;
+
+        if ((val > 0) && (*b == val))
+        {
+          // if trailing edge was max, rescan for new max in mask
+          val = 0;
+          ret = __min(dx, rw - (x - nx));
+          f -= ret;
+          for (i = 0; i < ret; i++, f++)
+            if ((*f > 0) && ((*f < val) || (val <= 0)))
+              val = *f;
+        }
+      }
+    }
+  }
+  return 1;
+}
+
+
+//= Finds the minimum non-zero 16 bit value in a rectangular-shaped region.
+// sets output to zero if mask does not overlap any non-zero pixels
+
+int jhcArea::BoxMin16 (jhcImg& dest, const jhcImg& src, int wid, int ht)
+{
+  int dx = wid, dy = ((ht == 0) ? wid : ht);
+
+  // check arguments
+  if (!dest.Valid(2) || !dest.SameFormat(src))
+    return Fatal("Bad images to jhcArea::BoxMin16");
+  if ((dx > src.RoiW()) || (dy > src.RoiH()))
+    return Fatal("Mask too big (%d %d) vs. (%d %d) in jhcArea::BoxMin16", 
+                 dx, dy, src.RoiW(), src.RoiH());
+
+  // special cases
+  if ((dx <= 0) || (dy <= 0))
+    return dest.FillArr(0);
+  if ((dx == 1) && (dy == 1))
+    return dest.CopyArr(src);
+  dest.CopyRoi(src);
+  if ((dx > 1) && (dy > 1))
+  {
+    a1.SetSize(dest);
+    a1.CopyRoi(src);
+  }
+
+  // generic ROI case
+  int x, y, i, ret, val;
+  int rw = dest.RoiW(), rh = dest.RoiH(), ln2 = dest.Line() >> 1;
+  int nx = dx / 2, px = dx - nx, xdel = __min(nx + 1, rw), xadd = __max(0, rw - px);
+  int xini = __min(px, rw), xlo = __min(xdel, xadd), xhi = __max(xdel, xadd);
+  int ny = dy / 2, py = dy - ny, ydel = __min(ny + 1, rh), yadd = __max(0, rh - py);
+  int yini = __min(py, rh), ylo = __min(ydel, yadd), yhi = __max(ydel, yadd), dyln2 = dy * ln2;
+  const US16 *b, *f, *s0;
+  US16 *m, *m0;
+
+  // PASS 1 vertical ==============================================
+  // find minimum in vertical strip of height dy = [-ny 0 +py]
+  // subtract trailing edge starting at ydel, add leading edge up to yadd 
+  // y refers to location of output pixel in image a1 (m)
+  if (dy > 1)
+  {
+    s0 = (const US16 *) src.RoiSrc();
+    if (dx > 1)
+      m0 = (US16 *) a1.RoiDest();
+    else
+      m0 = (US16 *) dest.RoiDest();
+    for (x = 0; x < rw; x++, m0++, s0++)
+    {
+      // start all pointers at base of column
+      m = m0;
+      b = s0;
+      f = s0;
+
+      // initialize value based on positive overlap of mask
+      val = 0;
+      for (i = 0; i < yini; i++, f += ln2)
+        if ((*f > 0) && ((*f < val) || (val <= 0)))
+          val = *f;
+
+      // at beginning mask is not completely in image
+      for (y = 0; y < ylo; y++, m += ln2, f += ln2)
+      {
+        *m = (US16) val;
+        if ((*f > 0) && ((*f < val) || (val <= 0)))
+          val = *f;
+      }
+
+      if (yadd < ydel)
+        // huge masks span whole image in middle
+        for (y = ylo; y < yhi; y++, m += ln2)
+          *m = (US16) val;
+      else    
+        // in middle look at leading and trailing edge of mask
+        for (y = ylo; y < yhi; y++, m += ln2, b += ln2, f += ln2)
+        {
+          *m = (US16) val;
+
+          // if leading edge is greater >= max then just set max 
+          if ((*f > 0) && ((*f < val) || (val <= 0)))
+            val = *f;
+          else if ((val > 0) && (*b == val))
+          {
+            // if trailing edge was max, rescan for new max in mask
+            val = 0;
+            f -= dyln2;
+            for (i = 0; i < dy; i++, f += ln2)
+              if ((*f > 0) && ((*f < val) || (val <= 0)))
+                val = *f;
+          }
+        }
+
+      // at end mask falls off image
+      for (y = yhi; y < rh; y++, m += ln2, b += ln2)
+      {
+        *m = (US16) val;
+
+        if ((val > 0) && (*b == val))
+        {
+          // if trailing edge was max, rescan for new max in mask
+          val = 0;
+          ret = __min(dy, rh - (y - ny));
+          f -= (ret * ln2);
+          for (i = 0; i < ret; i++, f += ln2)
+            if ((*f > 0) && ((*f < val) || (val <= 0)))
+              val = *f;
+        }
+      }
+    }
+  }
+
+
+  // PASS 2 horizontal ============================================
+  // find minimum in vertical strip of height dx = [-nx 0 +px]
+  // subtract trailing edge starting at xdel, add leading edge up to xadd 
+  // x refers to location of output pixel in image dest (m)
+  if (dx > 1)
+  {
+    if (dy > 1)
+      s0 = (const US16 *) a1.RoiSrc();
+    else
+      s0 = (const US16 *) src.RoiSrc();
+    m0 = (US16 *) dest.RoiDest();
+    for (y = 0; y < rh; y++, m0 += ln2, s0 += ln2)
+    {
+      // start all pointers at base of column
+      m = m0;
+      b = s0;
+      f = s0;
+
+      // initialize value based on positive overlap of mask
+      val = 0;
+      for (i = 0; i < xini; i++, f++)
+        if ((*f > 0) && ((*f < val) || (val <= 0)))
+          val = *f;
+
+      // at beginning mask is not completely in image
+      for (x = 0; x < xlo; x++, m++, f++)
+      {
+        *m = (US16) val;
+        if ((*f > 0) && ((*f < val) || (val <= 0)))
+          val = *f;
+      }
+
+      if (xadd < xdel)
+        // huge masks span whole image in middle
+        for (x = xlo; x < xhi; x++, m++)
+          *m = (US16) val;
+      else    
+        // in middle look at leading and trailing edge of mask
+        for (x = xlo; x < xhi; x++, m++, b++, f++)
+        {
+          *m = (US16) val;
+
+          // if leading edge is greater >= max then just set max 
+          if ((*f > 0) && ((*f < val) || (val <= 0)))
+            val = *f;
+          else if ((val > 0) && (*b == val))
+          {
+            // if trailing edge was max, rescan for new max in mask
+            val = 0;
+            f -= dx;
+            for (i = 0; i < dx; i++, f++)
+              if ((*f > 0) && ((*f < val) || (val <= 0)))
+                val = *f;
+          }
+        }
+
+      // at end mask falls off image
+      for (x = xhi; x < rw; x++, m++, b++)
+      {
+        *m = (US16) val;
 
         if ((val > 0) && (*b == val))
         {

@@ -111,6 +111,10 @@ public:
   const char *NewInput ();
   const char *NewOutput ();
 
+  // debugging
+  void SpeakError (const char *msg) 
+    {sp.InitTTS(); sp.Say(msg); sp.Finish(5.0);}
+
 
 // PROTECTED MEMBER FUNCTIONS
 protected:
@@ -122,6 +126,7 @@ protected:
 private:
   // main functions
   void kern_gram ();
+  void base_gram (const char *list);
   void self_name (const char *name);
   void xfer_input ();
   const char *blip_txt (int cutoff);

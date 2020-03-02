@@ -83,7 +83,7 @@ jhcEliNeck::jhcEliNeck ()
 void jhcEliNeck::std_geom ()
 {
   // pan-to-tilt link: pan angle at base of link (x to right, y is forward)
-  jt[0].SetServo(  10,   0,   10.0,  0.031, 90.0, 540.0, 540.0, -2.0 );
+  jt[0].SetServo(  10,   0,   10.0,  0.031, 90.0, 360.0, 360.0, -2.0 );
   jt[0].SetGeom(    0.3, 1.8, 90.0, 90.0,    0.0,   0.0, -45.0, 45.0 );  
  
   // tilt-to-cam link: tilt angle at base of link (x toward camera, y backward)
@@ -108,9 +108,9 @@ int jhcEliNeck::ramp_params (const char *fname)
   ps->NextSpecF( &(jt[0].vstd), "Pan std speed (deg/sec)");
   ps->NextSpecF( &(jt[0].astd), "Pan accel (deg^2/sec)");
   ps->NextSpecF( &(jt[0].dstd), "Pan decel (deg^2/sec)");
-  ps->NextSpecF( &(jt[0].vstd), "Tilt std speed (deg/sec)");
-  ps->NextSpecF( &(jt[0].astd), "Tilt accel (deg^2/sec)");
-  ps->NextSpecF( &(jt[0].dstd), "Tilt decel (deg^2/sec)");
+  ps->NextSpecF( &(jt[1].vstd), "Tilt std speed (deg/sec)");
+  ps->NextSpecF( &(jt[1].astd), "Tilt accel (deg^2/sec)");
+  ps->NextSpecF( &(jt[1].dstd), "Tilt decel (deg^2/sec)");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -126,11 +126,11 @@ int jhcEliNeck::neck_params (const char *fname)
   int ok;
 
   ps->SetTag("neck_move", 0);
-  ps->NextSpecF( &gaze0,  -5.0, "Initial head tilt (deg)");    // was -40
+  ps->NextSpecF( &gaze0, -5.0, "Initial head tilt (deg)");    // was -40
   ps->Skip();
-  ps->NextSpecF( &ndone,   1.0, "Blocking gaze done test (deg)");
-  ps->NextSpecF( &quit,    0.5, "Blocking move timeout (sec)");
-  ps->NextSpec4( &ms,     33,   "Default condition check (ms)");
+  ps->NextSpecF( &ndone,  1.0, "Blocking gaze done test (deg)");
+  ps->NextSpecF( &quit,   0.5, "Blocking move timeout (sec)");
+  ps->NextSpec4( &ms,    33,   "Default condition check (ms)");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -565,32 +565,43 @@ void jhcEliNeck::servo_set (double p, double pv, double t, double tv)
 //= Compute position and true gazing angle of camera.
 // applies forward kinematics with calibration parameters
 // sometimes useful for registering depth maps properly
-// Y points forward, X to right, Z is upwards
+// Y points forward, X to right, Z is upwards (origin = wheel midpoint)
 // needs to be told height of bottom of lift stage separately
 
-void jhcEliNeck::HeadPose (jhcMatrix& pos, jhcMatrix& aim, double lift)
+void jhcEliNeck::HeadPose (jhcMatrix& pos, jhcMatrix& aim, double lift) const
 {
   if (!pos.Vector(4) || !aim.Vector(4))
     Fatal("Bad input to jhcEliNeck::HeadPose");
-
   pos.RelVec3(pos0, 0.0, 0.0, lift);
-  aim.Copy(dir);
-  aim.IncP(90.0);
+  aim.RelVec3(dir, 90.0, 0.0, 0.0);
+}
 
-/*
-  jhcMatrix tool(4);
 
-  // compute coordinate transform matrices
-  jt[0].SetMapping(Pan(), NULL, nx0, ny0, nz0 + lift);
-  jt[1].SetMapping(Tilt(), jt);
+//= Give full position of camera relative to midpoint of wheels on floor.
+// Y points forward, X to right, Z is upwards (origin = wheel midpoint)
+// needs to be told height of bottom of lift stage separately
 
-  // adjust for camera projection forward (y is reversed)
-  tool.SetVec3(0.0, -cfwd, 0.0);
-  jt[1].GlobalMap(pos, tool);
+void jhcEliNeck::HeadLoc (jhcMatrix& pos, double lift) const
+{
+  if (!pos.Vector(4))
+    Fatal("Bad input to jhcEliNeck::HeadLoc");
+  pos.RelVec3(pos0, 0.0, 0.0, lift);
+}
 
-  // make up an aiming vector
-  dir.SetVec3(Pan(), Tilt(), 0.0);
-*/
+
+//= Compute pan and tilt angles to center given target in camera.
+// Y points forward, X to right, Z is upwards (origin = wheel midpoint)
+// needs to be told height of bottom of lift stage separately
+
+void jhcEliNeck::AimFor (double& p, double& t, const jhcMatrix& targ, double lift) const
+{
+  jhcMatrix cam(4);
+
+  if (!targ.Vector(4))
+    Fatal("Bad input to jhcEliNeck::AimFor");
+  HeadLoc(cam, lift);
+  cam.PanTilt3(p, t, targ);
+  p -= 90.0;                           // forward = 90 degs
 }
 
 
@@ -649,12 +660,10 @@ int jhcEliNeck::TiltTarget (double tilt, double rate, int bid)
 
 int jhcEliNeck::GazeAt (const jhcMatrix& targ, double lift, double rate, int bid)
 {
-  jhcMatrix cam(4);
   double pan, tilt;
 
-  cam.RelVec3(pos0, 0.0, 0.0, lift);
-  cam.PanTilt3(pan, tilt, targ);
-  return GazeTarget(pan - 90.0, tilt, rate, rate, bid);
+  AimFor(pan, tilt, targ, lift);
+  return GazeTarget(pan, tilt, rate, rate, bid);
 }
 
 
@@ -697,6 +706,17 @@ double jhcEliNeck::norm_ang (double degs) const
   while (a <= -180.0)
     a += 360.0;
   return a;
+}
+
+
+//= Gives the max absolute pan or tilt error between current gaze and target position.
+
+double jhcEliNeck::GazeErr (const jhcMatrix& targ, double lift) const
+{
+  double pan, tilt;
+
+  AimFor(pan, tilt, targ, lift);
+  return GazeErr(pan, tilt);
 }
 
 

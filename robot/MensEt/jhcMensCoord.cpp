@@ -39,7 +39,7 @@ jhcMensCoord::~jhcMensCoord ()
 jhcMensCoord::jhcMensCoord ()
 {
   // current software version
-  ver = 3.33;
+  ver = 3.50;
 
   // connect processing to basic robot I/O
   rwi.BindBody(&body);
@@ -124,6 +124,8 @@ int jhcMensCoord::Reset (int speech, int id)
 
 int jhcMensCoord::Respond ()
 {
+  if (UpdateSpeech() <= 0)
+    return 0;
   rwi.Update(NextSense());
   if (jhcAliaSpeech::Respond() <= 0)
     return 0;

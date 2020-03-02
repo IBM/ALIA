@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017-2019 IBM Corporation
+// Copyright 2017-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -111,8 +111,9 @@ jhcNetNode::jhcNetNode ()
 
   // default status 
   pod = 0;
-  mark = 0;
   top = 0;
+  keep = 1;
+  mark = 0;
 
   // no special grammar tags
   tags = 0;
@@ -155,11 +156,13 @@ bool jhcNetNode::VerbTag () const
 // lets user statements be selectively accepted/rejected from working memory
 // returns 1 if belief has changed, 0 if already at same value
 
-int jhcNetNode::Actualize () 
+int jhcNetNode::Actualize (int ver) 
 {
   if (blf == blf0)
     return 0;
   blf = blf0;
+  if (ver > 0)
+    gen = ver;
   return 1;
 }
 
@@ -437,9 +440,10 @@ int jhcNetNode::NumWords () const
 
 
 //= Get a specific tag out of all the words associated with this item.
+// if "bth" > 0.0 then only returns non-negated words with belief over threshold
 // most recently added terms returned first
 
-const char *jhcNetNode::Word (int i) const
+const char *jhcNetNode::Word (int i, double bth) const
 {
   const char *wd;
   int j, cnt = 0;
@@ -447,8 +451,9 @@ const char *jhcNetNode::Word (int i) const
   if (i >= 0)
     for (j = np - 1; j >= 0; j--)
       if ((wd = LexBase(j)) != NULL)
-        if (cnt++ >= i)
-          return wd;
+        if ((bth <= 0.0) || ((inv <= 0) && (blf >= bth)))
+          if (cnt++ >= i)
+            return wd;
   return NULL;
 }
 
@@ -624,7 +629,7 @@ int jhcNetNode::save_tags (FILE *out, int lvl, int r, const jhcGraphlet *acc, in
       jfprintf(out, "\n%*s", lvl, "");
     jfprintf(out, " %*s 1", -(r + 3), "-neg-");
   }
-  if (((detail & 0x01) != 0) && (blf != 1.0))
+  if (((detail & 0x01) != 0) && (blf != 1.0) && (quote == NULL))
   {
     if (ln++ > 0)
       jfprintf(out, "\n%*s", lvl, "");

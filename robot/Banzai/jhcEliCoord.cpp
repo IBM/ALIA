@@ -34,7 +34,7 @@
 jhcEliCoord::jhcEliCoord ()
 {
   // current software version
-  ver = 2.75;
+  ver = 2.82;
   
   // connect processing to basic robot I/O
   rwi.BindBody(&body);
@@ -104,26 +104,27 @@ int jhcEliCoord::SaveVals (const char *fname)
 
 int jhcEliCoord::SetPeople (const char *fname, int append)
 {
-  int i, n, n0 = vip.Names();
+  int i, n, n0 = ((append > 0) ? vip.Names() : 0);
 
   // enable spontaneous face recognition (and updating)
   ((rwi.fn).fr).LoadDB(fname, append);
 
   // make sure grammar knows of names (first and full)
   n = vip.Load(fname, append);
+  for (i = n0; i < n; i++)
+  {
+    gr.ExtendRule("NAME", vip.Full(i));
+    gr.ExtendRule("NAME", vip.First(i));
+  }
+  if (SpMode() < 2)
+    return n;
+
+  // possibly update speech front-end also 
   sp.Listen(0);
   for (i = n0; i < n; i++)
   {
-    // speech front end
-    if (SpMode() >= 2)
-    {
-      sp.ExtendRule("NAME", vip.Full(i), 0);
-      sp.ExtendRule("NAME", vip.First(i), 0);
-    }
-
-    // text parser
-    gr.ExtendRule("NAME", vip.Full(i));
-    gr.ExtendRule("NAME", vip.First(i));
+    sp.ExtendRule("NAME", vip.Full(i), 0);
+    sp.ExtendRule("NAME", vip.First(i), 0);
   }
   sp.Listen(1);
   return n;
@@ -184,7 +185,8 @@ int jhcEliCoord::Respond ()
     alert = 1;
   else if (Attending() <= 0)
     alert = 0;
-  (rwi.base)->AttnLED(alert);
+  if (rwi.base != NULL)
+    (rwi.base)->AttnLED(alert);
 
   // figure out what to do then issue action commands
   if (jhcAliaSpeech::Respond(eye) <= 0)
@@ -271,6 +273,7 @@ void jhcEliCoord::check_user (int id)
 
 
 //= Make sure each visible head has a tag consistent with any associated node.
+// also sets all person-associated nodes to be retained during garbarge collection
 
 void jhcEliCoord::tag_tracks ()
 {
@@ -290,6 +293,7 @@ void jhcEliCoord::tag_tracks ()
       n = (jhcNetNode *) p->node;
       if (n == NULL) 
         continue;
+      n->keep = 1;                     // do not remove reference
 
       // possibly copy node's preferred word to tag
       w = 0;
@@ -317,7 +321,6 @@ void jhcEliCoord::tag_tracks ()
             *end = '\0';
           if (!n->HasWord(first))
             attn.AddLex(n, first);
-
         }
   }
 }

@@ -49,8 +49,9 @@ public:
   virtual bool HasWord (const char *word, int tru_only =0) const =0;
 
   //= Get a specific tag out of all the words associated with this item.
+  // if "bth" > 0.0 then only returns non-negated words with belief over threshold
   // most recently added terms returned first
-  virtual const char *Word (int i =0) const =0;
+  virtual const char *Word (int i =0, double bth =0.0) const =0;
 
   //= Checks if lexical tag is one of several items.
   // largely for convenience in grounding commands

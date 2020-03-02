@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017-2019 IBM Corporation
+// Copyright 2017-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,13 +67,12 @@ int jhcAliaOp::FindMatches (jhcAliaDir& dir, const jhcWorkMem& f, double mth, in
   jhcNetNode *mate = NULL;
   int found, cnt = 0;
 
-// separate intent from context conditions?
-mth = 0.0;
-
-  // generally require main nodes (i.e. verb) of directives to match
-  bth = mth;
+  // set control parameters
   omax = dir.MaxOps();
   tval = dir.own;
+  bth = mth;
+
+  // generally require main nodes (i.e. verb) of directives to match
   if (dir.kind != JDIR_NOTE)
     return try_mate((dir.key).Main(), dir, f, tol);
 
@@ -261,13 +260,13 @@ int jhcAliaOp::load_pattern (jhcTxtLine& in)
 int jhcAliaOp::Save (FILE *out, int detail)
 {
   jhcAliaDir dir;
-  char num[20] = "";
   int i;
 
   // operator number
   if (id > 0)
-    _itoa_s(id, num, 10);
-  jfprintf(out, "// OPERATOR %s\n", num);
+    jfprintf(out, "// OPERATOR %d\n", id);
+  else
+    jfprintf(out, "// OPERATOR\n");
 
   // trigger graphlet (converted to directive)
   jfprintf(out, "trig:\n");

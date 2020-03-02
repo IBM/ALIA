@@ -82,6 +82,12 @@ public:
   ~jhcHeadGaze ();
   jhcHeadGaze ();
   void Bind (jhcStare3D *stare);
+
+  // parameter utilities
+  void SetGaze (double dz, double dr, double s, double fw, double pt, double tt)
+    {hadj = dz; dadj = dr; diam = s; fwid = fw; ptol = pt; ttol = tt;}
+  void SetAttn (double x, double y, double z)
+    {xme = x; yme = y; zme = z;}
   void SetAttn (const jhcMatrix& pos) 
     {xme = pos.X(); yme = pos.Y(); zme = pos.Z();}
 
@@ -99,6 +105,12 @@ public:
   int AnyGaze (int th =1) const {return((GazeMax() >= th) ? 1 : 0);}
   int GazeID (int id, int trk =1) const;
   int GazeNew (int trk =1, int gmin =1) const;
+
+  // convenience
+  int GazeNewID (int trk =1, int gmin =1) const 
+    {return((s3 == NULL) ? 0 : s3->PersonID(GazeNew(trk, gmin)));}
+  int FrontNewID (int cam =0, int fmin =1) const
+    {return((s3 == NULL) ? 0 : s3->PersonID(FrontNew(cam, fmin)));}
 
   // debugging graphics
   int AllGaze (jhcImg& dest, int trk =1) const;

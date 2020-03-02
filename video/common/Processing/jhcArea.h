@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2017 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -106,6 +106,7 @@ public:
   // max and min sweeps
   int BoxMax (jhcImg& dest, const jhcImg& src, int wid, int ht =0);
   int BoxMin (jhcImg& dest, const jhcImg& src, int wid, int ht =0);
+  int BoxMin16 (jhcImg& dest, const jhcImg& src, int wid, int ht =0);
 
   // rank order filtering
   int BoxFracOver (jhcImg& dest, const jhcImg& src, int wid, int ht =0, double frac =0.5);

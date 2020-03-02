@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ CChatHist::CChatHist ()
   // geometry
 	sz     = 16;   
   indent = 50;   
+  fill   = 0.6;
   hpad   = 10;   
   vpad   = 5;    
   skip2  = 1;   
@@ -137,12 +138,12 @@ void CChatHist::MeasureItem (LPMEASUREITEMSTRUCT lpMIS)
 void CChatHist::DrawItem (LPDRAWITEMSTRUCT lpDIS)
 {
 	CDC* pdc = CDC::FromHandle(lpDIS->hDC);
-  CRect r0, r = lpDIS->rcItem;
+  CRect r0, r2, r = lpDIS->rcItem;
   COLORREF tcol, bcol;
   POINT corner = {round, round};
   HFONT font;
 	CString txt;
-  int shrink, id = lpDIS->itemID;
+  int shrink, ln, dw, id = lpDIS->itemID;
 
   // for click in bad places
   if (id < 0)
@@ -155,13 +156,23 @@ void CChatHist::DrawItem (LPDRAWITEMSTRUCT lpDIS)
                     FF_DONTCARE, _T("jhcChatHist"));
   SelectObject(lpDIS->hDC, font);
 
-  // adjust nominal display region for indenting and side margins
+  // adjust display region for indenting and side margins then find text box
 	GetItemRect(id, r0);
   r0.DeflateRect(indent + hpad + edge, 0, hpad + edge, 0);
-
-  // compute minimum rectangle width needed and sideways shrinking
 	GetText(id, txt);
   pdc->DrawText(txt, -1, r0, DT_WORDBREAK | DT_CALCRECT);
+
+  // compute minimum rectangle width needed and sideways shrinking
+  ln = r0.Height() / sz;
+  if (ln > 1)
+  {
+    // try shrinking width if multiple (possibly partial) lines
+    dw = ROUND(r0.Width() * fill / (double) ln);
+    r0.DeflateRect(dw, 0, 0, 0);
+    pdc->DrawText(txt, -1, r0, DT_WORDBREAK | DT_CALCRECT);
+    if ((r0.Height() / sz) > ln)
+      r0.InflateRect(dw, 0, 0, 0);
+  }
   shrink = r.Width() - (r0.Width() + 2 * hpad + edge);
 
   // set colors and indent position of rectangle

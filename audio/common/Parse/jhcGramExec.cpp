@@ -111,6 +111,7 @@ void jhcGramExec::ClearGrammar (int keep)
 
 
 //= Load a recognition grammar from a generic file.
+// ignores duplicate expansions (e.g. noun added twice)
 // appends new rules if some other grammar(s) already loaded
 // to get rid of old rules first call ClearGrammar()
 // all rules initially unmarked (i.e. not active top level)
@@ -737,8 +738,8 @@ void jhcGramExec::parse_cleanup ()
 ///////////////////////////////////////////////////////////////////////////
 
 //= Load a certain (or additional) grammar from a file.
-// this can be done without explicitly pausing the system
-// if only one grammar is allowed, this overwrites previous
+// ignores duplicate expansions (e.g. noun added twice)
+// appends new rules if some other grammar(s) already loaded
 // initially all rules are disabled (call jhcGramExec::parse_enable)
 // returns 2 if appended, 1 if exclusive, 0 or negative for some error
 

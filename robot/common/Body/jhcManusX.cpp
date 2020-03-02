@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -54,6 +54,14 @@ jhcManusX::jhcManusX ()
   // processing parameters and default values
   Defaults();
   clr_state();
+}
+
+
+//= Set size for image processing (even if no video source bound).
+
+void jhcManusX::SetSize (int w, int h)
+{
+  frame.SetSize(w, h, 3);
 }
 
 

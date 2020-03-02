@@ -285,6 +285,7 @@ int jhcStare3D::PersonTouch (double wx, double wy, int trk)
 ///////////////////////////////////////////////////////////////////////////
 
 //= Find person closest in 3D to camera origin in projection space.
+// returns tracker index not person ID
 
 int jhcStare3D::Closest (int trk) const
 {
@@ -483,6 +484,22 @@ int jhcStare3D::SetNode (void *n, int id, int trk)
     return 0;
   guy->node = n;
   return 1;
+}
+
+
+//= Find tracking ID number for person whose node matches the one given.
+
+int jhcStare3D::NodeID (const void *node, int trk) const
+{
+  const jhcBodyData *p;
+  int i, n = PersonLim(trk);
+
+  if (node != NULL)
+    for (i = 0; i < n; i++)
+      if ((p = GetPerson(i, trk)) != NULL)
+        if (p->node == node)
+          return p->id;
+  return 0;
 }
 
 

@@ -55,7 +55,7 @@ private:
   jhcAliaNote *rpt;
 
   // event state
-  int hwin;
+  int hwin, told;
 
 
 // PUBLIC MEMBER VARIABLES
@@ -63,9 +63,13 @@ public:
   // controls diagnostic messages
   int dbg;                   
 
-  // event parameters
-  jhcParam eps;
-  double pnear, pfar;
+  // attention parameters
+  jhcParam aps;
+  double pnear, ltol, lquit;
+
+  // motion parameters 
+  jhcParam mps;
+  double cozy, aquit, ideal, worry, ttime, orient, atime, ftime;
 
 
 // PUBLIC MEMBER FUNCTIONS
@@ -83,7 +87,8 @@ public:
 // PRIVATE MEMBER FUNCTIONS
 private:
   // processing parameters
-  int evt_params (const char *fname);
+  int attn_params (const char *fname);
+  int move_params (const char *fname);
 
   // overridden virtuals
   void local_reset (jhcAliaNote *top);
@@ -92,12 +97,18 @@ private:
   int local_status (const jhcAliaDesc *desc, int i);
 
   // reported events
-  void see_vip ();
-  void person_close ();
+  void vip_seen ();
+  void vip_close ();
+  void person_prop (int i, const char *prop) const;
   void add_name (jhcAliaDesc *n, const char *name) const;
 
-  // overall poses
-//  JCMD_DEF(ball_stop);
+  // looking at/for people
+  JCMD_DEF(soc_look);
+  int get_dude (const jhcAliaDesc *agt) const;
+
+  // moving toward people
+  JCMD_DEF(soc_approach);
+  JCMD_DEF(soc_follow);
 
 
 };

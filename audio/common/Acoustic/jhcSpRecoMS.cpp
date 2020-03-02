@@ -64,6 +64,7 @@ jhcSpRecoMS::jhcSpRecoMS ()
   r_ok = -1;  
   noisy = 0;
   *tag = '\0';
+  dict_wt = 1.0;
 
   // parsing
   *pfile = '\0';
@@ -2099,13 +2100,13 @@ void jhcSpRecoMS::add_dict (void *n, int cnt, int opt)
   {
     prev = *node;
     gram->CreateNewState(prev, node);
-    gram->AddRuleTransition(prev, *node, SPRULETRANS_DICTATION, 1.0, NULL);
+    gram->AddRuleTransition(prev, *node, SPRULETRANS_DICTATION, (float) dict_wt, NULL);
     gram->AddWordTransition(*node, final, NULL, L" ", SPWT_LEXICAL, 1.0, NULL);
   }    
 
   // for final dictation link no new node or skip link needed
   // this enforces at least one dictated element (unless overall skip)
-  gram->AddRuleTransition(*node, final, SPRULETRANS_DICTATION, 1.0, NULL);
+  gram->AddRuleTransition(*node, final, SPRULETRANS_DICTATION, (float) dict_wt, NULL);
   *node = final;
 }
 

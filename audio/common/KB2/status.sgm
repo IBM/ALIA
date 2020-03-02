@@ -1,0 +1,27 @@
+// terms associated with power on and battery status events
+// ================================================
+
+// imperative verb
+
+=[ACT]
+  announce
+
+
+// ================================================
+
+// present verb
+
+=[ACT-S]
+  announces
+
+
+// progressive verb
+
+=[ACT-G]
+  announcing
+
+
+// past or passive verb
+
+=[ACT-D]
+  announced

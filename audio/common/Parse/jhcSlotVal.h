@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2015-2019 IBM Corporation
+// Copyright 2015-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,14 +77,23 @@
 
 class jhcSlotVal
 {
+// PUBLIC MEMBER VARIABLES
+public:
+  int dbg;
+
+
 // PUBLIC MEMBER FUNCTIONS
 public:
+  jhcSlotVal () {dbg = 0;}
+
   // main functions
+  void CallList (int lvl, const char *fcn, const char *alist, const char *entry = NULL) const;
   void PrintList (const char *alist, const char *tag =NULL) const;
   const char *SetList (char *alist, const char *src, int ssz) const;
   int ChkAttn (const char *alist) const;
   char *CleanVal (char *dest) const;
   char *CleanVal (char *dest, const char *src) const;
+  const char *StripEntry (const char *alist) const {return NextEntry(alist, NULL, 0);}
   const char *NextEntry (const char *alist, char *entry, int ssz) const;
   const char *NextMatches (const char *alist, const char *tag, int n =0) const;
 
@@ -101,7 +110,9 @@ public:
   bool AnySlot (const char *alist, const char *marks, int local =0) const;
   const char *FindSlot (const char *alist, const char *slot, char *val, int local, int ssz) const;
   const char *NextSlot (const char *alist, char *slot, char *val, int local, int ssz, int vsz) const;
+  bool SlotMatch (const char *pair, const char *slot) const;
   int SlotStart (const char *pair, const char *prefix =NULL) const;
+  char *SlotRef (char *pair) const;
   const char *SlotGet (char *pair, const char *prefix =NULL, int lower =1) const;
 
   // slot functions - convenience

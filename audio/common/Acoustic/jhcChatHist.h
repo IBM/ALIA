@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ class CChatHist : public CListBox
 public:
 	int sz;        /** Font height in pixels (negative for bold). */
   int indent;    /** Minimum indent of box from some side.      */
+  double fill;   /** Min last line length if multiple lines.    */
   int hpad;      /** Side margin of text inside box.            */
   int vpad;      /** Top and bottom margin of text inside box.  */
   int skip2;     /** Half the space between successive boxes.   */

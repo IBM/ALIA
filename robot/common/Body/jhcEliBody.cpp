@@ -667,11 +667,11 @@ int jhcEliBody::Update (int voice, int imgs)
 
 void jhcEliBody::CamPose (double& pan, double& tilt, double& ht)
 {
-  jhcMatrix pos(4), dir(4);
+  jhcMatrix pos(4);
 
   pan = neck.Pan();
   tilt = neck.Tilt();
-  neck.HeadPose(pos, dir, lift.Height());
+  neck.HeadLoc(pos, lift.Height());
   ht = pos.Z();
 }
 

@@ -29,11 +29,19 @@
 
 #include "Data/jhcImg.h"           // common video
 #include "Data/jhcParam.h"
-#include "Face/jhcFFindOCV.h"
 #include "Processing/jhcDraw.h"
 #include "Processing/jhcHist.h"
 #include "Processing/jhcResize.h"
 #include "Processing/jhcStats.h"
+
+
+// define FFIND_DLL to use DLL instead of OpenCV 2.4.5 sources
+
+#ifdef FFIND_DLL
+  #include "Face/jhcFFindDLL.h"
+#else
+  #include "Face/jhcFFindOCV.h"
+#endif
 
 
 //= Finds faces in head regions and checks if frontal.
@@ -63,7 +71,12 @@ private:
 
 // PUBLIC MEMBER VARIABLES
 public:
-  jhcFFindOCV ff;                /** Face finder processing module.     */
+  // face finder processing module
+#ifdef FFIND_DLL
+  jhcFFindDLL ff;
+#else
+  jhcFFindOCV ff;                
+#endif
 
   // debugging info
   double fdx[pmax][cmax];        /** Signed fractional X offset of face. */
@@ -79,6 +92,10 @@ public:
   // creation and initialization
   ~jhcFrontal ();
   jhcFrontal ();
+
+  // parameter utilities
+  void SetFront (double sz, double xc, double yc, double dx, double dy)
+    {fsz = sz; xoff = xc; yoff = yc; xsh = dx; ysh = dy;}
 
   // processing parameter bundles 
   int Defaults (const char *fname =NULL);

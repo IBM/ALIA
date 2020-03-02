@@ -248,9 +248,6 @@ int jhcProcMem::FindOps (jhcAliaDir *dir, jhcWorkMem& wmem, double pth, double m
   jhcAliaOp *p;
   int i, k, mc0, mmax;
 
-// *** temporary fix ***
-//mth = 0.0;
-
   // get operator type by examining directive kind
   if (dir == NULL)
     return -2;

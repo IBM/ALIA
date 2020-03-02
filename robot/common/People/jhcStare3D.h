@@ -101,6 +101,7 @@ public:
   int SetName (int id, const char *name, int trk =1);
   const void *GetNode (int id, int trk =1) const;
   int SetNode (void *n, int id, int trk =1);  
+  int NodeID (const void *node, int trk =1) const;
 
   // debugging graphics
   int AllHeads (jhcImg& dest, int trk =1, int invert =0, double sz =8.0, int style =2)

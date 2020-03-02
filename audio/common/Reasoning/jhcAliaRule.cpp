@@ -83,7 +83,6 @@ int jhcAliaRule::AssertMatches (jhcWorkMem& f, double mth, int dbg)
   // do matching (wmem passed to match_found in member variable)
   wmem = &f;
   show = dbg;
-//show = 1;
   bth = mth;
   n = MatchGraph(&b, mc, cond, f);
   wmem = NULL;

@@ -71,7 +71,7 @@ jhcEliGrok::jhcEliGrok ()
   strcpy_s(wtarg[3], "eye contact");
   strcpy_s(wtarg[2], "recent face");
   strcpy_s(wtarg[1], "twitch");
-  strcpy_s(wtarg[0], "<neutral>");
+  strcpy_s(wtarg[0], "rise");
 }
 
 
@@ -120,7 +120,7 @@ void jhcEliGrok::clr_ptrs ()
 
 const char *jhcEliGrok::Watching () const
 {
-  int bid[8] = {neutral, twitch, face, stare, close, sound, speak, freeze};
+  int bid[8] = {rise, twitch, face, stare, close, sound, speak, freeze};
   int i, win;
 
   // see which bid value won last command arbitration  
@@ -149,16 +149,16 @@ int jhcEliGrok::watch_params (const char *fname)
   jhcParam *ps = &wps;
   int ok;
 
-  ps->SetTag("rwi_watch", 0);
-  ps->NextSpec4( &freeze,  27,   "Post-cmd freeze bid");
-  ps->NextSpec4( &speak,   26,   "Current speaker bid");
-  ps->NextSpec4( &sound,   25,   "Most recent sound bid");
-  ps->NextSpec4( &close,   24,   "Closest head bid");
-  ps->NextSpec4( &stare,   23,   "Most recent stare bid");
-  ps->NextSpec4( &face,    22,   "Most recent face bid");
+  ps->SetTag("grok_watch", 0);
+  ps->NextSpec4( &freeze, 27, "Post-cmd freeze bid");
+  ps->NextSpec4( &speak,  26, "Current speaker bid");
+  ps->NextSpec4( &sound,  25, "Most recent sound bid");
+  ps->NextSpec4( &close,  24, "Closest head bid");
+  ps->NextSpec4( &stare,  23, "Most recent stare bid");
+  ps->NextSpec4( &face,   22, "Most recent face bid");
 
-  ps->NextSpec4( &twitch,  21,   "Random gaze bid");
-  ps->NextSpec4( &neutral,  0,   "Reset neck bid");          // was 20
+  ps->NextSpec4( &twitch, 21, "Random gaze bid");
+  ps->NextSpec4( &rise,   20, "Head rise bid");   
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -172,36 +172,39 @@ int jhcEliGrok::orient_params (const char *fname)
   jhcParam *ps = &ops;
   int ok;
 
-  ps->SetTag("rwi_orient", 0);
-  ps->NextSpecF( &bored, 10.0, "Post-cmd freeze (sec)"); 
-  ps->NextSpecF( &edge,  30.0, "Sound trigger offset (deg)");
-  ps->NextSpecF( &hnear, 72.0, "Head near start (in)");
-  ps->NextSpecF( &hfar,  80.0, "Head far finish (in)");
-  ps->NextSpec4( &fmin,   3,   "Min face detections");
-  ps->NextSpecF( &dwell,  1.5, "Target dwell time (sec)");
-  
-  ps->NextSpecF( &side,  50.0, "Body rotate thresh (deg)");   // 0 = don't
-  ps->NextSpecF( &tfix,  30.0, "Body rotate goal (deg)");  
+  ps->SetTag("grok_orient", 0);
+  ps->NextSpecF( &edge,   25.0, "Sound trigger offset (deg)");  // was 30
+  ps->NextSpecF( &hnear,  72.0, "Head distance thresh (in)");
+  ps->NextSpec4( &fmin,    3,   "Min face detections");
+  ps->NextSpecF( &center,  1.0, "Twitch start stable (deg)");
+  ps->NextSpecF( &pdev,   45.0, "Max twitch pan (deg)");
+  ps->NextSpecF( &aimed,   2.0, "Gaze done error (degs)");
+
+  ps->NextSpecF( &pdist,  36.0, "Default person dist (in)");
+  ps->NextSpecF( &hdec,   10.0, "Head rise decrement (in)");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
 }
 
 
-//= Parameters controlling idle activities.
+//= Parameters controlling behavior timing.
 
-int jhcEliGrok::idle_params (const char *fname)
+int jhcEliGrok::time_params (const char *fname)
 {
-  jhcParam *ps = &ips;
+  jhcParam *ps = &tps;
   int ok;
 
-  ps->SetTag("rwi_idle", 0);
-  ps->NextSpecF( &center,  1.0, "Twitch start stable (deg)");
-  ps->NextSpecF( &aim,    30.0, "Max twitch offset (deg)");
-  ps->NextSpecF( &relax,   7.0, "Twitch interval (sec)");  
-  ps->NextSpecF( &rdev,    3.0, "Twitch deviation (sec)");
-  ps->NextSpecF( &pdist,  36.0, "Default person dist (in)");
-  ps->NextSpecF( &pht,    52.0, "Default person ht (in)");
+  ps->SetTag("grok_time", 0);
+  ps->NextSpecF( &bored, 10.0, "Post-cmd freeze (sec)"); 
+  ps->NextSpecF( &relax,  7.0, "Twitch interval (sec)");  
+  ps->NextSpecF( &rdev,   3.0, "Twitch deviation (sec)");
+  ps->NextSpecF( &gtime,  0.3, "Gaze response (sec)");  
+  ps->NextSpecF( &ttime,  0.7, "Twitch response (sec)");  
+  ps->NextSpecF( &rtime,  1.5, "Rise response (sec)");  
+
+  ps->NextSpecF( &side,  50.0, "Body rotate thresh (deg)");    // 0 = don't
+  ps->NextSpecF( &btime,  1.5, "Rotate response (sec)");      
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -220,7 +223,7 @@ int jhcEliGrok::Defaults (const char *fname)
 
   ok &= watch_params(fname);
   ok &= orient_params(fname);
-  ok &= idle_params(fname);
+  ok &= time_params(fname);
   ok &= fn.Defaults(fname);      // does s3 also
   return ok;
 }
@@ -246,7 +249,7 @@ int jhcEliGrok::SaveVals (const char *fname)
 
   ok &= wps.SaveVals(fname);
   ok &= ops.SaveVals(fname);
-  ok &= ips.SaveVals(fname);
+  ok &= tps.SaveVals(fname);
   ok &= fn.SaveVals(fname);      // does s3 also
   return ok;
 }
@@ -287,16 +290,14 @@ void jhcEliGrok::Reset ()
     mark.FillArr(0);
   }
 
-  // clear targets for watching behaviors
-  twin = -1;
-  hwin = -1;
-  gwin = -1;
-  fwin = -1;
+  // high-level commands
+  wlock = 0;
+  wwin = 0;
 
-  // clear state for watching behaviors
-  seek  = 0;
-  rwait = 0;  
-  idle  = 0;
+  // clear state for sound and twitch behaviors
+  seek = 0;
+  slew = 0;  
+  idle = 0;
 
   // restart background loop, which first generates a body Issue call
   jhcBackgRWI::Reset();
@@ -314,7 +315,8 @@ int jhcEliGrok::Update (int voice, UL32 resume)
     return 0;
 
   // do fast sound processing in foreground (needs voice)
-  mic->Update(voice);
+  if (mic != NULL)
+    mic->Update(voice);
   tk.Analyze(voice);
 
   // create pretty picture then enforce min wait (to simulate robot)
@@ -344,6 +346,8 @@ void jhcEliGrok::body_issue ()
 {
   // record current time
   tnow = jms_now();
+  if (body == NULL)
+    return;
 
   // run some reactive behaviors (tk is up-to-date) 
   cmd_freeze();
@@ -353,7 +357,10 @@ void jhcEliGrok::body_issue ()
   gaze_stare();
   gaze_face();
   gaze_random();
-  head_neutral();
+  head_rise();
+
+  // interpret high-level commands
+  assert_watch();
 
   // start commands and get new raw images
   body->Issue();
@@ -366,17 +373,95 @@ void jhcEliGrok::body_issue ()
 void jhcEliGrok::body_update ()
 {
   jhcMatrix pos(4), dir(4);
+  int i, n = s3.PersonLim(1);
 
   // wait (if needed) for body sensor data to be received (no mic)
+  if (body == NULL)
+    return;
   body->Update(-1, 0);
 
   // do slow head finding and tracking (needs both pose and image)
   if (seen > 0)
   {  
+    // adjust expected head positions for body motion (ignores hands)
+    for (i = 0; i < n; i++)
+      if ((s3.dude[i]).TrackID() >= 0)
+        base->AdjustTarget(s3.dude[i]);
+
+    // find new person location based on current camera pose
     neck->HeadPose(pos, dir, lift->Height());
     fn.SetCam(pos, dir);
     fn.Analyze(body->Color(), body->Range());
   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//                           High-Level Commands                         //
+///////////////////////////////////////////////////////////////////////////
+
+//= Connect some tracked person to motion controller.
+// "wiring" persists even without command until overridden (e.g. id = 0)
+// bid value must be greater than previous command to take effect
+// returns 1 if newly set, 0 if pre-empted by higher priority
+
+int jhcEliGrok::WatchPerson (int id, int bid)
+{
+  if ((bid <= wlock) || (id <= 0))
+    return 0;
+  wlock = bid;
+  wwin = id;
+  return 1;
+}
+
+
+//= Turn selected person into tracking motion.
+// needs to be called before body->Issue() due to target persistence
+
+void jhcEliGrok::assert_watch ()
+{
+  const jhcMatrix *targ;
+
+  if ((wlock <= 0) || (wwin <= 0))
+    return;
+  if ((targ = s3.GetID(wwin)) != NULL)
+    orient_toward(targ, wlock);
+  else
+  {
+    // most recently selected person has vanished
+    wlock = 0;
+    wwin = 0;
+  }
+}
+
+
+//= Aim camera at target location, rotating body if needed.
+// set "turn" to zero or negative to prevent body rotation
+
+void jhcEliGrok::orient_toward (const jhcMatrix *targ, int bid)
+{
+  double pan, tilt;
+
+  if (targ == NULL) 
+    return;
+  neck->AimFor(pan, tilt, *targ, lift->Height());
+  neck->GazeFix(pan, tilt, gtime, bid);
+  if ((side > 0.0) && (fabs(pan) > side))
+    base->TurnFix(pan, btime, 1.5, bid);         // swivel base
+}
+
+
+//= Gives the max absolute pan or tilt error between current gaze and some person.
+// useful for telling if move is progressing or has finished
+// returns negative if person is no longer visible
+
+double jhcEliGrok::PersonErr (int id) const
+{
+  const jhcMatrix *targ;
+
+  if ((targ = s3.GetID(id)) == NULL)
+    return -1.0;
+  return neck->GazeErr(*targ, lift->Height());
 }
 
 
@@ -403,8 +488,7 @@ void jhcEliGrok::watch_talker ()
 {
   if (speak <= 0)
     return;
-  set_target(twin, twait, tk.Speaking(), 1);
-  orient_toward(s3.GetID(twin), speak);
+  WatchPerson(tk.Speaking(), speak);
 }
 
 
@@ -428,10 +512,9 @@ void jhcEliGrok::gaze_sound ()
     {
       // remember location since sound is often short duration
       rads = D2R * (ang + 90.0);
-      src.SetVec3(pdist * cos(rads), pdist * sin(rads), pht);
+      src.SetVec3(pdist * cos(rads), pdist * sin(rads), s3.h0);
       old = 0;
       seek = 1;
-      swait = tnow;
     }
   }
   if (seek <= 0)
@@ -440,8 +523,9 @@ void jhcEliGrok::gaze_sound ()
   // adjust for any base motion then aim at remembered location
   if (old > 0)
     base->AdjustTarget(src);   
-  orient_toward(&src, sound);
-  if (jms_diff(tnow, swait) >= ROUND(1000.0 * dwell))
+  if (neck->GazeErr(src, lift->Height()) > aimed)
+    orient_toward(&src, sound);
+  else
     seek = 0;
 }
 
@@ -451,22 +535,18 @@ void jhcEliGrok::gaze_sound ()
 void jhcEliGrok::watch_closest ()
 {
   const jhcMatrix *hd;
-  double d;
-  int old = hwin;
+  int sel;
 
   // see if behvaior desired then find closest head
   if (close <= 0)
     return;
-  if ((hwin = s3.Closest()) < 0)
+  if ((sel = s3.Closest()) < 0)
     return;
-  hd = s3.GetPerson(hwin);
 
-  // follow if planar distance within hysteretic bounds
-  d = hd->PlaneVec3();
-  if ((d <= hnear) || ((hwin == old) && (d <= hfar)))
-    orient_toward(hd, close);
-  else
-    hwin = -1;                         // stop tracking
+  // follow if planar distance close enough
+  hd = s3.GetPerson(sel);
+  if (hd->PlaneVec3() <= hnear)
+    WatchPerson(s3.PersonID(sel), close);
 }
 
 
@@ -476,8 +556,7 @@ void jhcEliGrok::gaze_stare ()
 {
   if (stare <= 0)
     return;
-  set_target(gwin, gwait, fn.GazeNew());
-  orient_toward(s3.GetPerson(gwin), stare);
+  WatchPerson(fn.GazeNewID(), stare);
 }
 
 
@@ -487,8 +566,7 @@ void jhcEliGrok::gaze_face ()
 {
   if (face <= 0)
     return;
-  set_target(fwin, fwait, fn.FrontNew(0, fmin)); 
-  orient_toward(s3.GetPerson(fwin), face);
+  WatchPerson(fn.FrontNewID(0, fmin), face);
 }
 
 
@@ -504,15 +582,14 @@ void jhcEliGrok::gaze_face ()
 
 void jhcEliGrok::gaze_random ()
 {
-  jhcMatrix hd(4), cam(4), dir(4);
-  double pan, tilt;
+  jhcMatrix hd(4);
 
   // see if behavior desired
   if (twitch <= 0)
     return;
 
   // if not currently twitching
-  if (rwait == 0)
+  if (slew == 0)
   {
     // possibly pick a new time for next twitch (once)           
     if (idle == 0) 
@@ -533,88 +610,35 @@ void jhcEliGrok::gaze_random ()
       return;
     }
 
-    // get angles to likely forward head 
-    hd.SetVec3(0.0, pdist, pht);
-    neck->HeadPose(cam, dir, lift->Height());
-    cam.PanTilt3(pan, tilt, hd);
-    pan -= 90.0;                             
-
-    // perturb by some random amount (once)
-    prand = pan  + jrand_cent(0.0, aim);
-    trand = tilt + jrand_cent(0.0, aim);
-    rwait = tnow;                          // advance to next state
+    // get tilt to likely forward head and pick a random pan
+    hd.SetVec3(0.0, pdist, s3.h0);
+    neck->AimFor(prand, trand, hd, lift->Height());
+    prand = jrand_cent(0.0, pdev);
+    slew = 1;                              // advance to next state
     idle = 0;
   }
 
   // if time not expired then pursue target, otherwise reset state machine 
-  if (jms_diff(tnow, rwait) < ROUND(1000.0 * dwell))
-    neck->GazeTarget(prand, trand, 1.0, 0.0, twitch);
+  if (neck->GazeErr(prand, trand) > aimed)
+    neck->GazeFix(prand, trand, ttime, twitch);
   else
-    rwait = 0;                             // advance to next state
+    slew = 0;                              // advance to next state
 }
 
 
-//= Set default gaze toward expected head of person straight ahead.
+//= Slowly raise gaze to highest reasonable person head.
 
-void jhcEliGrok::head_neutral ()
+void jhcEliGrok::head_rise ()
 {
   jhcMatrix hd(4);
+  double pan, tilt;
 
-  if (neutral <= 0)
+  if (rise <= 0)
     return;
-  hd.SetVec3(0.0, pdist, pht);
-  orient_toward(&hd, neutral);
-}
-
-
-//= Accept proposed target if valid, else update dwell timer.
-// invalidates target after temporal extension expires
-
-void jhcEliGrok::set_target (int& targ, UL32& timer, int i, int th) const
-{
-  if (i >= th)
-  {
-    targ = i;
-    timer = tnow;
-  }
-  else if (jms_diff(tnow, timer) >= ROUND(1000.0 * dwell))
-    targ = -1;
-}
-
-
-//= Aim camera at target location, rotating body if needed.
-// set "turn" to zero or negative to prevent body rotation
-
-void jhcEliGrok::orient_toward (const jhcMatrix *targ, int bid)
-{
-  jhcMatrix cam(4), dir(4);
-  double pan, tilt, sp = 1.0;
-
-  // slower speed for some behaviors
-  if ((bid == neutral) || (bid == twitch))
-    sp = 0.5;
-
-  // figure out pan and tilt angles to target (forward = 90 degs)
-  if (targ == NULL) 
-    return;
-  neck->HeadPose(cam, dir, lift->Height());
-  cam.PanTilt3(pan, tilt, *targ);
-  pan -= 90.0;                             
-
-  // make head point at given angles (only azimuth for sound)
-  if (bid == sound)
-    neck->PanTarget(pan, sp, bid);
-  else
-    neck->GazeTarget(pan, tilt, sp, 0.0, bid);
-
-  // also move body if head turned a lot
-  if (side > 0.0) 
-  {
-    if (pan > side)
-      base->TurnTarget(pan - tfix, 1.0, bid);  
-    else if (pan < -side)
-      base->TurnTarget(pan + tfix, 1.0, bid);
-  }
+  hd.SetVec3(0.0, pdist, s3.h1 - hdec);
+  neck->AimFor(pan, tilt, hd, lift->Height());
+  if (neck->TiltErr(tilt) > aimed)
+    neck->TiltFix(tilt, rtime, rise);
 }
 
 

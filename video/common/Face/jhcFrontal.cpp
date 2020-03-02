@@ -42,6 +42,7 @@ jhcFrontal::~jhcFrontal ()
 
 jhcFrontal::jhcFrontal ()
 {
+  SetFront(0.3, 0.5, 0.5, 0.2, 0.1);
   Defaults();
   Reset();
 }
@@ -59,11 +60,11 @@ int jhcFrontal::front_params (const char *fname)
   int ok;
 
   ps->SetTag("face_front", 0);
-  ps->NextSpecF( &fsz,  0.3, "Min face wrt search");    // was 0.42
-  ps->NextSpecF( &xoff, 0.5, "X center wrt search");  
-  ps->NextSpecF( &yoff, 0.5, "Y center wrt search");
-  ps->NextSpecF( &xsh,  0.2, "Max X shift wrt face");  
-  ps->NextSpecF( &ysh,  0.1, "Max Y shift wrt face");
+  ps->NextSpecF( &fsz,  "Min face wrt search");    // was 0.42
+  ps->NextSpecF( &xoff, "X center wrt search");  
+  ps->NextSpecF( &yoff, "Y center wrt search");
+  ps->NextSpecF( &xsh,  "Max X shift wrt face");  
+  ps->NextSpecF( &ysh,  "Max Y shift wrt face");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;

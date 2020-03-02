@@ -40,12 +40,20 @@
   in
   in front of
   close to
+  at
   
+
+// definite place
+
+=[LOC-0]
+  here
+  there
+
 
 // dual location phrase
 
 =[LOC-2]
-   between
+  between
 
 
 // indefinite article
@@ -123,12 +131,6 @@
   your
   its
   their
-
-
-// place
-
-=[PLACE]
-  here
 
 
 // degree

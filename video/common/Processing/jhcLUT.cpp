@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2018 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1151,12 +1151,12 @@ int jhcLUT_0::Night8 (jhcImg& d8, const jhcImg& d16, int sh) const
 
   // general ROI case
   int x, y, v, n = __max(0, __min(sh, 2)) + 5;
-  int w = d8.RoiW(), h = d8.RoiH(), ssk = d16.Skip(), dsk = d8.Skip();
+  int w = d8.RoiW(), h = d8.RoiH(), ssk2 = d16.Skip() >> 1, dsk = d8.Skip();
   const US16 *s = (US16 *) d16.RoiSrc();
   UC8 *d = d8.RoiDest();
 
   // convert pixels
-  for (y = h; y > 0; y--, d += dsk, s += ssk)
+  for (y = h; y > 0; y--, d += dsk, s += ssk2)
     for (x = w; x > 0; x--, d++, s++)
       if ((*s < 1760) || (*s > 40000))
         *d = 0;
@@ -1186,12 +1186,12 @@ int jhcLUT_0::Fog16 (jhcImg& d16, const jhcImg& d8) const
   d16.CopyRoi(d8);
 
   // general ROI case
-  int x, y, w = d8.RoiW(), h = d8.RoiH(), ssk = d8.Skip(), dsk = d16.Skip();
+  int x, y, w = d8.RoiW(), h = d8.RoiH(), ssk = d8.Skip(), dsk2 = d16.Skip() >> 1;
   const UC8 *s = d8.RoiSrc();
   US16 *d = (US16 *) d16.RoiDest();
 
   // convert pixels
-  for (y = h; y > 0; y--, d += dsk, s += ssk)
+  for (y = h; y > 0; y--, d += dsk2, s += ssk)
     for (x = w; x > 0; x--, d++, s++)
       if (*s == 0)
         *d = 65535;                  // invalid
@@ -1214,7 +1214,7 @@ int jhcLUT_0::Remap16 (jhcImg& d8, const jhcImg& d16, int lo16, int hi16, int lo
   d8.CopyRoi(d16);
 
   // general ROI case
-  int x, y, f, w = d8.RoiW(), h = d8.RoiH(), ssk = d16.Skip(), dsk = d8.Skip();
+  int x, y, f, w = d8.RoiW(), h = d8.RoiH(), ssk2 = d16.Skip() >> 1, dsk = d8.Skip();
   UC8 v;
   const US16 *s = (US16 *) d16.RoiSrc();
   UC8 *d = d8.RoiDest();
@@ -1223,7 +1223,7 @@ int jhcLUT_0::Remap16 (jhcImg& d8, const jhcImg& d16, int lo16, int hi16, int lo
   f = ((hi8 - lo8) << 16) / (hi16 - lo16);
 
   // convert pixels
-  for (y = h; y > 0; y--, d += dsk, s += ssk)
+  for (y = h; y > 0; y--, d += dsk, s += ssk2)
     for (x = w; x > 0; x--, d++, s++)
       if ((*s < 1760) || (*s > 40000))
         *d = 0;

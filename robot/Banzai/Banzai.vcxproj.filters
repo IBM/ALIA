@@ -504,9 +504,6 @@
     <ClCompile Include="..\..\video\common\Face\jhcFrontal.cpp">
       <Filter>Source Files\common video\Face</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\video\common\Face\jhcFFindOCV.cpp">
-      <Filter>Source Files\common video\Face</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\video\common\Face\jhcFFind.cpp">
       <Filter>Source Files\common video\Face</Filter>
     </ClCompile>
@@ -533,6 +530,12 @@
     </ClCompile>
     <ClCompile Include="..\common\Grounding\jhcSocial.cpp">
       <Filter>Source Files\common robot\Grounding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\audio\common\Language\jhcMorphFcns.cpp">
+      <Filter>Source Files\common audio\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp">
+      <Filter>Source Files\common audio\Language</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -911,9 +914,6 @@
     <ClInclude Include="..\..\video\common\Face\jhcFrontal.h">
       <Filter>Header Files\common video\Face</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\video\common\Face\jhcFFindOCV.h">
-      <Filter>Header Files\common video\Face</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\video\common\Face\jhcFFind.h">
       <Filter>Header Files\common video\Face</Filter>
     </ClInclude>
@@ -944,15 +944,24 @@
     <ClInclude Include="..\common\Grounding\jhcSocial.h">
       <Filter>Header Files\common robot\Grounding</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\video\common\Face\jhcFFindDLL.h">
+      <Filter>Header Files\common video\Face</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\video\common\Face\ffind_ocv.h">
+      <Filter>Header Files\common video\Face</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Language\jhcMorphFcns.h">
+      <Filter>Header Files\common audio\Language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Language\jhcNetBuild.h">
+      <Filter>Header Files\common audio\Language</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Banzai.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Banzai.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\lbpcascade_frontalface.xml">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

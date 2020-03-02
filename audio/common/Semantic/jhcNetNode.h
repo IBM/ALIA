@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017-2019 IBM Corporation
+// Copyright 2017-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ private:
 // PUBLIC MEMBER VARIABLES
 public:
   // status and grammatical tags
-  int pod, mark, top;
+  int pod, top, keep, mark;
   UL32 tags;
 
 
@@ -99,7 +99,7 @@ public:
   void SetString (const char *wds);
   bool NounTag () const;
   bool VerbTag () const;
-  int Actualize ();
+  int Actualize (int ver);
 
   // argument functions
   int NumArgs () const      {return na;}
@@ -138,7 +138,7 @@ public:
   bool LexConflict (const jhcNetNode *ref) const;
   const char *LexBase (int i) const;
   int NumWords () const;
-  const char *Word (int i =0) const;
+  const char *Word (int i =0, double bth =0.0) const;
   const char *Tag () const;  
   bool Blank () const {return(Word(0) == NULL);}
   bool HasWord (const char *word, int tru_only =0) const;

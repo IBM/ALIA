@@ -184,9 +184,9 @@ void jhcWorkMem::actualize_halo (int src) const
     if (n->pod == src)
     {
       if (n->LexNode())
-        n->SetBelief(1.0);
+        MarkBelief(n, 1.0);
       else
-        n->Actualize();
+        n->Actualize(ver);
     }
 }
 
@@ -207,7 +207,7 @@ void jhcWorkMem::PromoteHalo (jhcBindings& h2m, int s)
   while ((n = halo.Next(n)) != NULL)
    if (n->pod == s)
    {
-     n2 = MakeNode(n->Kind());
+     n2 = MakeNode(n->Kind());     // sets proper generation
      n2->SetNeg(n->Neg());
      n2->SetBelief(n->Default());  // actualize result pattern
      h2m.Bind(n, n2);

@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1998-2019 IBM Corporation
+// Copyright 1998-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -105,14 +105,16 @@ int jhcResize::Sample (jhcImg& dest, const jhcImg& src) const
 
 int jhcResize::SampleN (jhcImg& dest, const jhcImg& src) const 
 {
+  int nf = dest.Fields();
+
   // check arguments, detect special cases
-  if (!dest.Valid() || !src.Valid(dest.Fields()))
+  if (!dest.Valid() || !src.Valid(nf))
     return Fatal("Bad images to jhcResize::SampleN");
   if (dest.SameFormat(src))
     return dest.CopyArr(src);
   if (dest.Valid(1, 3) && (dest.XDim() == (2 * src.XDim())) && src.FullRoi())
     return Double(dest, src);
-  if (dest.Valid(1, 3) && (src.XDim() > dest.XDim()) && src.FullRoi())
+  if ((nf >= 1) && (nf <= 3) && (src.XDim() > dest.XDim()) && src.FullRoi())
     return Decimate(dest, src, src.XDim() / dest.XDim());
 
   // local variables
@@ -136,8 +138,7 @@ int jhcResize::SampleN (jhcImg& dest, const jhcImg& src) const
 
   // more local variables
   int x, y, i, j, f;
-  int nf = src.Fields(), dsk = dest.RoiSkip();
-  int xskip = nf, yskip = src.Line();
+  int xskip = nf, yskip = src.Line(), dsk = dest.RoiSkip();
   int xdup = 1, ydup = 1, xcnt = dest.RoiW(), ycnt = dest.RoiH();
   const UC8 *s2, *s = src.RoiSrc(); 
   UC8 *d = dest.RoiDest(); 
@@ -273,24 +274,26 @@ int jhcResize::DoubleRGB (jhcImg& dest, const jhcImg& src) const
 }
 
 
-//= Special monochrome case where destination image is smaller than source.
+//= Special sampling case where destination image is smaller than source.
 // always does whole image, does not respect or copy ROI
 // might leave some destination pixels unfilled
 
 int jhcResize::Decimate (jhcImg& dest, const jhcImg& src, int factor) const 
 {
-  int x, y, w, h, dln = dest.Line(), sln = factor * src.Line();
+  int x, y, w, h, f = dest.Fields(), dln = dest.Line(), sln = factor * src.Line();
   UC8 *d, *d0 = dest.PxlDest();
   const UC8 *s, *s0 = src.PxlSrc();
 
   // check arguments, detect special cases
-  if (!dest.Valid(1, 3) || !src.Valid(dest.Fields()) || 
+  if ((f < 1) || (f > 3) || !dest.Valid() || !src.Valid(dest.Fields()) || 
       (factor <= 0) || !src.FullRoi())
     return Fatal("Bad images to jhcResize::Decimate");
   if ((factor == 1) && dest.SameFormat(src))
     return dest.CopyArr(src);
   if (dest.Valid(3))
     return DecimateRGB(dest, src, factor);
+  if (dest.Valid(2))
+    return Decimate_16(dest, src, factor);
 
   // figure out sizes and end skips
   w = src.XDim() / factor;
@@ -298,7 +301,7 @@ int jhcResize::Decimate (jhcImg& dest, const jhcImg& src, int factor) const
   h = src.YDim() / factor;
   h = __min(h, dest.YDim());
   
-  // copy pixels
+  // copy pixels for monochrome case
   for (y = 0; y < h; y++)
   {
     d = d0;
@@ -349,6 +352,36 @@ int jhcResize::DecimateRGB (jhcImg& dest, const jhcImg& src, int factor) const
     d0 += dln;
     s0 += sln;
   }
+  return 1;
+}
+
+
+//= Sample 16 bit image source into smaller destination.
+// always does whole image, does not respect or copy ROI
+// might leave some destination pixels unfilled
+
+int jhcResize::Decimate_16 (jhcImg& dest, const jhcImg& src, int factor) const 
+{
+  int x, y, w, h, dln2 = dest.Line() >> 1, sln2 = (factor * src.Line()) >> 1;
+  US16 *d, *d0 = (US16 *) dest.PxlDest();
+  const US16 *s, *s0 = (const US16 *) src.PxlSrc();
+
+  // check arguments, detect special cases
+  if (!dest.Valid(2) || !src.Valid(2) || (factor <= 0))
+    return Fatal("Bad images to jhcResize::Decimate_16");
+  if ((factor == 1) && dest.SameFormat(src))
+    return dest.CopyArr(src);
+
+  // figure out sizes and end skips
+  w = src.XDim() / factor;
+  w = __min(w, dest.XDim());
+  h = src.YDim() / factor;
+  h = __min(h, dest.YDim());
+  
+  // copy pixels
+  for (y = h; y > 0; y--, d0 += dln2, s0 += sln2)
+    for (x = w, d = d0, s = s0; x > 0; x--, d++, s += factor)
+      *d = *s;
   return 1;
 }
 
@@ -658,6 +691,35 @@ int jhcResize::AvgThirdRGB (jhcImg& dest, const jhcImg& src) const
 }
 
 
+//= Fill half-sized 16 bit image with minimum of 4 neighbor pixels.
+// ignores source ROI and always does full image
+// makes more sense for depth images than Blocks_16
+
+int jhcResize::MinHalf_16 (jhcImg& dest, const jhcImg& src) const
+{
+  int dw = dest.XDim(), dh = dest.YDim(), dsk2 = dest.Skip() >> 1;
+  int x, y, lo, lo2, sln2 = src.Line() >> 1, ssk2 = (sln2 - dw) << 1;
+  const US16 *s = (const US16 *) src.PxlSrc();
+  UC8 *d = dest.PxlDest();
+
+  // check for proper scale factor
+  if (!dest.Valid(2) || !src.Valid(2) || 
+      (dw != (src.XDim() >> 1)) || (dh != (src.YDim() >> 1)))
+    return Fatal("Bad images to jhcResize::MinHalf_16");
+  dest.MaxRoi();
+
+  // full ROI case
+  for (y = dh; y > 0; y--, d += dsk2, s += ssk2)
+    for (x = dw; x > 0; x--, d++, s += 2)
+    {
+      lo  = __min(s[0], s[1]);
+      lo2 = __min(s[sln2], s[sln2 + 1]);
+      *d  = (UC8) __min(lo, lo2);
+    }
+  return 1;
+}
+
+
 //= Generate a new image by averaging blocks of pixels of size w x h.
 // unlike SmoothN this allows a starting corner and explict block size
 // fills in as much of destination image as possible, rest is unchanged
@@ -706,6 +768,7 @@ int jhcResize::Blocks (jhcImg& dest, const jhcImg& src, int sx, int sy, int bw, 
  
 //= Generate a new image by averaging blocks of 16 bit pixels of size w x h.
 // fills in as much of destination image as possible, rest is unchanged
+// not particularly sensible for depth images
 
 int jhcResize::Blocks_16 (jhcImg& dest, const jhcImg& src, int sx, int sy, int bw, int bh) const 
 {

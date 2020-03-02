@@ -55,11 +55,14 @@ public:
   //= Create a new node to represent linguistic term associated with this node.
   virtual void NewLex (jhcAliaDesc *head, const char *word, int neg =0, double blf =1.0) =0;
 
+  //= Locate most recent existing node with compatible person name.
+  virtual jhcAliaDesc *Person (const char *name) const =0;
+
   //= Reference to the robot itself.
-  virtual jhcAliaDesc *Self () =0;
+  virtual jhcAliaDesc *Self () const =0;
 
   //= Reference to the current user.
-  virtual jhcAliaDesc *User () =0;
+  virtual jhcAliaDesc *User () const =0;
 
   //= Add current note as a focus or delete it.
   // return number of focus if added, -2 if deleted

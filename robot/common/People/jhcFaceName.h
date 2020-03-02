@@ -78,7 +78,7 @@ public:
 
   // processing parameter bundles 
   int Defaults (const char *fname =NULL, int local =0);
-  int SaveVals (const char *fname, int local =0) const;
+  int SaveVals (const char *fname, int local =0);
 
   // main functions
   void Reset (int local =0);

@@ -1,0 +1,83 @@
+// terms associated with ELI robot person tracking
+// ================================================
+
+// singular noun
+
+=[AKO]
+  person
+
+
+// adjective
+
+=[HQ]
+  close
+  visible
+  far away
+
+
+// -----------------------------------------
+
+// imperative verb
+
+=[ACT]
+  look
+  approach
+  follow
+  come
+  ask
+
+
+// ================================================
+
+// plural noun
+
+=[AKO-S]
+  people
+
+
+// comparative adjectives
+
+=[HQ-ER]
+  closer
+  more visible
+  farther away
+
+
+// superlative adjectives
+
+=[HQ-EST]
+  closest 
+  most visible
+  farthest away
+
+
+// -----------------------------------------
+
+// present verb
+
+=[ACT-S]
+  looks
+  approaches
+  follows
+  comes
+  asks
+
+
+// progressive verb
+
+=[ACT-G]
+  looking
+  approaching
+  following
+  coming
+  asking
+
+
+// past or passive verb
+
+=[ACT-D]
+  looked
+  approached
+  followed
+  came
+  asked

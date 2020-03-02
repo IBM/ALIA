@@ -1,0 +1,31 @@
+// terms associated with new inputs posted by jhcGraphizer
+// ================================================
+
+// imperative verb
+
+=[ACT]
+  announce
+  acknowledge
+
+
+// ================================================
+
+// present verb
+
+=[ACT-S]
+  announces
+  acknowledges
+
+
+// progressive verb
+
+=[ACT-G]
+  announcing
+  acknowledging
+
+
+// past or passive verb
+
+=[ACT-D]
+  announced
+  acknowledged

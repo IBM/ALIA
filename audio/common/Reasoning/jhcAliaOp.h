@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2017-2019 IBM Corporation
+// Copyright 2017-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@
 class jhcAliaOp : public jhcSituation, public jhcNodePool
 {
 friend class jhcProcMem;               // collection
-friend class jhcGraphizer;             // creation
+friend class jhcNetBuild;              // creation
 
 // PRIVATE MEMBER VARIABLES
 private:
