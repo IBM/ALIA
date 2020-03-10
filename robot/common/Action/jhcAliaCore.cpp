@@ -105,13 +105,13 @@ int jhcAliaCore::Baseline (const char *list, int add, int rpt)
   char dir[80], line[80];
   FILE *in;
   char *end;
-  int n, cnt = 0;
+  int n, r0 = amem.NumRules(), op0 = pmem.NumOperators(), cnt = 0;
 
   // possibly clear old stuff then try to open file
   if (add <= 0)
   {
-    amem.ClearRules();
-    pmem.ClearOps();
+    r0 = amem.ClearRules();
+    op0 = pmem.ClearOps();
   }
   if (fopen_s(&in, list, "r") != 0)
     return jprintf(1, rpt, ">>> Could not open baseline knowledge file: %s !\n", list);
@@ -143,7 +143,8 @@ int jhcAliaCore::Baseline (const char *list, int add, int rpt)
 
   // clean up
   fclose(in);
-  jprintf(1, rpt, "  TOTAL = %d operators, %d rules\n\n", pmem.NumOperators(), amem.NumRules());
+  jprintf(1, rpt, "  TOTAL = %d operators, %d rules\n\n", 
+          pmem.NumOperators() - op0, amem.NumRules() - r0);
   return cnt;
 }
 
@@ -158,7 +159,7 @@ int jhcAliaCore::add_info (const char *dir, const char *base, int rpt, int level
   int cnt = 0;
 
   if (readable(fname, 200, "%s%s.sgm", dir, base))
-    if (gr.LoadGrammar(fname) > 0)
+    if ((net.mf).AddVocab(&gr, fname) > 0)
       cnt++;
   if (readable(fname, 200, "%s%s.ops", dir, base))
     if (pmem.Load(fname, 1, rpt, level) > 0)      

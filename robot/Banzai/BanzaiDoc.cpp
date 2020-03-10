@@ -118,6 +118,8 @@ BEGIN_MESSAGE_MAP(CBanzaiDoc, CDocument)
   ON_COMMAND(ID_ATTENTION_ENROLLLIVE, &CBanzaiDoc::OnAttentionEnrolllive)
   ON_COMMAND(ID_PEOPLE_SOCIALEVENTS, &CBanzaiDoc::OnPeopleSocialevents)
   ON_COMMAND(ID_PEOPLE_SOCIALMOVE, &CBanzaiDoc::OnPeopleSocialmove)
+  ON_COMMAND(ID_UTILITIES_EXTRACTWORDS, &CBanzaiDoc::OnUtilitiesExtractwords)
+  ON_COMMAND(ID_UTILITIES_CHKGRAMMAR, &CBanzaiDoc::OnUtilitiesChkgrammar)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -197,7 +199,7 @@ BOOL CBanzaiDoc::OnNewDocument()
   //         =  2 for restricted operation, expiration enforced
   cripple = 0;
   ver = ec.Version();
-  LockAfter(7, 2020, 2, 2020);
+  LockAfter(8, 2020, 3, 2020);
 
   // JHC: if this function is called, app did not start with a file open
   // JHC: initializes display object which depends on document
@@ -2292,6 +2294,72 @@ void CBanzaiDoc::OnPeopleSpeaking()
 
 
 /////////////////////////////////////////////////////////////////////////////
+//                           Grammar Construction                          //
+/////////////////////////////////////////////////////////////////////////////
+
+// Get preliminary grammar terms from operators and rules
+
+void CBanzaiDoc::OnUtilitiesExtractwords()
+{
+  jhcString sel, test;
+  CFileDialog dlg(TRUE);
+  char *end;
+  int n, skip = (int) strlen(cwd) + 1;
+
+  // select file to read 
+  sprintf_s(test.ch, "%s\\KB2\\interaction.ops", cwd);
+  test.C2W();
+  (dlg.m_ofn).lpstrFile = test.Txt();
+  (dlg.m_ofn).lpstrFilter = _T("Operators and Rules\0*.ops;*.rules\0All Files (*.*)\0*.*\0");
+  if (dlg.DoModal() != IDOK)
+    return;
+
+  // remove extension then look for terms
+  sel.Set((dlg.m_ofn).lpstrFile);    
+  if ((end = strrchr(sel.ch, '.')) != NULL)
+    *end = '\0';
+  if ((n = (ec.net).HarvestLex(sel.ch)) > 0)
+    Tell("Extracted %d terms to: %s0.sgm", n, sel.ch + skip);
+}
+
+
+// Refine grammar terms for consistent morphology
+
+void CBanzaiDoc::OnUtilitiesChkgrammar()
+{
+  jhcString sel, test;
+  CFileDialog dlg(TRUE);
+  int err;
+
+  // select file to read 
+  sprintf_s(test.ch, "%s\\language\\lex_open.sgm", cwd);
+  test.C2W();
+  (dlg.m_ofn).lpstrFile = test.Txt();
+  (dlg.m_ofn).lpstrFilter = _T("Grammar Files\0*.sgm\0All Files (*.*)\0*.*\0");
+  if (dlg.DoModal() != IDOK)
+    return;
+
+  // try generating derived terms and do basic inversion testing
+  sel.Set((dlg.m_ofn).lpstrFile);    
+  if ((err = ((ec.net).mf).LexDeriv(sel.ch)) < 0)
+    return;
+  if (err > 0)
+  {
+    Tell("Adjust original =[XXX-morph] section to fix %d problems", err);
+    return;
+  }
+
+  // try regenerating base words from derived terms
+  if ((err = ((ec.net).mf).LexBase("derived.sgm", 1, sel.ch)) < 0)
+    return;
+  if (err > 0)
+    Tell("Adjust original =[XXX-morph] section to fix %d problems", err);
+  else
+    Tell("Looks good but examine \"derived.sgm\" then \"base_words.txt\"\n\nAdjust original =[XXX-morph] section to fix any problems");
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 //                              Test Functions                             //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -2351,6 +2419,4 @@ jtimer_rpt();
   d.ShowGrid(r8,  1, 1, 0, "Small: %3.1f -> %3.1f", avg2, ra);
 
 }
-
-
 

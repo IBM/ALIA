@@ -174,7 +174,7 @@ const char *jhcNetBuild::add_evt (jhcNetNode *obj, const char *alist,
   // find main verb then make up node representing event 
   if ((tail = FragNextPair(tail, next)) == NULL)
     return alist;
-  if ((val = m.BaseVerb(t, next)) == NULL)
+  if ((val = mf.VerbLex(t, next)) == NULL)
     return alist; 
   evt = pool.AddProp(obj, "agt", val, neg, blf, "act");
   evt->tags = t;
@@ -746,7 +746,7 @@ jhcNetNode *jhcNetBuild::build_cmd (const char *alist, jhcNodePool& pool) const
 
   // look for main verb but ignore placeholder "do something"
   while ((tail = FragNextPair(tail, next)) != NULL)
-    if ((val = m.BaseVerb(t, next)) != NULL)                
+    if ((val = mf.VerbLex(t, next)) != NULL)                
       break;
   if (val == NULL)
     return NULL;
@@ -818,7 +818,7 @@ const char *jhcNetBuild::build_fact (jhcNetNode *subj, const char *alist, jhcNod
 
   // look for main verb and make node for sentence
   while ((after = FragNextPair(after, next)) != NULL)
-    if ((val = m.BaseVerb(t, next)) != NULL)                
+    if ((val = mf.VerbLex(t, next)) != NULL)                
       break;
   if (val == NULL)
     return NULL;
@@ -1012,7 +1012,7 @@ jhcNetNode *jhcNetBuild::build_obj (const char **after, const char *alist, jhcNo
       ref_props(obj, nr, val, neg);
     else if ((val = SlotGet(next, "NAME", 0)) != NULL)         // proper noun ("Jim")
       nr.AddLex(obj, val, neg, blf);                 
-    else if ((val = m.BaseNoun(obj->tags, next)) != NULL)      // base type ("dog") 
+    else if ((val = mf.NounLex(obj->tags, next)) != NULL)      // base type ("dog") 
       nr.AddProp(obj, "ako", val, neg, blf);                   
     else if ((val = SlotGet(next, "HQ")) != NULL)              // simple property ("big") 
       nr.AddProp(obj, "hq", val, neg, blf);                    
@@ -1020,7 +1020,7 @@ jhcNetNode *jhcNetBuild::build_obj (const char **after, const char *alist, jhcNo
       tail = obj_deg(obj, val, tail, nr, neg, blf);            
     else if (SlotStart(next, "ACT-G") > 0)                     // participle ("sleeping")
     {
-      act = nr.AddProp(obj, "agt", m.BaseVerb(t, next), neg, blf, "act");
+      act = nr.AddProp(obj, "agt", mf.VerbLex(t, next), neg, blf, "act");
       act->tags = t;
     }
     else if (SlotStart(next, "LOC") > 0)                       // location phrase ("at home")

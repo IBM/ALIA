@@ -60,7 +60,7 @@ public:
   int NumOperators () const {return np;}
 
   // configuration
-  void ClearOps () {clear();}
+  int ClearOps () {return clear();}
   int Load (const char *fname, int add =0, int rpt =0, int level =1);
   int Save (const char *fname, int level =1) const;
   int Print (int level =1) const {return save_ops(stdout, level);}
@@ -75,7 +75,7 @@ public:
 // PRIVATE MEMBER FUNCTIONS
 private:
   // creation and initialization
-  void clear ();
+  int clear ();
   void init_lists ();
 
   // configuration

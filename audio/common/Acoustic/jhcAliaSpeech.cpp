@@ -107,6 +107,7 @@ int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
       return 0;
 
     // add kernel terms and robot name as attention word (speech only)
+    (net.mf).AddVocab(&sp, "language/lex_open.sgm");
     kern_gram();
     base_gram(extras);
     self_name(rname);
@@ -128,6 +129,7 @@ int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
   jhcAliaCore::Reset(1, rname);
 
   // load rules, operators, and words for kernels (speech already set)
+  (net.mf).AddVocab(&gr, "language/lex_open.sgm");
   KernExtras(kdir);
   Baseline(extras, 1, 2);
   if (acc > 0)
@@ -163,6 +165,7 @@ int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
 
 void jhcAliaSpeech::kern_gram ()
 {
+  char fname[200];
   const jhcAliaKernel *k = &kern;
   const char *tag; 
 
@@ -170,7 +173,10 @@ void jhcAliaSpeech::kern_gram ()
   {
     tag = k->BaseTag();
     if (*tag != '\0')
-      sp.LoadGrammar("%s%s.sgm", kdir, tag);
+    {
+      sprintf_s(fname, "%s%s.sgm", kdir, tag);
+      (net.mf).AddVocab(&sp, fname);
+    }
     k = k->NextPool();
   }
   sp.Listen(1);
@@ -181,7 +187,7 @@ void jhcAliaSpeech::kern_gram ()
 
 void jhcAliaSpeech::base_gram (const char *list)
 {
-  char dir[80], line[80];
+  char dir[80], line[80], fname[200];
   FILE *in;
   char *end;
   int n;
@@ -208,10 +214,11 @@ void jhcAliaSpeech::base_gram (const char *list)
     if ((n = (int) strlen(line)) <= 0)
       continue;
 
-    // read various types of input (1 = extras level)
+    // read various types of input 
     if (line[n - 1] == '\n')
       line[n - 1] = '\0';
-    sp.LoadGrammar("%s%s.sgm", dir, line);     
+    sprintf_s(fname, "%s%s.sgm", dir, line);     
+    (net.mf).AddVocab(&sp, fname);
   } 
 
   // clean up

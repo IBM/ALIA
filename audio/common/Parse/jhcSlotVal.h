@@ -113,6 +113,7 @@ public:
   bool SlotMatch (const char *pair, const char *slot) const;
   int SlotStart (const char *pair, const char *prefix =NULL) const;
   char *SlotRef (char *pair) const;
+  const char *SlotVal (const char *pair) const;
   const char *SlotGet (char *pair, const char *prefix =NULL, int lower =1) const;
 
   // slot functions - convenience

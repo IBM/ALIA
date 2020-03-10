@@ -176,6 +176,9 @@ BEGIN
         MENUITEM "&Image Size",                 ID_PARAMETERS_IMAGESIZE
         MENUITEM "&Play Video",                 ID_TEST_PLAYVIDEO
         MENUITEM SEPARATOR
+        MENUITEM "&Extract Words",              ID_UTILITIES_EXTVOCAB
+        MENUITEM "&Chk Grammar",                ID_UTILITIES_TESTVOCAB
+        MENUITEM SEPARATOR
         MENUITEM "&Test",                       ID_UTILITIES_TEST
     END
 END
@@ -215,7 +218,7 @@ CAPTION "About MensEt"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,15,17,20,20
-    LTEXT           "MensEt Version 3.50",IDC_STATIC,48,11,119,8,SS_NOPREFIX
+    LTEXT           "MensEt Version 3.60",IDC_STATIC,48,11,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2018-2020, IBM Corporation",IDC_STATIC,47,36,171,8
     DEFPUSHBUTTON   "OK",IDOK,176,7,50,14,WS_GROUP
     LTEXT           "Written by Jonathan H. Connell",IDC_STATIC,47,24,128,9
@@ -585,6 +588,8 @@ BEGIN
     ID_MOTION_LIFT          "Parameters for interpreting gripper height commands"
     ID_REFLEXES_INITPOSE    "Connect to robot and establish default configuration"
     ID_DEMO_TIMING          "Adjust thought rate, attention word mode, etc."
+    ID_UTILITIES_EXTVOCAB   "Get preliminary grammar terms from operators and rules"
+    ID_UTILITIES_TESTVOCAB  "Refine grammar terms for consistent morphology"
 END
 
 #endif    // English (United States) resources

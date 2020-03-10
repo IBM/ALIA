@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2015-2019 IBM Corporation
+// Copyright 2015-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 jhcGramExec::jhcGramExec ()
 {
   // current version
-  ver = 1.50;
+  ver = 1.52;
 
   // max number of words that "+" can match
   dict_n = 5; 
@@ -781,6 +781,13 @@ int jhcGramExec::parse_load (const char *grammar)
       if ((start = strpbrk(start + 1, "[<")) != NULL)
         if ((end = strpbrk(start + 1, "]>")) != NULL)
         {
+          if (_strnicmp(start + 1, "xxx", 3) == 0)
+          {
+
+            // ignore sections starting with XXX
+            *rname = '\0';
+            continue;
+          }
           *end = '\0';
           strcpy_s(rname, start + 1);
           nonterm_chk(rname, grammar);

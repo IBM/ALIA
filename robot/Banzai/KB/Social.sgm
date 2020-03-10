@@ -1,7 +1,7 @@
-// terms associated with ELI robot person tracking
+// terms associated with "Social" ops and rules
 // ================================================
 
-// singular noun
+// singular nouns - mass nouns like "a rice" belong in =[AKO-M] instead
 
 =[AKO]
   person
@@ -17,67 +17,21 @@
 
 // -----------------------------------------
 
-// imperative verb
+// imperative verbs
 
 =[ACT]
   look
   approach
   follow
-  come
-  ask
 
 
 // ================================================
 
-// plural noun
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
 
-=[AKO-S]
-  people
-
-
-// comparative adjectives
-
-=[HQ-ER]
-  closer
-  more visible
-  farther away
-
-
-// superlative adjectives
-
-=[HQ-EST]
-  closest 
-  most visible
-  farthest away
-
-
-// -----------------------------------------
-
-// present verb
-
-=[ACT-S]
-  looks
-  approaches
-  follows
-  comes
-  asks
-
-
-// progressive verb
-
-=[ACT-G]
-  looking
-  approaching
-  following
-  coming
-  asking
-
-
-// past or passive verb
-
-=[ACT-D]
-  looked
-  approached
-  followed
-  came
-  asked
+=[XXX-morph]
+  person * npl = people
+  visible * acomp = more visible
+  visible * asup  = most visible
+  far away * acomp = farther away
+  far away * asup  = farthest away

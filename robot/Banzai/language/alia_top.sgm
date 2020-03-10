@@ -5,10 +5,6 @@
 #include "alia_VP.sgm"
 #include "lex_closed.sgm"
 
-#include "graphizer.sgm"
-#include "lex_open.sgm"
-#include "lex_deriv.sgm"
-
 
 // valid utterances once attention established
 

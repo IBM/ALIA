@@ -49,7 +49,7 @@ protected:
 // PUBLIC MEMBER VARIABLES
 public:
   // morphology (possibly shared)
-  jhcMorphFcns m;
+  jhcMorphFcns mf;
 
   // suggestions to add
   jhcAliaRule *rule;

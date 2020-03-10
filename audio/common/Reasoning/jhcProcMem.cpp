@@ -40,8 +40,9 @@ jhcProcMem::~jhcProcMem ()
 
 
 //= Get rid of all loaded operators.
+// always returns 0 for convenience
 
-void jhcProcMem::clear ()
+int jhcProcMem::clear ()
 {
   jhcAliaOp *p0, *p;
   int i;
@@ -60,6 +61,7 @@ void jhcProcMem::clear ()
     resp[i] = NULL;
   }
   np = 0;
+  return 0;
 }
 
 

@@ -1,7 +1,7 @@
-// terms associated with Manus robot base
+// terms associated with "BasicAct" ops and rules
 // ================================================
 
-// singular noun
+// singular noun - Mass nouns like "a sand" belong in =[AKO-M] instead
 
 =[AKO]
   gripper
@@ -40,96 +40,26 @@
 
 =[ACT]
   freeze
-  drive
   step
   move
+  drive
   turn
   rotate
   spin
   raise
-  lift
   lower
-  release
-  grab
+  lift
   open
   close
+  grab
+  release
 
 
 // ================================================
 
-// plural noun
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
 
-=[AKO-S]
-  grippers
-  hands
+=[XXX-morph]
+  open * vprog = opening
+  open * vpast = opened
 
-
-// comparative adjectives
-
-=[HQ-ER]
-  closer
-
-
-// superlative adjectives
-
-=[HQ-EST]
-  closest
-
-
-// -----------------------------------------
-
-// present verb
-
-=[ACT-S]
-  freezes
-  drives
-  steps
-  moves
-  turns
-  rotates
-  spins
-  raises
-  lifts
-  lowers
-  releases
-  grabs
-  opens
-  closes
-
-
-// progressive verb
-
-=[ACT-G]
-  freezing
-  driving
-  stepping
-  moving
-  turning
-  rotating
-  spinning
-  raising
-  lifting
-  lowering
-  releasing
-  grabbing
-  opening
-  closing
-
-
-// past or passive verb
-
-=[ACT-D]
-  froze
-  drove
-  stepped
-  moved
-  turned
-  rotated
-  spun
-  raised
-  lifted
-  lowered
-  released
-  grabbed
-  opened
-  closed

@@ -41,9 +41,9 @@ enum JTAG_VAL
   JTV_NPL,    // plural noun
   JTV_NMASS,  // mass noun
 
-  JTV_PROP,   // normal adjective
-  JTV_COMP,   // comparative adjective (-er)
-  JTV_SUP,    // superlative adjective (-est)
+  JTV_APROP,  // normal adjective
+  JTV_ACOMP,  // comparative adjective (-er)
+  JTV_ASUP,   // superlative adjective (-est)
 
   JTV_VIMP,   // imperative verb
   JTV_VPRES,  // present tense verb (-s)
@@ -70,9 +70,9 @@ const char JTAG_STR[JTV_MAX][10] =
   "npl", 
   "nmass", 
 
-  "prop", 
-  "comp",
-  "sup",
+  "aprop", 
+  "acomp",
+  "asup",
 
   "vimp", 
   "vpres", 
@@ -97,9 +97,9 @@ enum JTAG_MASK
   JTAG_NPL   = (0x01 << JTV_NPL),
   JTAG_NMASS = (0x01 << JTV_NMASS),
 
-  JTAG_PROP  = (0x01 << JTV_PROP),
-  JTAG_COMP  = (0x01 << JTV_COMP),
-  JTAG_SUP   = (0x01 << JTV_SUP),
+  JTAG_APROP = (0x01 << JTV_APROP),
+  JTAG_ACOMP = (0x01 << JTV_ACOMP),
+  JTAG_ASUP  = (0x01 << JTV_ASUP),
 
   JTAG_VIMP  = (0x01 << JTV_VIMP),
   JTAG_VPRES = (0x01 << JTV_VPRES),
@@ -123,7 +123,7 @@ const UL32 JTAG_VERB = (JTAG_VIMP | JTAG_VPRES | JTAG_VPAST | JTAG_VPROG | JTAG_
 
 //= All mask bits associated with adjectives.
 
-const UL32 JTAG_ADJ = (JTAG_PROP | JTAG_COMP | JTAG_SUP);
+const UL32 JTAG_ADJ = (JTAG_APROP | JTAG_ACOMP | JTAG_ASUP);
 
 
 #endif  // once

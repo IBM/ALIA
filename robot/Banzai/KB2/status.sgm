@@ -1,27 +1,29 @@
-// terms associated with power on and battery status events
+// terms associated with "status" ops and rules
 // ================================================
 
-// imperative verb
+// adjectives
+
+=[HQ]
+  awake
+  tired
+
+
+// -----------------------------------------
+
+// imperative verbs
 
 =[ACT]
   announce
+  say
 
 
 // ================================================
 
-// present verb
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
 
-=[ACT-S]
-  announces
-
-
-// progressive verb
-
-=[ACT-G]
-  announcing
-
-
-// past or passive verb
-
-=[ACT-D]
-  announced
+=[XXX-morph]
+  say * vpast = said
+  awake * acomp = more awake
+  awake * asup  = most awake
+  tired * acomp = more tired
+  tired * asup  = most tired

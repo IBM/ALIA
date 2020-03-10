@@ -177,6 +177,8 @@ public:
   afx_msg void OnMotionLift();
   afx_msg void OnReflexesInitpose();
   afx_msg void OnDemoTiming();
+  afx_msg void OnUtilitiesExtvocab();
+  afx_msg void OnUtilitiesTestvocab();
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
-// terms associated with text-to-speech pattern generator
+// terms associated with "TalkFcn" ops and rules
 // ================================================
 
-// imperative verb
+// imperative verbs
 
 =[ACT]
   say
@@ -9,20 +9,8 @@
 
 // ================================================
 
-// present verb
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
 
-=[ACT-S]
-  says
-
-
-// progressive verb
-
-=[ACT-G]
-  saying
-
-
-// past or passive verb
-
-=[ACT-D]
-  said
+=[XXX-morph]
+  say * vpast = said
 

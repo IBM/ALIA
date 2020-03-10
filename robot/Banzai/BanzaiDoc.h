@@ -175,6 +175,8 @@ public:
   afx_msg void OnAttentionEnrolllive();
   afx_msg void OnPeopleSocialevents();
   afx_msg void OnPeopleSocialmove();
+  afx_msg void OnUtilitiesExtractwords();
+  afx_msg void OnUtilitiesChkgrammar();
 };
 
 /////////////////////////////////////////////////////////////////////////////

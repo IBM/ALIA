@@ -1,7 +1,7 @@
-// terms associated with sound effect system
+// terms associated with "SoundFcn" ops and rules
 // ================================================
 
-// imperative verb
+// imperative verbs
 
 =[ACT]
   pause
@@ -15,77 +15,21 @@
   plunk
   toot
   honk
+  tweet
   squawk
   warble
-  tweet
+  chirp
   crash
   thump
-  chirp
 
 
 // ================================================
 
-// present verb
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
 
-=[ACT-S]
-  pauses
-  bleeps
-  bloops
-  chings
-  chongs
-  bings
-  bongs
-  plinks
-  plunks
-  toots
-  honks
-  squawks
-  warbles
-  tweets
-  crashes
-  thumps
-  chirps
+=[XXX-morph]
+  warble * vprog = warbling
+  warble * vpast = warbled
 
 
-// progressive verb
 
-=[ACT-G]
-  pausing
-  bleeping
-  blooping
-  chinging
-  chonging
-  binging
-  bonging
-  plinking
-  plunking
-  tooting
-  honking
-  squawking
-  warbling
-  tweeting
-  crashing
-  thumping
-  chirping
-
-
-// past or passive verb
-
-=[ACT-D]
-  paused
-  bleeped
-  blooped
-  chinged
-  chonged
-  binged
-  bonged
-  plinked
-  plunked
-  tooted
-  honked
-  squawked
-  warbled
-  tweeted
-  crashed
-  thumped
-  chirped

@@ -111,6 +111,8 @@
 #define ID_MOTION_LIFT                  32840
 #define ID_REFLEXES_INITPOSE            32841
 #define ID_DEMO_TIMING                  32842
+#define ID_UTILITIES_EXTVOCAB           32843
+#define ID_UTILITIES_TESTVOCAB          32844
 
 // Next default values for new objects
 // 
@@ -118,7 +120,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        136
-#define _APS_NEXT_COMMAND_VALUE         32843
+#define _APS_NEXT_COMMAND_VALUE         32845
 #define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

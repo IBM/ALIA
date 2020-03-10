@@ -51,7 +51,6 @@ class jhcAliaCore
 private:
   static const int dmax = 30;   /** Maximum extra grounding DLLs. */
 
-  jhcGraphizer net;             // language to network conversion
   jhcDegrapher dg;              // network to language generation
   jhcTalkFcn talk;              // literal text output
   jhcAssocMem amem;             // working memory expansions
@@ -81,6 +80,7 @@ protected:
 
 // PUBLIC MEMBER VARIABLES
 public:
+  jhcGraphizer net;             // language to network conversion
   jhcAliaAttn attn;             // working memory and call roots
 
   // configuration

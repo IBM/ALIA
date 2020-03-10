@@ -350,12 +350,24 @@ int jhcSlotVal::SlotStart (const char *pair, const char *prefix) const
 }
 
 
-//= Simple parsing of slot-value pair to return value part.
+//= Simple parsing of slot-value pair to return MODIFIABLE value part.
 // return pointer allows "pair" itself to be altered (!)
 
 char *jhcSlotVal::SlotRef (char *pair) const
 {
   char *val;
+
+  if ((val = strchr(pair, '=')) == NULL)
+    return NULL;
+  return(val + 1);
+}
+
+
+//= Simple parsing of slot-value pair to return value part.
+
+const char *jhcSlotVal::SlotVal (const char *pair) const
+{
+  const char *val;
 
   if ((val = strchr(pair, '=')) == NULL)
     return NULL;

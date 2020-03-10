@@ -1681,6 +1681,12 @@ int jhcSpRecoMS::load_jhc (const char *fname, int flush)
       if ((start = strpbrk(start + 1, "[<")) != NULL)
         if ((end = strpbrk(start + 1, "]>")) != NULL)
         {
+          if (_strnicmp(start + 1, "xxx", 3) == 0)
+          {
+            // ignore sections starting with XXX
+            rule = 0;
+            continue;
+          }
           *end = '\0';
           start = trim_wh(start + 1);
           nonterm_chk(start, fname);

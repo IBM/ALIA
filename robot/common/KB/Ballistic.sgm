@@ -1,10 +1,9 @@
-// terms associated with ELI robot base
+// terms associated with "Ballistic" ops and rules
 // ================================================
 
-// singular noun
+// singular nouns - mass nouns like "a rice" belong in =[AKO-M] instead
 
 =[AKO]
-  grip
   arm
   hand
   head
@@ -45,135 +44,44 @@
   sideways
 
 
-// imperative verb
+// imperative verbs
 
 =[ACT]
-  lose
   freeze
-  drive
   step
   move
+  drive
   turn
   rotate
   spin
   raise
-  lift
   lower
   open
   release
   close
   hold
-  gaze
   extend
   retract
   shift
+  reset
   point
   twist
-  reset
+  gaze
 
 
 // ================================================
 
-// plural noun
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
 
-=[AKO-S]
-  grips
-  arms
-  hands
-  heads
-
-
-// comparative adjectives
-
-=[HQ-ER]
-  more tired
-
-
-// superlative adjectives
-
-=[HQ-EST]
-  most tired
-
-
-// -----------------------------------------
-
-// present verb
-
-=[ACT-S]
-  loses
-  freezes
-  drives
-  steps
-  moves
-  turns
-  rotates
-  spins
-  raises
-  lifts
-  lowers
-  opens
-  releases
-  closes
-  holds
-  gazes
-  extends
-  retracts
-  shifts
-  points
-  twists
-  resets
-
-
-// progressive verb
-
-=[ACT-G]
-  losing
-  freezing
-  driving
-  stepping
-  moving
-  turning
-  rotating
-  spinning
-  raising
-  lifting
-  lowering
-  opening
-  releasing
-  closing
-  holding
-  gazing
-  extending
-  retracting
-  shifting
-  pointing
-  twisting
-  resetting
-
-
-// past or passive verb
-
-=[ACT-D]
-  lost
-  froze
-  drove
-  stepped
-  moved
-  turned
-  rotated
-  spun
-  raised
-  lifted
-  lowered
-  opened
-  released
-  closed
-  held
-  gazed
-  extended
-  retracted
-  shifted
-  pointed
-  twisted
-  reset
+=[XXX-morph]
+  open * vprog = opening
+  open * vpast = opened
+  spin * vpast = spun
+  hold * vpast = held
+  reset * vpast = reset
+  tired * acomp = more tired
+  tired * asup  = most tired
+  freeze * vpast = froze
+  drive * vpast = drove
+  
 

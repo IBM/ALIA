@@ -1,27 +1,19 @@
-// terms associated with speech acts posted by jhcGraphizer
+// terms associated with "chitchat" ops and rules
 // ================================================
 
-// imperative verb
+// imperative verbs
 
 =[ACT]
   acknowledge
+  say
 
 
 // ================================================
 
-// present verb
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
 
-=[ACT-S]
-  acknowledges
+=[XXX-morph]
+  acknowledge * vprog = acknowledging
+  acknowledge * vpast = acknowledged
+  say * vpast = said
 
-
-// progressive verb
-
-=[ACT-G]
-  acknowledging
-
-
-// past or passive verb
-
-=[ACT-D]
-  acknowledged

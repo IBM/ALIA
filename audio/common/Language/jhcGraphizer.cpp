@@ -336,7 +336,7 @@ void jhcGraphizer::attn_args (jhcNetNode *input, const jhcAliaChain *bulk) const
 // examines files "kern.ops" and "kern.rules" (if they exist)
 // generates file "kern.sgm0" with likely categories (cannot find mass nouns)
 // expects node base names to be indicative (e.g. hg-1 ako-7 act-3 agt-12)
-// generally need to check output for irregular forms to create ".mph" file
+// use jhcMoprhFcns::LexDeriv then LexBase to fix up irregular morphologies 
 // returns number of words listed in output file
 // NOTE: will not get terms in volunteered events or those used internally!
 
@@ -362,12 +362,10 @@ int jhcGraphizer::HarvestLex (const char *kern)
   // generate output grammar file
   name = kern;
   if ((n2 = strrchr(name, '/')) != NULL)
-  {
     name = n2 + 1;
-    if ((n2 = strchr(name, '//')) != NULL)
-      name = n2 + 1;
-  }
-  sprintf_s(fname, "%s.sgm0", kern);
+  if ((n2 = strrchr(name, '\\')) != NULL)
+    name = n2 + 1;
+  sprintf_s(fname, "%s0.sgm", kern);
   return gram_cats(fname, name);
 }
 
@@ -384,7 +382,7 @@ int jhcGraphizer::scan_lex (const char *fname)
 
   // try opening file
   if (fopen_s(&in, fname, "r") != 0)
-    return jprintf(">>> Could not open input file: %s !\n", fname);
+    return 0;
 
   // look for non-comment lines with a lexical term label
   while (fgets(line, 200, in) != NULL)
@@ -477,68 +475,57 @@ int jhcGraphizer::gram_cats (const char *fname, const char *label) const
   fprintf(out, "// ================================================\n\n");
 
   // nouns
-  if (nn > 0)
-  {
-    fprintf(out, "// singular noun - Mass nouns like \"a sand\" belong in =[AKO-M] instead\n\n");
-    fprintf(out, "=[AKO]\n");
-    for (i = 0; i < nn; i++)
-      fprintf(out, "  %s\n", noun[i]);
-    fprintf(out, "\n\n");
-  }
+  fprintf(out, "// singular nouns\n\n");
+  fprintf(out, "=[AKO]\n");
+  for (i = 0; i < nn; i++)
+    fprintf(out, "  %s\n", noun[i]);
+  fprintf(out, "\n\n");
+
+  // mass nouns (not harvested)
+  fprintf(out, "// mass nouns (like \"a rice\")\n\n");
+  fprintf(out, "=[AKO-M]\n");
+  fprintf(out, "\n\n");
 
   // adjectives
-  if (na > 0)
-  {
-    fprintf(out, "// adjective\n\n");
-    fprintf(out, "=[HQ]\n");
-    for (i = 0; i < na; i++)
-      fprintf(out, "  %s\n", adj[i]);
-    fprintf(out, "\n\n");
-  }
+  fprintf(out, "// adjectives\n\n");
+  fprintf(out, "=[HQ]\n");
+  for (i = 0; i < na; i++)
+    fprintf(out, "  %s\n", adj[i]);
+  fprintf(out, "\n\n");
 
   // names
-  if (nt > 0)
-  {
-    fprintf(out, "// proper noun\n\n");
-    fprintf(out, "=[NAME]\n");
-    for (i = 0; i < nt; i++)
-      fprintf(out, "  %s\n", tag[i]);
-    fprintf(out, "\n\n");
-  }
-
-  // separator
-  if ((n > 0) && (v > 0))
-    fprintf(out, "// -----------------------------------------\n\n");
+  fprintf(out, "// proper nouns\n\n");
+  fprintf(out, "=[NAME]\n");
+  for (i = 0; i < nt; i++)
+    fprintf(out, "  %s\n", tag[i]);
+  fprintf(out, "\n\n");
 
   // adverbs
-  if (nm > 0)
-  {
-    fprintf(out, "// modifier\n\n");
-    fprintf(out, "=[MOD]\n");
-    for (i = 0; i < nm; i++)
-      fprintf(out, "  %s\n", mod[i]);
-    fprintf(out, "\n\n");
-  }
+  fprintf(out, "// -----------------------------------------\n\n");
+  fprintf(out, "// modifiers\n\n");
+  fprintf(out, "=[MOD]\n");
+  for (i = 0; i < nm; i++)
+    fprintf(out, "  %s\n", mod[i]);
+  fprintf(out, "\n\n");
 
   // directions
-  if (nd > 0)
-  {
-    fprintf(out, "// direction\n\n");
-    fprintf(out, "=[DIR]\n");
-    for (i = 0; i < nd; i++)
-      fprintf(out, "  %s\n", dir[i]);
-    fprintf(out, "\n\n");
-  }
+  fprintf(out, "// directions\n\n");
+  fprintf(out, "=[DIR]\n");
+  for (i = 0; i < nd; i++)
+    fprintf(out, "  %s\n", dir[i]);
+  fprintf(out, "\n\n");
 
   // verbs
-  if (nv > 0)
-  {
-    fprintf(out, "// imperative verb\n\n");
-    fprintf(out, "=[ACT]\n");
-    for (i = 0; i < nv; i++)
-      fprintf(out, "  %s\n", verb[i]);
-    fprintf(out, "\n\n");
-  }
+  fprintf(out, "// imperative verbs\n\n");
+  fprintf(out, "=[ACT]\n");
+  for (i = 0; i < nv; i++)
+    fprintf(out, "  %s\n", verb[i]);
+  fprintf(out, "\n\n");
+
+  // morphology placeholder (English)
+  fprintf(out, "// ================================================\n\n");
+  fprintf(out, "// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)\n\n");
+  fprintf(out, "=[XXX-morph]\n\n");
 
   // cleanup
   fclose(out);

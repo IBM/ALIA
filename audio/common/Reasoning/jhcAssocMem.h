@@ -59,7 +59,7 @@ public:
   int NumRules () const {return nr;}
  
   // configuration
-  void ClearRules () {clear();}
+  int ClearRules () {return clear();}
   int Load (const char *fname, int add =0, int rpt =0, int level =1);
   int Save (const char *fname, int level =1) const;
   int Print (int level =1) const {return save_rules(stdout, level);}
@@ -77,7 +77,7 @@ public:
 // PRIVATE MEMBER FUNCTIONS
 private:
   // creation and initialization
-  void clear ();
+  int clear ();
 
   // configuration
   int save_rules (FILE *out, int level) const;

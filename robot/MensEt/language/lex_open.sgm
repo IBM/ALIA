@@ -67,6 +67,8 @@
   sad
   happy
   scared
+  orange
+  striped
 
 
 // proper noun
@@ -158,3 +160,45 @@
   pirouette
   proclaim
 
+
+// ================================================
+
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
+
+=[XXX-morph]
+  man * npl = men
+  woman * npl = women
+  alive * acomp = more alive
+  alive * asup  = most alive
+  violent * acomp = more violent
+  violent * asup  = most violent
+  present * acomp = more present
+  present * asup  = most present
+  far * acomp = farther
+  far * asup  = farthest
+  scared * acomp = more scared
+  scared * asup  = most scared
+  pirouette * vprog = pirouetting
+  pirouette * vpast = pirouetted
+  do something * vpres = does something
+  do something * vprog = doing something
+  do something * vpast = did something
+  throw * vpast = threw
+  know * vpast = knew
+  flee * vpast = fled
+  figure * vprog = figuring
+  figure * vpast = figured
+  orange * acomp = oranger
+  orange * asup  = orangest
+  striped * acomp = more striped
+  striped * asup  = most striped
+
+
+
+
+
+  
+
+
+
+ 

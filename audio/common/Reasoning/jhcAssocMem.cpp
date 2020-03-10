@@ -44,8 +44,9 @@ jhcAssocMem::~jhcAssocMem ()
 
 
 //= Get rid of all loaded rules.
+// always returns 0 for convenience
 
-void jhcAssocMem::clear ()
+int jhcAssocMem::clear ()
 {
   jhcAliaRule *r0, *r = rules;
 
@@ -57,6 +58,7 @@ void jhcAssocMem::clear ()
   }
   rules = NULL;
   nr = 0;
+  return 0;
 }
 
 

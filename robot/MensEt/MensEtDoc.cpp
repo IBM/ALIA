@@ -119,6 +119,8 @@ BEGIN_MESSAGE_MAP(CMensEtDoc, CDocument)
   ON_COMMAND(ID_MOTION_LIFT, &CMensEtDoc::OnMotionLift)
   ON_COMMAND(ID_REFLEXES_INITPOSE, &CMensEtDoc::OnReflexesInitpose)
   ON_COMMAND(ID_DEMO_TIMING, &CMensEtDoc::OnDemoTiming)
+  ON_COMMAND(ID_UTILITIES_EXTVOCAB, &CMensEtDoc::OnUtilitiesExtvocab)
+  ON_COMMAND(ID_UTILITIES_TESTVOCAB, &CMensEtDoc::OnUtilitiesTestvocab)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -178,7 +180,7 @@ BOOL CMensEtDoc::OnNewDocument()
   //         =  2 for restricted operation, expiration enforced
   cripple = 0;
   ver = mc.Version(); 
-  LockAfter(7, 2020, 2, 2020);
+  LockAfter(8, 2020, 3, 2020);
 
   // JHC: if this function is called, app did not start with a file open
   // JHC: initializes display object which depends on document
@@ -2097,6 +2099,73 @@ void CMensEtDoc::OnReflexesStack()
 
 
 /////////////////////////////////////////////////////////////////////////////
+//                           Grammar Construction                          //
+/////////////////////////////////////////////////////////////////////////////
+
+// Get preliminary grammar terms from operators and rules
+
+void CMensEtDoc::OnUtilitiesExtvocab()
+{
+  jhcString sel, test;
+  CFileDialog dlg(TRUE);
+  char *end;
+  int n, skip = (int) strlen(cwd) + 1;
+
+  // select file to read 
+  sprintf_s(test.ch, "%s\\KB2\\interaction.ops", cwd);
+  test.C2W();
+  (dlg.m_ofn).lpstrFile = test.Txt();
+  (dlg.m_ofn).lpstrFilter = _T("Operators and Rules\0*.ops;*.rules\0All Files (*.*)\0*.*\0");
+  if (dlg.DoModal() != IDOK)
+    return;
+
+  // remove extension then look for terms
+  sel.Set((dlg.m_ofn).lpstrFile);    
+  if ((end = strrchr(sel.ch, '.')) != NULL)
+    *end = '\0';
+  if ((n = (mc.net).HarvestLex(sel.ch)) > 0)
+    Tell("Extracted %d terms to: %s0.sgm", n, sel.ch + skip);
+}
+
+
+
+// Refine grammar terms for consistent morphology
+
+void CMensEtDoc::OnUtilitiesTestvocab()
+{
+  jhcString sel, test;
+  CFileDialog dlg(TRUE);
+  int err;
+
+  // select file to read 
+  sprintf_s(test.ch, "%s\\language\\lex_open.sgm", cwd);
+  test.C2W();
+  (dlg.m_ofn).lpstrFile = test.Txt();
+  (dlg.m_ofn).lpstrFilter = _T("Grammar Files\0*.sgm\0All Files (*.*)\0*.*\0");
+  if (dlg.DoModal() != IDOK)
+    return;
+
+  // try generating derived terms and do basic inversion testing
+  sel.Set((dlg.m_ofn).lpstrFile);    
+  if ((err = ((mc.net).mf).LexDeriv(sel.ch)) < 0)
+    return;
+  if (err > 0)
+  {
+    Tell("Adjust original =[XXX-morph] section to fix %d problems", err);
+    return;
+  }
+
+  // try regenerating base words from derived terms
+  if ((err = ((mc.net).mf).LexBase("derived.sgm", 1, sel.ch)) < 0)
+    return;
+  if (err > 0)
+    Tell("Adjust original =[XXX-morph] section to fix %d problems", err);
+  else
+    Tell("Looks good but examine \"derived.sgm\" then \"base_words.txt\"\n\nAdjust original =[XXX-morph] section to fix any problems");
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 //                                Testing                                  //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -2104,8 +2173,26 @@ void CMensEtDoc::OnReflexesStack()
 
 void CMensEtDoc::OnUtilitiesTest()
 { 
-//  (mc.net).HarvestLex("KB/BasicAct");
+//  ((mc.net).mf).LoadExcept("language/graphizer2.sgm");
+//  ((mc.net).mf).SaveExcept("morph.sgm");
 
+//  (mc.sp).Init();
+//  Tell("spx = %d", ((mc.net).mf).AddVocab(&(mc.sp), "graphizer2.sgm"));
+//  Tell("grx = %d", ((mc.net).mf).AddVocab(&(mc.gr), "graphizer2.sgm"));
+
+//  Tell("Found %d terms", (mc.net).HarvestLex("KB/BasicAct"));
+
+//  ((mc.net).mf).LexBase("lex_deriv2.sgm");
+
+  ((mc.net).mf).LexDeriv("KB/BasicAct.sgm0");
+//  ((mc.net).mf).LexDeriv("KB/BasicAct.sgm2");
+//  ((mc.net).mf).LexBase("derived.sgm", 1, "morph.sgm");
+//  ((mc.net).mf).LexBase("derived.sgm", 1, "KB/BasicAct.sgm2");
+
+//  ((mc.net).mf).LexDeriv("lex_open2.sgm");  
+//  ((mc.net).mf).LexDeriv("lex_open2.sgm2");  
+
+//   ((mc.net).mf).LexBase("derived.sgm");
+//   ((mc.net).mf).LexBase("derived.sgm", 1, "lex_open2.sgm2");
 }
-
 

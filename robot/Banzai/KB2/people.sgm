@@ -1,76 +1,54 @@
-// terms associated with person identification and proximity events
+// terms associated with "people" ops and rules
 // ================================================
 
-// singular noun
+// singular nouns - mass nouns like "a rice" belong in =[AKO-M] instead
 
 =[AKO]
+  person
 
 
-
-// adjective
+// adjectives
 
 =[HQ]
-
+  visible
+  close
+  far away
 
 
 // -----------------------------------------
 
-// imperative verb
+// imperative verbs
 
 =[ACT]
-  see
   greet
+  say
   offer
   serve
+  look
   come
+  approach
+  ask
+  wait
+  see
 
 
 // ================================================
 
-// plural noun
+// irregular morphologies (npl, acomp, asup, vpres, vprog, vpast)
 
-=[AKO-S]
-
-
-
-// comparative adjectives
-
-=[HQ-ER]
-
-
-// superlative adjectives
-
-=[HQ-EST]
-
+=[XXX-morph]
+  visible * acomp = more visible
+  visible * asup   = most visible
+  serve * vprog = serving
+  serve * vpast = served
+  see * vpast = saw
+  person * npl = people
+  far away * acomp = farther away
+  far away * asup  = farthest away
+  say * vpast = said
+  come * vpast = came
 
 
-// -----------------------------------------
-
-// present verb
-
-=[ACT-S]
-  sees
-  greets
-  offers
-  serves
-  comes
 
 
-// progressive verb
 
-=[ACT-G]
-  seeing
-  greeting
-  offering
-  serving
-  coming
-
-
-// past or passive verb
-
-=[ACT-D]
-  saw
-  greeted
-  offered
-  served
-  came

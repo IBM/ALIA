@@ -46,3 +46,13 @@
 
 =[ACT]
 
+
+// ================================================
+
+// irregular morphologies (np, acomp, asup, vpres, vprog, vpast)
+
+=[XXX-morph]
+  orange * acomp = oranger
+  orange * asup  = orangest
+  striped * acomp = more striped
+  striped * asup  = most striped

@@ -29,57 +29,12 @@
 
 // ================================================
 
-// plural noun
+// irregular morphologies (np, acomp, asup, vpres, vprog, vpast)
 
-=[AKO-S]
-  rules
-  operators
+=[XXX-morph]
+  awake	* acomp = more awake
+  awake	* asup  = most awake
+  give * vpast = gave
+  tell * vpast = told
+  understand * vpast = understood
 
-
-// comparative adjectives
-
-=[HQ-ER]
-  more awake
-
-
-// superlative adjectives
-
-=[HQ-EST]
-  most awake
-
-
-// -----------------------------------------
-
-// present verb
-
-=[ACT-S]
-  understands
-  hails
-  dismisses
-  gives
-  asks
-  tells
-  acknowledges
-  announces
-
-
-// progressive verb
-
-=[ACT-G]
-  understanding
-  hailing
-  dismissing
-  giving
-  asking
-  telling
-
-
-// past or passive verb
-
-=[ACT-D]
-  understood
-  hailed
-  dismissed
-  gave
-  asked
-  told
