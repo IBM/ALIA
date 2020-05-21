@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public:
   // sharp thresholds
   int Threshold (jhcImg& dest, const jhcImg& src, int th, int mark =255) const;
   int Threshold (jhcImg& dest, const jhcImg& src, const jhcRoi& area, int th, int mark =255) const;
-  int Between (jhcImg& dest, const jhcImg& src, int lo, int hi) const;
+  int Between (jhcImg& dest, const jhcImg& src, int lo, int hi, int mark =255) const;
   int AbsOver (jhcImg& dest, const jhcImg& src, int th) const;
   int Trinary (jhcImg& dest, const jhcImg& src, int lo, int hi) const;
   int BothWithin (jhcImg& dest, const jhcImg& src1, const jhcImg& src2, int lo, int hi) const;
@@ -90,9 +90,12 @@ public:
 
   // pixel switching
   int OverlayNZ (jhcImg& dest, const jhcImg& src, const jhcImg& marks) const;
+  int OverlayNZ (jhcImg& dest, const jhcImg& marks) const 
+    {return OverlayNZ(dest, dest, marks);}
   int SubstOver (jhcImg& dest, const jhcImg& alt, const jhcImg& gate, int th =0) const;
   int SubstUnder (jhcImg& dest, const jhcImg& alt, const jhcImg& gate, int th =255) const;
   int SubstKey (jhcImg& dest, const jhcImg& alt, const jhcImg& gate, int val =128) const;
+  int MarkTween (jhcImg& dest, const jhcImg& val, int lo, int hi, int mark =255) const;
 
   // area restriction
   int RoiNZ (jhcRoi& region, const jhcImg& src) const;
@@ -109,6 +112,12 @@ protected:
   int CompositeBW (jhcImg& dest, const jhcImg& imga, const jhcImg& imgb, const jhcImg& awt) const;
   int OverlayNZ_RGB (jhcImg& dest, const jhcImg& src, const jhcImg& marks) const;
   int OverlayNZ_BW (jhcImg& dest, const jhcImg& src, const jhcImg& marks) const;
+
+// PRIVATE MEMBER FUNCTIONS
+private:
+  // ROI utilities
+  void adj_lims (int v, int& lo, int& hi, int& n) const;
+
   
 };
 

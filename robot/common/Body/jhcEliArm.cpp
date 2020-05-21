@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2011-2019 IBM Corporation
+// Copyright 2011-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -225,9 +225,9 @@ int jhcEliArm::stow_params (const char *fname)
   int ok;
 
   ps->SetTag("arm_stow", 0);
-  ps->NextSpecF( &retx,  -3.0, "Tucked x postion (in)");   
-  ps->NextSpecF( &rety,  11.5, "Tucked y position (in)");  
-  ps->NextSpecF( &retz,  -1.0, "Tucked z position (in)");
+  ps->NextSpecF( &retx,  -2.0, "Tucked x postion (in)");   
+  ps->NextSpecF( &rety,  10.5, "Tucked y position (in)");  
+  ps->NextSpecF( &retz,  -1.5, "Tucked z position (in)");
   ps->NextSpecF( &rdir, 180.0, "Tucked point direction (deg)");
   ps->NextSpecF( &rtip, -15.0, "Tucked tip direction (deg)");
   ps->Skip();
@@ -1943,8 +1943,8 @@ int jhcEliArm::ZeroGrip (int always)
 
 int jhcEliArm::ShareLift (int always)
 {
-  jhcJoint *lf = jt + 2;
-  double out = 60.0, dps = 60.0, tol = 2.0;
+  jhcJoint *elb = jt + 1, *lf = jt + 2;
+  double flex = 45.0, out = 60.0, dps = 60.0, tol = 2.0;
   double bal, f, lo = 0.1, hi = 0.2, inc = 0.2; 
   int i, ok = 0, wait = 100, done = 8, time = 33;
 
@@ -1953,7 +1953,10 @@ int jhcEliArm::ShareLift (int always)
     return 1;
   if (aok <= 0)
     return -1;
+
+  // extend elbow to avoid hitting base
   Limp();
+  elb->SetAngle(flex, dps);
 
   // make lift joint stick straight out
   lf->SetAngle(out, dps);

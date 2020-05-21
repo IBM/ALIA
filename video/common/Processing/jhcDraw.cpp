@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -356,6 +356,115 @@ int jhcDraw::RectFill_16 (jhcImg& dest, const jhcRoi& src, int val) const
 int jhcDraw::BlockCent (jhcImg& dest, int xc, int yc, int w, int h, int r, int g, int b) const
 {
   return RectFill(dest, xc - (w / 2), yc - (h / 2), w, h, r, g, b);
+}
+
+
+//= Draw a filled rectangle centered on given coordinates tilted by some angle.
+// checks of form: (x - xa) * (yb - ya) > (y - ya) * (xb - xa) for bounding line [xa ya]->[xb yb]
+// computes sum = x * dy - y * dx - th where dx = xb - xa, dy = yb - ya, th = xa * dy - ya * dx 
+// NOTE: between 15-30x slower than BlockCent depending on angle
+
+int jhcDraw::BlockRot (jhcImg& dest, double xc, double yc, double w, double h, double degs, int r, int g, int b) const
+{
+  double d0 = fmod(degs, 180.0); 
+
+  // check for simple cases
+  if (d0 == 0.0)
+    return BlockCent(dest, ROUND(xc), ROUND(yc), ROUND(w), ROUND(h), r, g, b);
+  if (d0 == 90.0)
+    return BlockCent(dest, ROUND(xc), ROUND(yc), ROUND(h), ROUND(w), r, g, b);
+
+  // general angle case
+  double w2 = 0.5 * w, h2 = 0.5 * h, rads = D2R * degs, c = cos(rads), s = sin(rads);
+  double w2c = w2 * c, w2s = w2 * s, h2c = h2 * c, h2s = h2 * s;
+  double nwx = xc - w2c - h2s, nwy = yc - w2s + h2c, nex = xc + w2c - h2s, ney = yc + w2s + h2c;
+  double swx = xc - w2c + h2s, swy = yc - w2s - h2c, sex = xc + w2c + h2s, sey = yc + w2s - h2c; 
+
+  return FillPoly4(dest, nwx, nwy, nex, ney, sex, sey, swx, swy, r, g, b);
+}
+
+
+//= Draw a filled 4 sided polygon with vertexes in clockwise order.
+// actual position of points does not matter (e.g. could start with SW) only their order
+// counterclockwise order fills parts of bounding box (not whole image) outside of polygon
+
+int jhcDraw::FillPoly4 (jhcImg& dest, double nwx, double nwy, double nex, double ney, 
+                        double sex, double sey, double swx, double swy, int r, int g, int b) const
+{
+  double v, dx1 = nex - nwx, dy1 = ney - nwy, dx2 = sex - swx, dy2 = sey - swy;
+  double v2, dx3 = nex - sex, dy3 = ney - sey, dx4 = nwx - swx, dy4 = nwy - swy;
+  int idx1 = ROUND(1024.0 * dx1), idx2 = ROUND(1024.0 * dx2);
+  int idx3 = ROUND(1024.0 * dx3), idx4 = ROUND(1024.0 * dx4);
+  int idy1 = ROUND(1024.0 * dy1), idy2 = ROUND(1024.0 * dy2);
+  int idy3 = ROUND(1024.0 * dy3), idy4 = ROUND(1024.0 * dy4);
+  int x, y, x0, x1, y0, y1, rw, rh, sk, f = dest.Fields();
+  int is1_0, is2_0, is3_0, is4_0, isum1, isum2, isum3, isum4;
+  UC8 red = BOUND(r), grn = BOUND(g), blu = BOUND(b);
+  UC8 *d;
+
+  // check for good inputs and automatically pick drawing color           
+  if (!dest.Valid(1, 3))
+    return Fatal("Bad image to jhcDraw::FillPoly4");
+  if (r < 0)                                           
+    Color8(&red, &grn, &blu, -r, dest.Fields());    
+
+  // get scanning region limits
+  v  = __min(nex, sex);
+  v2 = __min(nwx, swx);
+  v  = __min(v, v2); 
+  x0 = (int) floor(v);
+  x0 = __max(0, x0);
+  v  = __min(ney, sey);
+  v2 = __min(nwy, swy);
+  v  = __min(v, v2); 
+  y0 = (int) floor(v);
+  y0 = __max(0, y0);
+  v  = __max(nex, sex);
+  v2 = __max(nwx, swx);
+  v  = __max(v, v2); 
+  x1 = (int) ceil(v);
+  x1 = __min(x1, dest.XLim());
+  v  = __max(ney, sey);
+  v2 = __max(nwy, swy);
+  v  = __max(v, v2); 
+  y1 = (int) ceil(v);
+  y1 = __min(y1, dest.YLim());
+  rw = x1 - x0 + 1;
+  rh = y1 - y0 + 1;
+
+  // get starting values for sums (-th) wrt x0,y0 corner
+  is1_0 = ROUND(1024.0 * ((nwy - y0) * dx1 - (nwx - x0) * dy1));
+  is2_0 = ROUND(1024.0 * ((swy - y0) * dx2 - (swx - x0) * dy2));
+  is3_0 = ROUND(1024.0 * ((sey - y0) * dx3 - (sex - x0) * dy3));
+  is4_0 = ROUND(1024.0 * ((swy - y0) * dx4 - (swx - x0) * dy4));
+
+  // scan all pixels in region and see if pixel inside all side lines
+  d = dest.RoiDest(x0, y0);
+  sk = dest.RoiSkip(rw);
+  for (y = rh; y > 0; y--, d += sk, is1_0 -= idx1, is2_0 -= idx2, is3_0 -= idx3, is4_0 -= idx4)
+  {
+    isum1 = is1_0;
+    isum2 = is2_0;
+    isum3 = is3_0;
+    isum4 = is4_0;
+    if (f == 1)
+    {
+      // monochrome
+      for (x = rw; x > 0; x--, d++, isum1 += idy1, isum2 += idy2, isum3 += idy3, isum4 += idy4)
+        if ((isum1 > 0) && (isum2 < 0) && (isum3 < 0) && (isum4 > 0))
+          *d = red;
+    }
+    else
+      for (x = rw; x > 0; x--, d++, isum1 += idy1, isum2 += idy2, isum3 += idy3, isum4 += idy4)
+        if ((isum1 > 0) && (isum2 < 0) && (isum3 < 0) && (isum4 > 0))
+        {
+          // color
+          d[0] = blu;
+          d[1] = grn;
+          d[2] = red;
+        }
+  }
+  return 1;
 }
 
 
@@ -1087,18 +1196,22 @@ int jhcDraw::DrawSide (jhcImg& dest, int side, int t, int r, int g, int b) const
 int jhcDraw::RectCent (jhcImg& dest, double xc, double yc, double w, double h, 
                        double degs, int t, int r, int g, int b) const 
 {
-  // check argument validity and dispatch for easiest case
+  double eqv = fabs(fmod(degs, 180.0)), tol = 0.02;    // 0.5 pel shift over 1400 pel side
+
+  // check argument validity and dispatch for easiest cases
   if (!dest.Valid(1) && !dest.Valid(3))
     return Fatal("Bad image to jhcDraw::RectCent");
   if (t < 0)
     return 0;
-  if (degs == 0.0)
+  if (eqv < tol)         
     return RectEmpty(dest, ROUND(xc - 0.5 * w), ROUND(yc - 0.5 * h), 
                      ROUND(w), ROUND(h), t, r, g, b);
+  if (fabs(eqv - 90.0) < tol)
+    return RectEmpty(dest, ROUND(xc - 0.5 * h), ROUND(yc - 0.5 * w), 
+                     ROUND(h), ROUND(w), t, r, g, b);
 
   // draw four lines for sides of rectangle
-  double rads = degs * 3.141592653 / 180.0;
-  double hsa = 0.5 * sin(rads), hca = 0.5 * cos(rads);
+  double rads = D2R * degs, hsa = 0.5 * sin(rads), hca = 0.5 * cos(rads);
   double ws = w * hsa, wc = w * hca, hs = h * hsa, hc = h * hca;
   int nwx = ROUND(xc - wc + hs), nwy = ROUND(yc - hc - ws);
   int nex = ROUND(xc + wc + hs), ney = ROUND(yc - hc + ws);

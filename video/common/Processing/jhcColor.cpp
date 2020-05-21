@@ -1533,7 +1533,7 @@ int jhcColor::DeBayer (jhcImg& dest, const jhcImg& src) const
     return Fatal("Bad images to jhcColor::DeBayer");
   dest.CopyRoi(src);
 
-  // always does whole image irrespective of ROI
+  // always does whole image irrespective of ROI (some matrix values not needed)
   int x, y, w = dest.XDim(), wm2 = w - 2, hm2 = dest.YDim() - 2;
   int dln = dest.Line(), sln = src.Line(), sln2 = sln << 1, sln3 = sln2 + sln;
   int dsk = dest.Skip(), dsk2 = dsk + dln, ssk2 = src.Skip() + sln + 2;

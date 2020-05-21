@@ -98,12 +98,22 @@ BEGIN
         MENUITEM "&Watching",                   ID_PARAMETERS_WATCHING
         MENUITEM "&Orienting",                  ID_PARAMETERS_ORIENTING
         MENUITEM "&Idle Timing",                ID_PARAMETERS_TARGETTIME
+        MENUITEM "&Visibility",                 ID_PEOPLE_VISIBILITY
         MENUITEM SEPARATOR
         MENUITEM "&Social Attn",                ID_PEOPLE_SOCIALEVENTS
         MENUITEM "Social &Move",                ID_PEOPLE_SOCIALMOVE
         MENUITEM SEPARATOR
         MENUITEM "Enroll &Photo",               ID_ATTENTION_ENROLLPHOTO
         MENUITEM "&Enroll Live",                ID_ATTENTION_ENROLLLIVE
+    END
+    POPUP "&Nav"
+    BEGIN
+        MENUITEM "&Map Size",                   ID_NAVIGATION_UPDATING
+        MENUITEM "FOV + &Dims",                 ID_NAV_FOVLIMITS
+        MENUITEM "Con&fidence",                 ID_NAV_CONFIDENCE
+        MENUITEM "&Guidance",                   ID_NAV_GUIDANCE
+        MENUITEM SEPARATOR
+        MENUITEM "&Cam Calib",                  ID_NAV_CAMCALIB
     END
     POPUP "&Ballistic"
     BEGIN
@@ -144,6 +154,15 @@ BEGIN
         MENUITEM "&Track Head",                 ID_DEPTH_TRACKHEAD
         MENUITEM "&Head Gaze",                  ID_DEPTH_PERSONMAP
         MENUITEM "&Speaking",                   ID_PEOPLE_SPEAKING
+    END
+    POPUP "&Environ"
+    BEGIN
+        MENUITEM "&Height Map",                 ID_ENVIRON_FLOORMAP
+        MENUITEM "&Integrated",                 ID_ENVIRON_INTEGRATED
+        MENUITEM "Local &Paths",                ID_ENVIRON_LOCALPATHS
+        MENUITEM "&Dist Sensors",               ID_ENVIRON_DISTANCES
+        MENUITEM SEPARATOR
+        MENUITEM "&Seek Loc",                   ID_ENVIRON_GOTO
     END
     POPUP "&Arm"
     BEGIN
@@ -219,7 +238,7 @@ CAPTION "About Banzai"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,15,17,20,20
-    LTEXT           "Banzai Version 2.90",IDC_STATIC,47,13,119,8,SS_NOPREFIX
+    LTEXT           "Banzai Version 3.10",IDC_STATIC,47,13,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2015-2020, IBM Corporation",IDC_STATIC,47,36,171,8
     DEFPUSHBUTTON   "OK",IDOK,176,7,50,14,WS_GROUP
     LTEXT           "Written by Jonathan H. Connell",IDC_STATIC,47,24,128,9
@@ -589,6 +608,28 @@ BEGIN
     ID_UTILITIES_EXTRACTWORDS 
                             "Get preliminary grammar terms from operators and rules"
     ID_UTILITIES_CHKGRAMMAR "Refine grammar terms for consistent morphology"
+    ID_ENVIRON_FLOORMAP     "Show instantaneous Kinect height map with neck limp"
+    ID_NAVIGATION_MAOSIZE   "Parameters governing range of map around robot"
+    ID_NAVIGATION_UPDATING  "Parameters for ground obstacle map around robot"
+    ID_ENVIRON_INTEGRATED   "Show floor map integrated over time including base movement"
+    ID_NAV_MAPCLEAR         "Parameters to find floor and clear areas"
+    ID_ENVIRON_AIRCONF      "Show maximum height imaged for obstacles"
+    ID_ENVIRON_FLATAREA     "Show how far the robot can drive forward in the current environment"
+    ID_NAV_CAMCALIB         "Refine sensor tilt, roll, and height based on floor"
+    ID_NAV_GUIDANCE         "Parameters for determining where the robot can move based on the map"
+    ID_ENVIRON_AVOIDANCE    "Show reachable areas and collision avoidance detours"
+END
+
+STRINGTABLE
+BEGIN
+    ID_ENVIRON_WANDER       "Keep moving forward trying to swerve around obstacles"
+    ID_ENVIRON_COZYUP       "Move straight ahead until blocked by obstacle"
+    ID_ENVIRON_LOCALPATHS   "Show distances robot can go in various orientations"
+    ID_ENVIRON_DISTANCES    "Show valid forward and backward motions on large maps"
+    ID_NAV_FOVLIMITS        "Define active part of Kinect sensing cone and size of robot"
+    ID_ENVIRON_GOTO         "Pick fixed map location for robot to travel toward"
+    ID_NAV_CONFIDENCE       "Parameters governing minimal area and map fading"
+    ID_PEOPLE_VISIBILITY    "Angular range where heads are likely to be detected"
 END
 
 #endif    // English (United States) resources

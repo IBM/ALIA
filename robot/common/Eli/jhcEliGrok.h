@@ -28,6 +28,7 @@
 #include "jhcGlobal.h"
 
 #include "Body/jhcEliBody.h"           // common robot
+#include "Environ/jhcLocalOcc.h"
 #include "People/jhcFaceName.h"
 #include "People/jhcSpeaker.h"
 #include "People/jhcStare3D.h"
@@ -44,7 +45,7 @@ class jhcEliGrok : public jhcBackgRWI
 {
 // PRIVATE MEMBER VARIABLES
 private:
-  jhcImg mark;
+  jhcImg mark, mark2;
   UL32 tnow;
   int seen;
 
@@ -56,7 +57,8 @@ private:
   UL32 idle;
 
   // high-level commands
-  int wlock, wwin;
+  double sx, sy, ssp;
+  int wlock, wwin, slock;
 
 
 // PUBLIC MEMBER VARIABLES
@@ -73,6 +75,7 @@ public:
   jhcStare3D s3;                       // head finder using depth
   jhcFaceName fn;                      // face ID and gaze for heads
   jhcSpeaker tk;                       // sound location vs head
+  jhcLocalOcc nav;                     // navigation obstacles
 
   // watching behaviors bids
   jhcParam wps;
@@ -87,6 +90,10 @@ public:
   jhcParam tps;
   double bored, relax, rdev, gtime, ttime, rtime, side, btime;
   
+  // head visibiliy parameters
+  jhcParam vps;
+  double lvis, rvis, tvis, bvis;
+
 
 // PUBLIC MEMBER FUNCTIONS
 public:
@@ -94,7 +101,8 @@ public:
   ~jhcEliGrok ();
   jhcEliGrok ();
   void BindBody (jhcEliBody *b);
-  const jhcImg *MarkUp () const {return &mark;}
+  const jhcImg *HeadView () const {return &mark;}
+  const jhcImg *MapView () const  {return &mark2;}
   const char *Watching () const;
 
   // processing parameter bundles 
@@ -108,9 +116,14 @@ public:
   int Update (int voice =0, UL32 resume =0);
   void Stop ();
 
-  // high-level commands
+  // high-level people commands
   int WatchPerson (int id, int bid =10);
   double PersonErr (int id) const;
+
+  // high-level navigation commands
+  int SeekLoc (double tx, double ty, double sp =1.0, int bid =10);
+  int SeekLoc (const jhcMatrix& targ, double sp =1.0, int bid =10) 
+    {return SeekLoc(targ.X(), targ.Y(), sp, bid);}
 
 
 // PRIVATE MEMBER FUNCTIONS
@@ -122,14 +135,19 @@ private:
   int watch_params (const char *fname);
   int orient_params (const char *fname);
   int time_params (const char *fname);
+  int vis_params (const char *fname);
 
-  // high-level commands
+  // high-level people commands
   void assert_watch ();
   void orient_toward (const jhcMatrix *targ, int bid);
+
+  // high-level navigation commands
+  void assert_seek ();
 
   // interaction overrrides
   void body_update ();
   void body_issue ();
+  void adjust_heads ();
 
   // innate behaviors
   void cmd_freeze ();
@@ -142,7 +160,8 @@ private:
   void head_rise ();
 
   // debugging graphics
-  void interest_img ();
+  void head_img ();
+  void nav_img ();
 
 
 };

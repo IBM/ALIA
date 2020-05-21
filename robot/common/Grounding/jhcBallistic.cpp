@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,11 +77,12 @@ int jhcBallistic::evt_params (const char *fname)
   int ok;
 
   ps->SetTag("ball_evt", 0);
-  ps->NextSpec4( &tired,  20,   "Low battery (pct)");
-  ps->NextSpec4( &fresh,  25,   "Okay battery (pct)");
-  ps->NextSpec4( &psamp, 150,   "Test interval cycles");  // once every 5 sec
-  ps->NextSpec4( &ptest,   6,   "Battery test cycles");   // 30 secs
-  ps->Skip(2);
+  ps->NextSpec4( &tired,  30,   "Low battery (pct)");
+  ps->NextSpec4( &fresh,  35,   "Okay battery (pct)");
+  ps->NextSpec4( &psamp, 150,   "Test interval cycles");      // once every 5 sec
+  ps->NextSpec4( &ptest,   6,   "Battery test cycles");       // 30 secs
+  ps->NextSpecF( &nag,   180.0, "Complaint repeat (secs)");  
+  ps->Skip();
 
   ps->NextSpecF( &hmin,    0.1, "Min hold width (in)");
   ps->NextSpec4( &hwait,  10,   "Firm hold cycles");
@@ -271,8 +272,8 @@ int jhcBallistic::neck_params (const char *fname)
   int ok;
 
   ps->SetTag("ball_neck", 0);
-  ps->NextSpecF( &npan,   30.0, "Pan amount (deg)");
-  ps->NextSpecF( &ntilt,  30.0, "Tilt amount (deg)");
+  ps->NextSpecF( &npan,   45.0, "Pan amount (deg)");
+  ps->NextSpecF( &ntilt,  45.0, "Tilt amount (deg)");      // wrt -15 neutral
   ps->NextSpecF( &sgz,     0.5, "Slow multiplier");
   ps->NextSpecF( &qgz,     2.0, "Fast multiplier");
   ps->NextSpecF( &ndone,   2.0, "Orientation achieved (deg)");
@@ -340,6 +341,7 @@ void jhcBallistic::local_reset (jhcAliaNote *top)
 {
   rpt = top;
   power = 0;
+  kvetch = 0;
   hold = 0;
 }
 
@@ -399,8 +401,8 @@ int jhcBallistic::local_status (const jhcAliaDesc *desc, int i)
 
 void jhcBallistic::power_state ()
 {
-  jhcEliArm *a;
-  int pct;
+  UL32 now;
+  int pct, repeat;
 
   // lock to sensor cycle
   if ((rpt == NULL) || (rwi == NULL) || (rwi->body == NULL))
@@ -412,18 +414,27 @@ void jhcBallistic::power_state ()
   if (pcnt++ < psamp)
     return; 
   pcnt = 0;
-  a = rwi->arm;
+  pct = (rwi->arm)->Power();
 
   // see if battery low for a while 
-  pct = a->Power();
   if (pct >= fresh)
     power = 0;
   else if (pct <= tired)
     power++;
-
-  // signal low voltage only once on crossing count threshold
-  if (power != ptest)
+  if (power < ptest)
+  {
+    kvetch = 0;
     return;
+  }
+
+  // determine how often to complain (more frequent when lower)
+  now = jms_now();
+  repeat = ROUND((1000.0 * nag * pct) / tired);
+  if ((kvetch != 0) && (jms_diff(now, kvetch) < repeat))
+    return;
+  kvetch = now;
+
+  // generate conscious event
   rpt->StartNote();
   rpt->NewProp(rpt->Self(), "hq", "tired");
   rpt->FinishNote();
@@ -1351,6 +1362,7 @@ int jhcBallistic::ball_neck_chk (const jhcAliaDesc *desc, int i)
 int jhcBallistic::get_gaze (int i, const jhcAliaDesc *act) 
 {
   jhcAliaDesc *dir;
+  double ntdef = -15.0;
   int w = 0;
 
   // sanity check
@@ -1378,9 +1390,9 @@ int jhcBallistic::get_gaze (int i, const jhcAliaDesc *act)
 
     // get incremental tilt offset
     if (dir->WordIn("up"))
-      cdir[i].SetT(ntilt);
+      cdir[i].SetT(ntilt + ntdef);
     else if (dir->WordIn("down"))
-      cdir[i].SetT(-ntilt);
+      cdir[i].SetT(-ntilt + ntdef);
     else if (dir->WordIn("level"))
       cdir[i].SetT(-0.1);
   }

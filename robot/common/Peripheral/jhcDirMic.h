@@ -74,7 +74,7 @@ public:
   // creation and configuration
   jhcDirMic ();
   ~jhcDirMic ();
-  int CommOK () const {return mok;}
+  int CommOK (int bad =0) const {return mok;}
   int Reset (int rpt =0);
 
   // parameter utilities

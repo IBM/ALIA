@@ -87,6 +87,8 @@ public:
                 double px, double py, int def =0, double xsc =1.0, double ysc =1.0) const;
   int RigidMixRGB (jhcImg& dest, const jhcImg& src, double degs, double cx, double cy, 
                    double px, double py, int r =0, int g =0, int b =0, double xsc =1.0, double ysc =1.0) const;
+  int RigidMixNZ (jhcImg& dest, const jhcImg& src, double degs, double cx, double cy, 
+                  double px, double py, double xsc =1.0, double ysc =1.0) const;
 
   // compositing and insertion
   int Insert (jhcImg& dest, const jhcImg& src, int xoff =0, int yoff =0) const;
@@ -112,6 +114,7 @@ public:
 
   // subpixel shifting
   int Shift (jhcImg& dest, const jhcImg& src, int dx, int dy) const;
+  int Shift (jhcImg& dest, int dx, int dy, int def =0) const;
   int FracShift (jhcImg& dest, const jhcImg& src, double dx, double dy) const;
   int FracSamp (jhcImg& dest, const jhcImg& src, double dx =0.0, double dy =0.0) const;
   int LineShift (jhcImg& dest, const jhcImg& src, const double *vdx, double dy) const;

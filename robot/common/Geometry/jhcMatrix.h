@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2011-2019 IBM Corporation
+// Copyright 2011-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -217,9 +217,11 @@ public:
   void CompVec3 (const jhcMatrix& wrt, double homo =1.0);
   void MultVec3 (const jhcMatrix& sc, double homo =1.0);
   void DiffVec3 (const jhcMatrix& a, const jhcMatrix& b, double homo =1.0);
-  void DirVec3 (const jhcMatrix& a, const jhcMatrix& b, double homo =1.0);
+  double DirVec3 (const jhcMatrix& a, const jhcMatrix& b, double homo =1.0);
+  double RotDir3 (const jhcMatrix& a, const jhcMatrix& b);
   void CrossVec3 (const jhcMatrix& a, const jhcMatrix& b, double homo =1.0);
   void RotPan3 (double pan);
+  void RotPan3 (const jhcMatrix& ref, double pan) {Copy(ref); RotPan3(pan);}
   void RotTilt3 (double tilt);
   void PrintVec3 (const char *tag =NULL, const char *fmt =NULL, int all4 =0, int cr =1) const;
   void PrintVec3i (const char *tag =NULL, const char *fmt =NULL, int all4 =0) const
@@ -233,9 +235,11 @@ public:
 
   // directions and rotations
   void CycNorm3 ();
-  void CycDiff3 (const jhcMatrix& a, const jhcMatrix& b, double homo =1.0) {DiffVec3(a, b, homo); CycNorm3();}
+  void CycDiff3 (const jhcMatrix& a, const jhcMatrix& b, double homo =1.0) 
+    {DiffVec3(a, b, homo); CycNorm3();}
   double UnitVec3 (const jhcMatrix& ref, double homo =1.0);
   double UnitVec3 (double homo =1.0);
+  double RotUnit3 (); 
   void EulerVec3 (double yaw, double pitch, double homo =0.0);
   void EulerVec4 (const jhcMatrix& ptr);
   double YawVec3 () const;

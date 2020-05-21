@@ -82,7 +82,7 @@ public:
   // configuration
   int Reset (int rpt =0, int chk =1);
   int Check (int rpt =0, int tries =2);
-  int CommOK () const {return lok;}
+  int CommOK (int bad =0) const {return lok;}
 
   // low level commands
   int Freeze (int doit =1, double tupd =0.033);

@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -84,6 +84,8 @@ public:
   double FracOver (const jhcImg& src, int th =0) const;
   double FracOver (const jhcImg& src, const jhcRoi& patch, int th =0) const;
   double FracUnder (const jhcImg& src, int th =255) const;
+  double FracUnder (const jhcImg& src, const jhcRoi& patch, int th =0) const;
+
 
   // border pixel counting
   int SideCount (const jhcImg& src, int side, int th =0) const;

@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ int jhcThresh_0::Thresh16 (jhcImg& dest, const jhcImg& src, int th, int mark) co
 
 //= Marks as 255 any pixels in range [lo hi] inclusive while others are zeroed.
 
-int jhcThresh_0::Between (jhcImg& dest, const jhcImg& src, int lo, int hi) const
+int jhcThresh_0::Between (jhcImg& dest, const jhcImg& src, int lo, int hi, int mark) const
 {
   if (!dest.SameFormat(src))
     return Fatal("Bad images to jhcThresh::Between");
@@ -162,6 +162,7 @@ int jhcThresh_0::Between (jhcImg& dest, const jhcImg& src, int lo, int hi) const
   
   // general ROI case
   int x, y, rcnt = dest.RoiCnt(), rh = dest.RoiH(), rsk = dest.RoiSkip();
+  UC8 m = BOUND(mark);
   UC8 *d = dest.RoiDest();
   const UC8 *s = src.RoiSrc();
   
@@ -169,7 +170,7 @@ int jhcThresh_0::Between (jhcImg& dest, const jhcImg& src, int lo, int hi) const
   for (y = rh; y > 0; y--, d += rsk, s += rsk)
     for (x = rcnt; x > 0; x--, d++, s++)
       if ((*s >= lo) && (*s <= hi))
-        *d = 255;
+        *d = m;
       else
         *d = 0;
   return 1; 
@@ -1038,9 +1039,9 @@ int jhcThresh_0::OverGateBW (jhcImg& dest, const jhcImg& src, const jhcImg& gate
   dest.MergeRoi(gate);
 
   // check for simplest cases
-  if ((th == 0) && (def == 0))
+  if (th < 0) 
     return dest.CopyArr(src);
-  if (th == 255)
+  if (th >= 255)
     return dest.FillArr(def);
 
   // local variables
@@ -1170,9 +1171,9 @@ int jhcThresh_0::UnderGateBW (jhcImg& dest, const jhcImg& src, const jhcImg& gat
   dest.MergeRoi(gate);
 
   // check for simplest cases
-  if ((th == 0) && (def == 0))
-    return dest.FillArr(0);
-  if (th == 255)
+  if (th <= 0)
+    return dest.FillArr(def);
+  if (th > 255)
     return dest.CopyArr(src);
 
   // local variables
@@ -1687,7 +1688,7 @@ int jhcThresh_0::CompositeBW (jhcImg& dest, const jhcImg& imga, const jhcImg& im
 //                            Pixel Switching                            //
 ///////////////////////////////////////////////////////////////////////////
 
-//= Copies src to dest but substitutes pixels from marks when non-zero.
+//= Copies src to dest but substitutes pixels from marks when marks is non-zero.
 
 int jhcThresh_0::OverlayNZ (jhcImg& dest, const jhcImg& src, const jhcImg& marks) const 
 {
@@ -1932,6 +1933,47 @@ int jhcThresh_0::SubstKey (jhcImg& dest, const jhcImg& alt, const jhcImg& gate, 
   }
   return 1;
 }
+
+
+//= Set dest to mark where pixel of val is between lo and hi (inclusive).  
+// more like a drawing function, updates destination's ROI to include any pixels set
+
+int jhcThresh_0::MarkTween (jhcImg& dest, const jhcImg& val, int lo, int hi, int mark) const
+{
+  int x0 = val.RoiX(), y0 = val.RoiY(), x2 = val.RoiX2(), y2 = val.RoiY2(), sk = val.RoiSkip();
+  int x, y, nx, xlo = dest.XLim(), xhi = 0, ylo = dest.YLim(), yhi = 0, ny = 0;
+  const UC8 *v = val.RoiSrc();
+  UC8 *d = dest.RoiDest(val);
+
+  if (!dest.Valid(1) || !dest.SameFormat(val))
+    return Fatal("Bad images to jhcThresh::MarkTween");
+  for (y = y0; y < y2; y++, d += sk, v += sk)
+  {
+    for (nx = 0, x = x0; x < x2; x++, d++, v++)
+      if ((*v >= lo) && (*v <= hi))
+      {
+        *d = (UC8) mark;
+        adj_lims(x, xlo, xhi, nx);
+      }
+    if (nx > 0)
+      adj_lims(y, ylo, yhi, ny);
+  }
+  if (ny > 0)
+    dest.AbsorbRoi(xlo, xhi, ylo, yhi);
+  return 1;
+}
+
+
+//= Adjust x or y range limit during normal image scan.
+
+void jhcThresh::adj_lims (int v, int& lo, int& hi, int& n) const
+{
+  if (n <= 0)
+    lo = __min(lo, v);
+  else
+    hi = __max(hi, v);
+  n = 1;
+} 
 
 
 ///////////////////////////////////////////////////////////////////////////

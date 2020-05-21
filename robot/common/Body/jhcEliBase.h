@@ -33,6 +33,10 @@
 #include "Peripheral/jhcSerialFTDI.h" 
 
 
+/** If condition occurs increment error count and return code, otherwise clear error count. **/
+#define BBARF(val, cond) if (cond) {berr++; return(val);} else berr = 0;
+
+
 //= Control of Eli mobile robot base.
 // built with Parallax Motor Mount kit driven by Roboclaw board (3.5 ft/sec)
 // commands are speed and goal guarded moves with expected durations
@@ -44,6 +48,7 @@
 //   integral motions (head, trav) and since-last-step change (dr, dm)
 //   computed Cartesian position (xpos, ypos) and since-last-step (dx, dy)
 //   AdjustXY function moves some point (target) to compensate for base motion
+// errors: generally try all sends but increment berr on failed receives
 
 class jhcEliBase 
 {
@@ -56,7 +61,7 @@ private:
 
   // packets
   UC8 pod[50];           /** Array for commands and values. */
-  int bok;               /** Communications status.         */
+  int berr;              /** Communications status.         */
   int crc;               /** Last communications checksum.  */
   int pend;              /** Strip last N acknowledgments.  */
 
@@ -125,7 +130,7 @@ public:
   int SaveCfg (const char *fname) const;
 
   // configuration
-  int CommOK () const {return bok;}
+  int CommOK (int bad =0) const {return((berr > bad) ? 0 : 1);}
   int Reset (int rpt =0, int chk =1);
   int Check (int rpt =0, int tries =2);
   double Battery ();
@@ -154,6 +159,7 @@ public:
   double Y () const         {return ypos;}  
   double StepFwd () const   {return dy0;}
   double StepSide () const  {return dx0;}
+  double StepLeft () const  {return -dx0;}
   double StepTurn () const  {return dr;}
   double StepX () const     {return dx;}
   double StepY () const     {return dy;}
@@ -172,6 +178,8 @@ public:
     {return MoveAbsolute(trav + dist, rate, bid);}
   int TurnTarget (double ang, double rate =1.0, int bid =10)
     {return TurnAbsolute(head + ang, rate, bid);}
+  int SetMoveVel (double ips, int bid =10);
+  int SetTurnVel (double dps, int bid =10);
 
   // profiled motion progress
   double MoveErr (double mgoal) const {return fabs(mgoal - trav);}
@@ -274,7 +282,7 @@ private:
   int geom_params (const char *fname);
 
   // configuration
-  int fail (int rpt);
+  int fail (int ans, int rpt);
   int loop_vals ();
 
   // packet validation

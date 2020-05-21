@@ -26,6 +26,7 @@
 #include "BanzaiDoc.h"
 
 #include <direct.h>                  // for _getcwd in Windows
+#include <conio.h>
 
 
 // JHC: for filtered video file open
@@ -120,6 +121,17 @@ BEGIN_MESSAGE_MAP(CBanzaiDoc, CDocument)
   ON_COMMAND(ID_PEOPLE_SOCIALMOVE, &CBanzaiDoc::OnPeopleSocialmove)
   ON_COMMAND(ID_UTILITIES_EXTRACTWORDS, &CBanzaiDoc::OnUtilitiesExtractwords)
   ON_COMMAND(ID_UTILITIES_CHKGRAMMAR, &CBanzaiDoc::OnUtilitiesChkgrammar)
+  ON_COMMAND(ID_ENVIRON_FLOORMAP, &CBanzaiDoc::OnEnvironFloormap)
+  ON_COMMAND(ID_NAVIGATION_UPDATING, &CBanzaiDoc::OnNavigationUpdating)
+  ON_COMMAND(ID_ENVIRON_INTEGRATED, &CBanzaiDoc::OnEnvironIntegrated)
+  ON_COMMAND(ID_NAV_CAMCALIB, &CBanzaiDoc::OnNavCamcalib)
+  ON_COMMAND(ID_NAV_GUIDANCE, &CBanzaiDoc::OnNavGuidance)
+  ON_COMMAND(ID_ENVIRON_LOCALPATHS, &CBanzaiDoc::OnEnvironLocalpaths)
+  ON_COMMAND(ID_ENVIRON_DISTANCES, &CBanzaiDoc::OnEnvironDistances)
+  ON_COMMAND(ID_NAV_FOVLIMITS, &CBanzaiDoc::OnNavFovlimits)
+  ON_COMMAND(ID_ENVIRON_GOTO, &CBanzaiDoc::OnEnvironGoto)
+  ON_COMMAND(ID_NAV_CONFIDENCE, &CBanzaiDoc::OnNavConfidence)
+  ON_COMMAND(ID_PEOPLE_VISIBILITY, &CBanzaiDoc::OnPeopleVisibility)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -129,8 +141,8 @@ CBanzaiDoc::CBanzaiDoc()
 {
   // JHC: move console and chat windows
   prt.SetTitle("ALIA console", 1);
-  SetWindowPos(GetConsoleWindow(), HWND_TOP, 1090, 5, 673, 1000, SWP_SHOWWINDOW);
-  chat.Launch(710, 5);
+  SetWindowPos(GetConsoleWindow(), HWND_TOP, 5, 35, 673, 1000, SWP_SHOWWINDOW);
+  chat.Launch(50, 5);
 
   // JHC: assume app called with command line argument fo file to open
   cmd_line = 1;
@@ -199,7 +211,7 @@ BOOL CBanzaiDoc::OnNewDocument()
   //         =  2 for restricted operation, expiration enforced
   cripple = 0;
   ver = ec.Version();
-  LockAfter(8, 2020, 3, 2020);
+  LockAfter(10, 2020, 5, 2020);
 
   // JHC: if this function is called, app did not start with a file open
   // JHC: initializes display object which depends on document
@@ -340,10 +352,10 @@ BOOL CBanzaiDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
   // open source based on passed (modified) string
   d.Clear(1, "Configuring source ...");
-	if (v.SetSource(fn.ch) > 0)
+	if (v.SetSource(fn.ch) <= 0)
     d.StatusText("");
   else
-    ShowFirst();
+    ShowFirst();	
 	return TRUE;
 }
 
@@ -384,7 +396,6 @@ void CBanzaiDoc::OnFileCameraadjust()
   theApp.AddToRecentFileList(mru.Txt());
   ShowFirst();
 }
-
 
 
 // Connect to combined color and depth sensor
@@ -513,7 +524,7 @@ void CBanzaiDoc::ShowFirst()
     // depth also
     eb->DepthSize(d8);
     eb->Depth8(d8);
-    d.ShowGrid(d8,  1, 0, 0, "Depth");
+    d.ShowGrid(d8, 1, 0, 0, "Depth");
   }
   d.StatusText("Ready");
 }
@@ -681,7 +692,7 @@ void CBanzaiDoc::OnUtilitiesPlayboth()
 
 void CBanzaiDoc::OnFileSaveAs() 
 {
-  jhcString sel, rn(rname), idir(cwd);
+  jhcString sel, idir, rn(rname);
   CFileDialog dlg(FALSE, NULL, rn.Txt());  
   jhcImgIO fio;
   jhcImg d8;
@@ -692,9 +703,9 @@ void CBanzaiDoc::OnFileSaveAs()
   d.Clear();
   d.ShowGrid(res, 0, 0, 0, "Last result");
 
-  // pop standard file choosing box starting at video directory
-  if (*(v.Dir()) != '\0')
-    idir.Set(v.Dir());
+  // pop standard file choosing box starting at results directory
+  sprintf_s(idir.ch, "%s\\results", cwd);
+  idir.C2W();
   (dlg.m_ofn).lpstrInitialDir = idir.Txt();
   if (dlg.DoModal() != IDOK)
     return;
@@ -710,7 +721,7 @@ void CBanzaiDoc::OnFileSaveAs()
 
 void CBanzaiDoc::OnFileSavesource()
 {
-  jhcString sel, idir(cwd), init("situation.bmp");
+  jhcString sel, idir, init("situation.bmp");
   CFileDialog dlg(FALSE, NULL, init.Txt());  
   jhcImgIO fio;
   jhcName name;
@@ -727,9 +738,9 @@ void CBanzaiDoc::OnFileSavesource()
   d.ShowGrid(col, 0, 0, 0, "Last input");
   d.ShowGrid(d8,  1, 0, 0, "Depth");
 
-  // pop standard file choosing box starting at video directory
-  if (*(v.Dir()) != '\0')
-    idir.Set(v.Dir());
+  // pop standard file choosing box starting at environ directory
+  sprintf_s(idir.ch, "%s\\environ", cwd);
+  idir.C2W();
   (dlg.m_ofn).lpstrInitialDir = idir.Txt();
   if (dlg.DoModal() != IDOK)
     return;
@@ -1707,7 +1718,7 @@ void CBanzaiDoc::OnDemoTextfile()
     return;
   }
   ec.SetPeople("VIPs.txt");
-  chat.Reset(0);
+  chat.Reset(0, "log");
   chat.Inject(in);
 
   // keep taking sentences until ESC
@@ -1765,7 +1776,7 @@ void CBanzaiDoc::OnDemoInteractive()
 {
   HWND me = GetForegroundWindow();
   char in[200];
-  jhcImg col(640, 480, 3);
+  jhcImg map, col(640, 480, 3);
   int src = ((mic > 0) ? (mic + 1) : spk);
 
   // possibly check for video
@@ -1786,31 +1797,27 @@ void CBanzaiDoc::OnDemoInteractive()
   // reset all required components
   system("cls");
   jprintf_open();
-  d.StatusText("Connecting to robot ...");
+  d.StatusText("Initializing robot ...");
   if (ec.Reset(src, rob) <= 0)
   {
     if (cmd_line > 0)
       ec.SpeakError("My body is not working");
     else
       Complain("Robot not functioning properly");
-    d.StatusText("Failed");
+    d.StatusText("Failed.");
     return;
   }
   ec.SetPeople("VIPs.txt");
-  chat.Reset(mic);
+  chat.Reset(mic, "log");
 
   // announce start and input mode
   if (mic > 0)
-  {
     d.Clear(1, "Voice input (ESC to quit) ...");
-    SetForegroundWindow(GetConsoleWindow());
-  }
   else
-  {
     d.Clear(1, "Text input (ESC to quit) ...");
-    SetForegroundWindow(chat);
-  }
+  SetForegroundWindow(chat);
 
+jtimer_clr();
   // keep taking sentences until ESC
 #ifndef _DEBUG
   try
@@ -1826,9 +1833,12 @@ void CBanzaiDoc::OnDemoInteractive()
       if (ec.Respond() <= 0)
         break;
 
-      // show interaction
+      // show robot sensing and action and any communication
       if ((ec.body).NewFrame())
-        d.ShowGrid((ec.rwi).MarkUp(), 0, 0, 0, "Robot view  --  %s", (ec.rwi).Watching());
+      {
+        d.ShowGrid((ec.rwi).HeadView(), 0, 0, 0, "Visual attention  --  %s", (ec.rwi).Watching());
+        d.ShowGrid((ec.rwi).MapView(),  1, 0, 2, "Overhead map");
+      }
       chat.Post(ec.NewInput(), 1);
       chat.Post(ec.NewOutput());
     }
@@ -1844,6 +1854,7 @@ void CBanzaiDoc::OnDemoInteractive()
   jprintf("Done.\n\n");
   jprintf("Think %3.1f Hz, Sense %3.1f Hz\n", ec.Thinking(), ec.Sensing()); 
   jprintf_close();
+jtimer_rpt();
 
   // window configuration
   d.StatusText("Stopped."); 
@@ -1883,6 +1894,16 @@ void CBanzaiDoc::OnParametersTargettime()
 	jhcPickVals dlg;
 
   dlg.EditParams((ec.rwi).tps); 
+}
+
+
+// Angular range where heads are likely to be detected
+
+void CBanzaiDoc::OnPeopleVisibility()
+{
+	jhcPickVals dlg;
+
+  dlg.EditParams((ec.rwi).vps); 
 }
 
 
@@ -1991,11 +2012,8 @@ void CBanzaiDoc::OnAttentionEnrolllive()
   int ok;
 
   // check video
-  if (!v.Valid())
-  {
-    Complain("No video source selected");
+  if (!ChkStream())
     return;
-  }
   v.SizeFor(now);
   ff->Reset();
   fr->Reset();
@@ -2360,6 +2378,571 @@ void CBanzaiDoc::OnUtilitiesChkgrammar()
 
 
 /////////////////////////////////////////////////////////////////////////////
+//                                Navigation                               //
+/////////////////////////////////////////////////////////////////////////////
+
+// Parameters for ground obstacle map around robot
+
+void CBanzaiDoc::OnNavigationUpdating()
+{
+	jhcPickVals dlg;
+
+  dlg.EditParams(((ec.rwi).nav).eps); 
+}
+
+
+// Define active part of Kinect sensing cone and size of robot
+
+void CBanzaiDoc::OnNavFovlimits()
+{
+	jhcPickVals dlg;
+
+  dlg.EditParams(((ec.rwi).nav).gps); 
+}
+
+
+// Parameters governing minimal area and map fading 
+
+void CBanzaiDoc::OnNavConfidence()
+{
+	jhcPickVals dlg;
+
+  dlg.EditParams(((ec.rwi).nav).kps); 
+}
+
+
+// Parameters for determining where the robot can move based on the map
+
+void CBanzaiDoc::OnNavGuidance()
+{
+	jhcPickVals dlg;
+
+  dlg.EditParams(((ec.rwi).nav).nps); 
+}
+
+
+// Refine sensor tilt, roll, and height based on floor
+
+void CBanzaiDoc::OnNavCamcalib()
+{
+  HWND me = GetForegroundWindow();
+  jhcLocalOcc *nav = &((ec.rwi).nav);
+  jhcImg mask;
+  jhcMatrix pos(4), dir(4);
+  char fname[80];
+  double tsum = 0.0, rsum = 0.0, hsum = 0.0, dev = 4.0;
+  double err, t, r, h, dt = 0.0, dr = 0.0, dh = 0.0, tol = 0.1, htol = 0.1;
+  int cnt = 0;
+
+  // make sure video is working then initialize robot
+  if (!ChkStream())
+    return;
+  if (eb->Reset(1, 1) <= 0)
+    return;
+  eb->Limp();
+
+  // configure map for tight range around floor
+  nav->mw = 1.5 * nav->dej;
+  nav->mh = nav->dej;
+  nav->x0 = 0.75 * nav->dej;
+  nav->y0 = 0.0;
+  nav->jhcOverhead3D::Reset();
+  mask.SetSize(nav->map2);
+
+  // loop over selected set of frames  
+  SetForegroundWindow(me);
+  d.Clear(1, "Camera calibration ...");
+  try 
+  {
+    while (!d.LoopHit(v.StepTime()))
+    {
+      // get frame, pause if right mouse click
+      if (eb->Update() <= 0)
+        break;
+
+      // find areas near floor and estimate camera corrections
+      (eb->neck).HeadPose(pos, dir, (eb->lift).Height());
+      nav->SetCam(0, 0.0, 0.0, pos.Z(), 90.0, dir.T(), dir.R(), 1.2 * nav->dej);
+      err = nav->EstPose(t, r, h, eb->Range(), 0, dev);
+
+      // accumulate statistics
+      if (err > 0.0)
+      {
+        t = -t;
+        tsum += t;
+        rsum += r;
+        hsum += h;
+        cnt++;
+        dt = tsum / cnt;
+        dr = rsum / cnt;
+        dh = hsum / cnt;
+      }
+ 
+      // make pretty pictures
+      if (err > 0.0)
+        nav->EstDev(mask, 2.0, dev);
+      else
+        Between(mask, nav->map2, 1, 254, 128);
+      nav->CamZone(nav->map2, 0);
+
+      // prompt for new sensors
+      eb->Issue();
+
+      // show results
+      d.ShowGrid(nav->map2, 0, 0, 2, "Overhead map  --  adjust dt = %+4.2f, dr = %+4.2f, dh = %+4.2f", dt, dr, dh);
+      if (err > 0.0)
+        d.ShowGrid(mask, 0, 1, 2, "Corrected (%4.2f) --  estimated tilt = %4.2f, roll = %4.2f, ht = %4.2f)", err, t, r, h);
+      else
+        d.ShowGrid(mask, 0, 1, 2, "Pixels considered  --  BAD FIT");
+    }
+  }
+  catch (...){Tell("Unexpected exit!");}
+  v.Prefetch(0);
+  eb->Limp();
+  d.StatusText("Stopped.");  
+
+  // possibly new save values
+  if (cnt <= 0)
+    Complain("Never found floor!");
+  else if ((fabs(dt) <= tol) && (fabs(dr) <= tol) && (fabs(dh) < htol))
+    Tell("No adjustment needed");
+  else  
+  {
+    // ask about individual changes
+    if (fabs(dt) > tol)
+      if (Ask("Adjust tilt by %+4.2f degrees?", dt)) 
+        ((eb->neck).jt[1]).cal += dt;
+    if (fabs(dr) > tol)
+      if (Ask("Adjust roll by %+4.2f degrees?", dr)) 
+        (eb->neck).roll += dr;
+    if (fabs(dh) > htol)
+      if (Ask("Adjust height by %+3.1f inches?", dh)) 
+        (eb->neck).nz0 += dh;
+
+    // save values to file (some may not have changed)
+    eb->CfgFile(fname, 1);
+    if (Ask("Save calibration for robot %d ?", eb->BodyNum()))
+      (eb->neck).SaveCfg(fname);
+  }
+
+  // clean up
+  FalseClone(res, mask);
+  sprintf_s(rname, "%s_cal.bmp", v.FrameName());
+}
+
+
+// Show instantaneous Kinect height map with neck limp
+
+void CBanzaiDoc::OnEnvironFloormap()
+{
+  HWND me = GetForegroundWindow();
+  jhcLocalOcc *nav = &((ec.rwi).nav);
+  jhcImg map2, fw;
+  int fbid = (ec.rwi).freeze;
+
+  // make sure video is working
+  if (!ChkStream())
+    return;
+
+  // initialize robot system (no ALIA)
+  d.StatusText("Initializing robot ...");
+  if (eb->Reset(1, 0) <= 0)
+  {
+    d.StatusText("Failed.");
+    return;
+  }
+  (ec.rwi).freeze = -abs(fbid);
+  (ec.rwi).BindBody(eb);
+  (ec.rwi).Reset();
+  fw.SetSize(nav->map);
+  eb->Limp();
+
+  // loop over selected set of frames  
+  SetForegroundWindow(me);
+  d.Clear(1, "Depth projection ...");
+  v.Rewind(1);
+  try
+  {
+    while (!d.LoopHit(v.StepTime()))
+    {
+      // get images and body data then process it
+      if ((ec.rwi).Update() <= 0)
+        break;
+
+      // make pretty pictures
+      map2.Clone(nav->map);
+      nav->ScanBeam(map2);
+      nav->RobotMark(map2, 0);
+      Threshold(fw, nav->map, 254, 255);         // white walls
+      MarkTween(fw, nav->dev, 78, 178, 50);      // blue floor
+      MarkTween(fw, nav->dev, 1, 1, 128);        // green missing
+
+      // prompt for new sensors
+      (ec.rwi).Issue();
+
+      // show overhead map and input image
+      d.ShowGrid(map2, 0, 0, 2, "Raw overhead map  --  pan %3.1f, tilt %3.1f", (eb->neck).Pan(), (eb->neck).Tilt());
+      d.ShowGrid(fw,   1, 0, 2, "Walls, floor, and missing");
+    }
+  }
+  catch (...){Tell("Unexpected exit!");}
+  v.Prefetch(0);
+  (ec.rwi).Stop();
+  (ec.rwi).freeze = fbid;
+  d.StatusText("Stopped.");  
+
+  // clean up
+  FalseClone(res, map2);
+  sprintf_s(rname, "%s_hts.bmp", v.FrameName());
+}
+
+
+// Show floor map integrated over time including base movement 
+
+void CBanzaiDoc::OnEnvironIntegrated()
+{
+  HWND me = GetForegroundWindow();
+  jhcLocalOcc *nav = &((ec.rwi).nav);
+  jhcImg obs2, cf2;
+  int fbid = (ec.rwi).freeze;
+
+  // make sure video is working
+  if (!ChkStream())
+    return;
+
+  // initialize robot system (no ALIA)
+  d.StatusText("Initializing robot ...");
+  if (eb->Reset(1, 0) <= 0)
+  {
+    d.StatusText("Failed.");
+    return;
+  }
+  (ec.rwi).freeze = -abs(fbid);
+  (ec.rwi).BindBody(eb);
+  (ec.rwi).Reset();
+  eb->Limp();
+
+  // loop over selected set of frames  
+  SetForegroundWindow(me);
+  d.Clear(1, "Local map ...");
+  v.Rewind(1);
+  try
+  {
+    while (!d.LoopHit(v.StepTime()))
+    {
+      // get images and body data then process it
+      if ((ec.rwi).Update() <= 0)
+        break;
+
+      // make pretty pictures
+      obs2.Clone(nav->obst);
+      nav->ScanBeam(obs2);
+      nav->RobotDir(obs2, 0);
+      nav->RobotMark(obs2, 0);
+      cf2.Clone(nav->conf);
+      nav->Doormat(cf2, 0);
+
+      // prompt for new sensors
+      (ec.rwi).Issue();
+
+      // show overhead map and input image
+      d.ShowGrid(obs2, 0, 0, 2, "Floor, obstacles, and potential dropoffs");
+      d.ShowGrid(cf2,  1, 0, 2, "Confidence and doormat area (%4.2f)", nav->fresh);
+    }
+  }
+  catch (...){Tell("Unexpected exit!");}
+  v.Prefetch(0);
+  (ec.rwi).Stop();
+  (ec.rwi).freeze = fbid;
+  d.StatusText("Stopped.");  
+
+  // clean up
+  FalseClone(res, obs2);
+  sprintf_s(rname, "%s_obst.bmp", v.FrameName());
+}
+
+
+// Show distances robot can go in various orientations
+
+void CBanzaiDoc::OnEnvironLocalpaths()
+{
+  HWND me = GetForegroundWindow();
+  jhcLocalOcc *nav = &((ec.rwi).nav);
+  jhcImg path;
+  int i, dev, nd, hnd, nd2, fbid = (ec.rwi).freeze;
+
+  // make sure video is working
+  if (!ChkStream())
+    return;
+
+  // initialize robot system (no ALIA)
+  d.StatusText("Initializing robot ...");
+  if (eb->Reset(1, 0) <= 0)
+  {
+    d.StatusText("Failed.");
+    return;
+  }
+  (ec.rwi).freeze = -abs(fbid);
+  (ec.rwi).BindBody(eb);
+  (ec.rwi).Reset();
+  eb->Limp();
+  nd  = nav->ndir;
+  hnd = nd / 2;
+  nd2 = 2 * nd;
+
+  // loop over selected set of frames  
+  SetForegroundWindow(me);
+  d.Clear(1, "Paths ...");
+  v.Rewind(1);
+  try
+  {
+    while (!d.LoopHit(v.StepTime()))
+    {
+      // get images and body data then process it
+      if ((ec.rwi).Update() <= 0)
+        break;
+
+      // make pretty pictures      
+      for (i = 0; i < nav->ndir; i++)
+        nav->RobotBody(nav->spin[i]);
+      path.Clone(nav->spin[hnd]);
+
+      // prompt for new sensors
+      (ec.rwi).Issue();
+
+      // show results
+      d.ShowGrid(path, 0, 0, 2, "straight = F %3.1f, B %3.1f", nav->dist[nd], nav->dist[0]);
+      d.ShowGrid(nav->spin[0], hnd - 2, 0, 2, "rt 90.0 degs = F %3.1f, B %3.1f", nav->dist[hnd], nav->dist[nd + hnd]);
+      for (dev = 1; dev < hnd; dev++)
+        d.ShowGrid(nav->spin[hnd - dev], dev - 1, 1, 2, "rt %3.1f degs = F %3.1f,  B %3.1f", 
+                                                        dev * nav->Step(), nav->dist[nd - dev], nav->dist[nd2 - dev]); 
+      for (dev = 1; dev < hnd; dev++)
+        d.ShowGrid(nav->spin[hnd + dev], dev - 1, 2, 2, "lf %3.1f degs = F %3.1f, B %3.1f", 
+                                                        dev * nav->Step(), nav->dist[nd + dev], nav->dist[dev]); 
+    }
+  }
+  catch (...){Tell("Unexpected exit!");}
+  v.Prefetch(0);
+  (ec.rwi).Stop();
+  (ec.rwi).freeze = fbid;
+  d.StatusText("Stopped.");  
+
+  // clean up
+  FalseClone(res, path);
+  sprintf_s(rname, "%s_path.bmp", v.FrameName());
+}
+
+
+// Show valid forward and backward motions on large maps
+
+void CBanzaiDoc::OnEnvironDistances()
+{
+  HWND me = GetForegroundWindow();
+  jhcLocalOcc *nav = &((ec.rwi).nav);
+  jhcImg fwd, rev;
+  int fbid = (ec.rwi).freeze;
+
+  // make sure video is working
+  if (!ChkStream())
+    return;
+
+  // initialize robot system (no ALIA)
+  d.StatusText("Initializing robot ...");
+  if (eb->Reset(1, 0) <= 0)
+  {
+    d.StatusText("Failed.");
+    return;
+  }
+  (ec.rwi).freeze = -abs(fbid);
+  (ec.rwi).BindBody(eb);
+  (ec.rwi).Reset();
+  eb->Limp();
+
+  // loop over selected set of frames  
+  SetForegroundWindow(me);
+  d.Clear(1, "Sensors ...");
+  v.Rewind(1);
+  try
+  {
+    while (!d.LoopHit(v.StepTime()))
+    {
+      // get images and body data then process it
+      if ((ec.rwi).Update() <= 0)
+        break;
+
+      // make pretty pictures
+      fwd.Clone(nav->obst);
+      nav->Dists(fwd, 0);
+      nav->RobotBody(fwd, 0);
+      rev.Clone(nav->obst);
+      nav->Paths(rev, 0);
+      nav->RobotBody(rev, 0);
+
+      // prompt for new sensors
+      (ec.rwi).Issue();
+
+      // show overhead map and input image
+      d.ShowGrid(fwd, 0, 0, 2, "Raw center ranges");
+      d.ShowGrid(rev, 1, 0, 2, "Achievable motions (some turns not possible)");
+    }
+  }
+  catch (...){Tell("Unexpected exit!");}
+  v.Prefetch(0);
+  (ec.rwi).Stop();
+  (ec.rwi).freeze = fbid;
+  d.StatusText("Stopped.");  
+
+  // clean up
+  FalseClone(res, fwd);
+  sprintf_s(rname, "%s_sensor.bmp", v.FrameName());
+}
+
+
+// Pick fixed map location for robot to travel toward
+
+void CBanzaiDoc::OnEnvironGoto()
+{
+  HWND me = GetForegroundWindow();
+  jhcLocalOcc *nav = &((ec.rwi).nav);
+  jhcImg map;
+  jhcMatrix z(4);
+  char label[80] = "";
+  double p0 = 60.0, t0 = -40.0, tol = 2.0, arrive = 4.0, tsp = 0.7;
+  double cx, cy, ipp, circ, ix, iy, err, tx, ty, d0, trav = 0.0, head = 0.0;
+  int mx, my, fbid = (ec.rwi).freeze, mbut = 0, step = 0;
+
+  // make sure video is working
+  if (!ChkStream())
+    return;
+jprintf_open();
+
+  // initialize robot system (no ALIA)
+  d.StatusText("Initializing robot ...");
+  if (eb->Reset(1, 0) <= 0)
+  {
+    d.StatusText("Failed.");
+    return;
+  }
+  (ec.rwi).freeze = -abs(fbid);
+  (ec.rwi).BindBody(eb);
+  (ec.rwi).Reset();
+  z.Zero();
+  (eb->arm).ShiftTarget(z);
+
+  // local image sizes
+  map.SetSize(nav->map);
+  cx = 0.5 * map.XLim();
+  cy = 0.5 * map.XLim();
+  ipp = nav->ipp;
+  circ = arrive / ipp;
+
+  // loop over selected set of frames  
+  SetForegroundWindow(me);
+  d.Clear(1, "Go to location ...");
+  v.Rewind(1);
+  try
+  {
+    while (!d.LoopHit(v.StepTime(), 3, 0, ""))
+    {
+      // get images and body data then process it
+      if ((ec.rwi).Update() <= 0)
+        break;
+      if (step >= 21)
+        (eb->base).AdjustXY(tx, ty);
+
+      // look right
+      if ((step >= 0) && (step < 10))
+      {
+        err = (eb->neck).GazeErr(-p0, t0);
+        sprintf_s(label, "Look right ... %3.1f", err);
+        if (err < tol)
+          step++;
+        else 
+          (eb->neck).GazeTarget(-p0, t0, 0.5);
+      }
+
+      // look left 
+      if ((step >= 10) && (step < 20))
+      {
+        err = (eb->neck).GazeErr(p0, t0);
+        sprintf_s(label, "Look left ... %3.1f", err);
+        if (err < tol)
+          step++;
+        else 
+          (eb->neck).GazeTarget(p0, t0, 0.5);
+      }
+      if (step == 20)
+      {
+        strcpy_s(label, "*** CLICK ON TARGET LOCATION ***");
+        if (mbut > 0)
+        {
+          strcpy_s(label, "Moving toward target  -  %3.1f in away  %s");
+          tx = (mx - cx) * ipp;
+          ty = (my - cy) * ipp;
+          step++;
+        }
+      }
+
+      // pick steering and speed
+      if (step >= 21)
+      {
+        d0 = sqrt(tx * tx + ty * ty);
+        (ec.rwi).SeekLoc(tx, ty, tsp, 100);
+      }
+
+      // make pretty pictures
+      nav->LocalMap(map);
+      if (step >= 21)
+      {
+        // show current goal location and direct path
+        ix = cx + tx / ipp;
+        iy = cy + ty / ipp;
+        DrawLine(map, cx, cy, ix, iy, 3, -6);
+        CircleEmpty(map, ix, iy, circ, 3, -5);
+      }
+      if (step >= 20)                  
+      {
+        // show sensor beams when ready for target click
+        nav->Paths(map);
+        nav->RobotBody(map);
+        nav->Tail(map);
+      }
+
+      // prompt for new sensors
+      (ec.rwi).Issue();
+
+      // show overhead map with navigation data
+      d.ShowGrid(map, 0, 0, 2, label, d0, ((trav < 0.0) ? "-  BACKUP" : ""));
+
+      // check for mouse event in image or if motion done
+      mbut = d.MouseRel0(mx, my);
+      if ((mbut < -1) || (mbut == 3))
+        break;
+      if ((step >= 21) && ((d0 <= arrive) || nav->Stymied()))
+        break;
+    }
+  }
+  catch (...){Tell("Unexpected exit!");}
+  v.Prefetch(0);
+  (ec.rwi).Stop();
+  (ec.rwi).freeze = fbid;
+  d.StatusText("Stopped.");  
+jprintf_close();
+
+  // clean up
+  FalseClone(res, map);
+  sprintf_s(rname, "%s_goto.bmp", v.FrameName());
+  if (step >= 21)
+  { 
+    if (d0 <= arrive)
+      Tell("Arrived");
+    else if (nav->Stymied())
+      Complain("Stuck");
+  }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 //                              Test Functions                             //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -2367,6 +2950,26 @@ void CBanzaiDoc::OnUtilitiesChkgrammar()
 
 void CBanzaiDoc::OnUtilitiesTest()
 {
+  jhcImg dest(640, 480, 1);
+  double rot = 15.0;
+  int i;
+
+  dest.FillArr(0);
+  jtimer_clr();
+  for (i = 0; i < 1000; i++)
+  {
+    jtimer(2, "BlockRot");
+    BlockRot(dest, 300, 300, 150, 50, rot, 200); 
+    jtimer_x(2);
+    jtimer(1, "BlockCent");
+    BlockCent(dest, 100, 100, 150, 50, 50);
+    jtimer_x(1);
+  }
+  jtimer_rpt();
+  d.Clear();
+  d.ShowGrid(dest, 0, 0, 2, "Rotated block");
+
+/*
   jhcRoi roi, roi2;
   jhcImg col, rng, d8, zmin, z8, rng2, r8;
   int sz = 3;
@@ -2417,6 +3020,8 @@ jtimer_rpt();
   
   d.ShowGrid(col, 0, 1, 0, "Color");
   d.ShowGrid(r8,  1, 1, 0, "Small: %3.1f -> %3.1f", avg2, ra);
-
+*/
 }
+
+
 

@@ -167,6 +167,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -294,6 +295,7 @@
     <ClCompile Include="BanzaiDoc.cpp" />
     <ClCompile Include="BanzaiFrm.cpp" />
     <ClCompile Include="BanzaiView.cpp" />
+    <ClCompile Include="..\common\Environ\jhcLocalOcc.cpp" />
     <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp" />
     <ClCompile Include="..\..\audio\common\Language\jhcMorphFcns.cpp" />
     <ClCompile Include="..\common\Grounding\jhcSocial.cpp" />
@@ -481,6 +483,7 @@
     <ClInclude Include="..\common\Depth\jhcSurface3D.h" />
     <ClInclude Include="..\common\Eli\jhcEliGrok.h" />
     <ClInclude Include="..\common\Eli\jhcManipFSM.h" />
+    <ClInclude Include="..\common\Environ\jhcLocalOcc.h" />
     <ClInclude Include="..\common\Geometry\jhcKalVec.h" />
     <ClInclude Include="..\common\Geometry\jhcPlaneEst.h" />
     <ClInclude Include="..\common\Grounding\jhcBallistic.h" />

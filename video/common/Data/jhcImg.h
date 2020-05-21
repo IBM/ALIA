@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1998-2018 IBM Corporation
+// Copyright 1998-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -186,6 +186,7 @@ public:
   int Sat8 (const jhcImg& src);
   int FillArr (int v =0);
   int FillMax (int v =0) {MaxRoi(); return FillArr(v);}  /** Fill ALL pixels. */
+  int FillAll (int v =0);
   int FillField (int v, int field =0);
   int FillRGB (int r, int g, int b);
 

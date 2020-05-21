@@ -35,8 +35,9 @@
 
 
 //= Makes binary mask from closed contour.
+// NOTE: if sharing jhcDraw class, this version always saturates line against borders
 
-class jhcFill : private jhcALU, private jhcDraw, private jhcGroup
+class jhcFill : private jhcALU, virtual private jhcDraw, virtual private jhcGroup
 {
 // PRIVATE MEMBER VARIABLES
 private:

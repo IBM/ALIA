@@ -177,6 +177,17 @@ public:
   afx_msg void OnPeopleSocialmove();
   afx_msg void OnUtilitiesExtractwords();
   afx_msg void OnUtilitiesChkgrammar();
+  afx_msg void OnEnvironFloormap();
+  afx_msg void OnNavigationUpdating();
+  afx_msg void OnEnvironIntegrated();
+  afx_msg void OnNavCamcalib();
+  afx_msg void OnNavGuidance();
+  afx_msg void OnEnvironLocalpaths();
+  afx_msg void OnEnvironDistances();
+  afx_msg void OnNavFovlimits();
+  afx_msg void OnEnvironGoto();
+  afx_msg void OnNavConfidence();
+  afx_msg void OnPeopleVisibility();
 };
 
 /////////////////////////////////////////////////////////////////////////////

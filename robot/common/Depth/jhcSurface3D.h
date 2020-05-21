@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2012-2019 IBM Corporation
+// Copyright 2012-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@
 
 //= Interprets scene relative to a flat plane.
 
-class jhcSurface3D : private jhcPlaneEst
+class jhcSurface3D : protected jhcPlaneEst
 {
 // PRIVATE MEMBER VARIABLES
 private:

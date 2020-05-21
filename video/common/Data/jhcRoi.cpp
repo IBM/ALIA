@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -577,12 +577,45 @@ void jhcRoi::MergeRoi (const jhcRoi& src)
 }
 
 
+//= Enlarges ROI so it includes the specified area (inclusive of endpoints).
+
+void jhcRoi::AbsorbRoi (int x0, int x1, int y0, int y1)
+{
+  int rx1 = rx + rw - 1, ry1 = ry + rh - 1;
+
+  // sanity check
+  if (NullRoi() > 0)
+  {
+    SetRoiLims(x0, x1, y0, y1);
+    return;
+  }
+
+  // extend included range
+  rx  = __min(rx, x0);
+  ry  = __min(ry, y0);
+  rx1 = __max(rx1, x1);
+  ry1 = __max(ry1, y1);  
+
+  // recompute dimensions
+  rw = rx1 - rx + 1;
+  rh = ry1 - ry + 1;
+  fix_roi();
+}
+
+
 //= Sets own ROI to include other ROI.
 
 void jhcRoi::AbsorbRoi (const jhcRoi& src)
 {
   int rx2 = rx + rw, ry2 = ry + rh;
   int sx2 = src.rx + src.rw, sy2 = src.ry + src.rh;
+
+  // sanity check
+  if (NullRoi() > 0)
+  {
+    CopyRoi(src);
+    return;
+  }
 
   // take union relative to bounding coordinates
   rx  = __min(rx, src.rx);

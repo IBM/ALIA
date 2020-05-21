@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016-2019 IBM Corporation
+// Copyright 2016-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,13 +38,15 @@
 // Can also be used with angle sets or simple scalar values. If "done" < 0
 // then treats vector coefficients as angles (i.e. mod 360 degrees).
 // NOV 2019: Added velocity deadband, moved progress to jhcTimedFcns::Stuck
+// MAY 2020: Added vector velocity to more closely match physical systems
 
 class jhcMotRamp
 {
 // PRIVATE MEMBER VARIABLES
 private:
   // state variables
-  double sp;        /** Ideal speed along trajectory.  */
+  jhcMatrix vel;     /** Motion for ideal trajectory. */
+  double sp;         /** Speed along trajectory.      */
 
   // progress monitoring
   double dist;      /** Current distance from goal.    */
@@ -58,10 +60,11 @@ public:
   char rname[80];
 
   // profile characteristics
-  double vstd;     /** Standard speed for moves.           */
-  double astd;     /** Standard acceleration for moves.    */
-  double dstd;     /** Standard deceleration for moves.    */
-  double done;     /** Mininum progress move (cyc if neg). */ 
+  double vstd;     /** Standard speed for moves at rate 1.  */
+  double astd;     /** Standard acceleration for pursuit.   */
+  double dstd;     /** Standard deceleration for goal area. */
+  double dmax;     /** Maximum emergency deceleration.      */
+  double done;     /** Mininum progress move (cyc if neg).  */ 
 
   // motion command
   jhcMatrix cmd;   /** Overall move goal position. */
@@ -72,10 +75,10 @@ public:
 public:
   // construction and configuration
   jhcMotRamp ();
-  void RampCfg (double v =90.0, double a =180.0, double d =180.0, double tol =2.0)
-    {vstd = v; astd = a; dstd = d; done = tol;} 
+  void RampCfg (double v =90.0, double a =180.0, double d =180.0, double tol =2.0, double e =0.0)
+    {vstd = v; astd = a; dstd = d; done = tol; dmax = e;} 
   void RampReset () 
-    {sp = 0.0; d0 = 0.0; stuck = 0.0; rt = 1.0;} 
+    {vel.Zero(); sp = 0.0, d0 = 0.0; stuck = 0.0; rt = 1.0;} 
 
   // goal specification
   void RampTarget (double val, double rate =1.0) 
@@ -111,7 +114,8 @@ public:
 // PRIVATE MEMBER FUNCTIONS
 private:
   // trajectory generation
-  double pick_sp (double v0, double dist, double tupd) const;
+  void goal_dir (jhcMatrix& dir, const jhcMatrix& now, double tupd);
+  void alter_vel (const jhcMatrix& dir, double dist, double tupd);
   
   // trajectory queries
   double find_time (double dist, double rate) const;

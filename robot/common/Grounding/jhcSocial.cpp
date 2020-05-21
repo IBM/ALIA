@@ -392,7 +392,10 @@ int jhcSocial::soc_approach_chk (const jhcAliaDesc *desc, int i)
   if (jms_diff(jms_now(), ct0[i]) > 0)
     return -1;
   if ((targ = s3->GetID(cst[i])) == NULL)
+{
+jprintf("Lost target: person %d !\n", cst[i]);
     return -1;
+}
 
   // get heading and distance to target, check if done
   ang = targ->PanVec3() - 90.0;
@@ -402,9 +405,11 @@ int jhcSocial::soc_approach_chk (const jhcAliaDesc *desc, int i)
   // re-issue basic command (drive forward if orientation okay)
   jprintf(1, dbg, ">> REQUEST %d: approach person %d\n", cbid[i], cst[i]);
   rwi->WatchPerson(cst[i], cbid[i]);
-  b->TurnFix(ang, ttime, 1.0, cbid[i]);
-  if (fabs(ang) < orient)
-    b->MoveFix(dist - goal, atime, 1.0, cbid[i]);   // slower than follow
+  rwi->SeekLoc(*targ, 0.7, cbid[i]);
+
+//  b->TurnFix(ang, ttime, 1.0, cbid[i]);
+//  if (fabs(ang) < orient)
+//    b->MoveFix(dist - goal, atime, 1.0, cbid[i]);   // slower than follow
   return 0;
 }
 
@@ -458,9 +463,11 @@ int jhcSocial::soc_follow_chk (const jhcAliaDesc *desc, int i)
   // re-issue basic command (drive forward if orientation okay)
   jprintf(1, dbg, ">> REQUEST %d: follow person %d\n", cbid[i], cst[i]);
   rwi->WatchPerson(cst[i], cbid[i]);
-  b->TurnFix(ang, ttime, 1.5, cbid[i]);
-  if (fabs(ang) < orient)
-    b->MoveFix(dist - ideal, ftime, 1.5, cbid[i]);   // quicker than approach
+  rwi->SeekLoc(*targ, 1.0, cbid[i]);
+
+//  b->TurnFix(ang, ttime, 1.5, cbid[i]);
+//  if (fabs(ang) < orient)
+//    b->MoveFix(dist - ideal, ftime, 1.5, cbid[i]);   // quicker than approach
   return 0;
 }
 

@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2011-2019 IBM Corporation
+// Copyright 2011-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -157,7 +157,7 @@ public:
 public:
   // creation and initialization
   jhcEliArm ();
-  int CommOK () const {return aok;}
+  int CommOK (int bad =0) const {return aok;}
 
   // configuration
   void Bind (jhcDynamixel *ctrl);

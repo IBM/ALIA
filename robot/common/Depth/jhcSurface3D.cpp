@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2012-2019 IBM Corporation
+// Copyright 2012-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -246,7 +246,9 @@ int jhcSurface3D::FloorMap (jhcImg& dest, const jhcImg& d16, int clr,
             iz = __min(iz, 255);       
             v = dest.APtr(ix, iy); 
             if (iz > *v)
-              *v = (UC8) iz;
+              *v = (UC8) iz;                     // iz always positive
+            else if (*v == 0)
+              *v = 1;                            // clamp negative iz 
           }
       }
   }
@@ -344,7 +346,9 @@ int jhcSurface3D::FloorMap2 (jhcImg& dest, const jhcImg& d16, int clr,
               iz = __min(iz, 255);       
               v = dest.APtr(ix, iy); 
               if (iz > *v)
-                *v = (UC8) iz;
+                *v = (UC8) iz;                   // iz always positive
+              else if (*v == 0)
+                *v = 1;                          // clamp negative iz
             }
          }
        }

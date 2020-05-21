@@ -163,6 +163,12 @@
     <Filter Include="Source Files\common video\Face">
       <UniqueIdentifier>{480acc64-1033-4426-83dd-f3bd9f38c88f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\common robot\Environ">
+      <UniqueIdentifier>{7f75513a-1ae7-4627-8a4a-70c3ad0237cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\common robot\Environ">
+      <UniqueIdentifier>{f158a761-e4db-4bdd-b17b-00923fbbefcb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BanzaiDoc.cpp">
@@ -536,6 +542,9 @@
     </ClCompile>
     <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp">
       <Filter>Source Files\common audio\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\Environ\jhcLocalOcc.cpp">
+      <Filter>Source Files\common robot\Environ</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -955,6 +964,9 @@
     </ClInclude>
     <ClInclude Include="..\..\audio\common\Language\jhcNetBuild.h">
       <Filter>Header Files\common audio\Language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\Environ\jhcLocalOcc.h">
+      <Filter>Header Files\common robot\Environ</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

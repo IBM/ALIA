@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016-2019 IBM Corporation
+// Copyright 2016-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 
 #include "Geometry/jhcMotRamp.h"
 
-#include <string.h>
+
 ///////////////////////////////////////////////////////////////////////////
 //                       Creation and Configuration                      //
 ///////////////////////////////////////////////////////////////////////////
@@ -36,6 +36,7 @@
 jhcMotRamp::jhcMotRamp () 
 {
   cmd.SetSize(4);
+  vel.SetSize(4);
   *rname = '\0';
   RampCfg(); 
   RampReset();
@@ -64,15 +65,39 @@ double jhcMotRamp::RampNext (double now, double tupd, double lead)
 
 void jhcMotRamp::RampNext (jhcMatrix& stop, const jhcMatrix& now, double tupd, double lead) 
 {
-  double f;
-//double d00 = d0, slow = 0.2;
+  jhcMatrix dir(4);
+  double amt;
 
   // make sure vectors are okay
   if (!stop.Vector(4) || !now.Vector(4) || (tupd <= 0.0))
     Fatal("Bad input to jhcMotRamp::RampNext");
 
-  // find distance to goal and check if progress is being made
-  dist = find_dist(now, cmd);
+  // update velocity based on current position and accelerations
+  goal_dir(dir, now, tupd);
+  alter_vel(dir, dist, tupd);
+
+  // get stopping position along vector to goal (not along velocity)
+  amt = sp * tupd * lead;
+  amt = __min(amt, dist);
+  stop.RelFrac3(now, dir, amt);
+  if (done < 0)
+    stop.CycNorm3();
+}
+
+
+//= Find vector in direction of target from current position.
+// also monitors whether progress is being made (distance is decreasing)
+// sets member variable "dist" to remaining distance to target
+
+void jhcMotRamp::goal_dir (jhcMatrix& dir, const jhcMatrix& now, double tupd)
+{
+  // find direction to target and remaining distance 
+  if (done < 0)
+    dist = dir.RotDir3(cmd, now);
+  else
+    dist = dir.DirVec3(cmd, now);
+
+  // check if making progress
   if ((d0 - dist) > fabs(done))
   {
     d0 = dist;
@@ -83,45 +108,12 @@ void jhcMotRamp::RampNext (jhcMatrix& stop, const jhcMatrix& now, double tupd, d
     d0 = __max(d0, dist);
     stuck += tupd;
   }
-
-/*
-//if (*rname != '\0')
-if ((strcmp(rname, "hand_ramp") == 0) || (strcmp(rname, "dir_ramp") == 0))
-jprintf("%c %s: dist0 = %3.1f, dist = %3.1f -> diff = %+4.2f, expect >= %4.2f\n", 
-((stuck <= 0.0) ? '+' : ' '), rname, 
-d00, dist, d00 - dist, fabs(done));
-*/
-
-  // unusual case of being exactly at goal
-  if (dist == 0.0)
-  {
-    sp = 0.0;
-    stop.Copy(now);
-    return;
-  }
-
-  // get new path speed and fraction to reduce distance
-  sp = pick_sp(sp, dist, tupd);
-  f = sp * tupd * lead / dist;
-  f = __min(f, 1.0);
-
-  // move along the difference vector
-  if (done < 0)
-    stop.CycMix3(now, cmd, f);
-  else
-    stop.MixVec3(now, cmd, f);
-
-/*
-char txt[80];
-if ((strcmp(rname, "hand_ramp") == 0) || (strcmp(rname, "dir_ramp") == 0))
-jprintf("    dist = %3.1f --> sp = %3.1f [rt = %4.2f, f = %4.2f] -> %s\n", dist, sp, rt, f, stop.ListVec3(txt));
-*/
 }
 
 
-//= Pick new "movingness" path speed based on current speed and distance to goal.
-// "rt" determines acceleration and top speed, ignores inertia and deceleration limit
-// makes sure that limited acceleration will cause stop at goal "cmd"
+//= Change velocity so as to move closer to target.
+// normally scales accelerations to give same trajectory regardless of rate
+// makes sure that limited deceleration will cause stop at goal "cmd"
 // <pre>
 //        ^
 //     sp |       +-----------
@@ -131,24 +123,39 @@ jprintf("    dist = %3.1f --> sp = %3.1f [rt = %4.2f, f = %4.2f] -> %s\n", dist,
 //       -+------------------->
 //                       dist
 // </pre>
+// if goal suddenly becomes closer, will cut speed instantly or by dmax (safer)
+// sets member variable "sp" to scalar speed of new velocity vector
 
-double jhcMotRamp::pick_sp (double v0, double dist, double tupd) const
+void jhcMotRamp::alter_vel (const jhcMatrix& dir, double dist, double tupd) 
 {
-  double a, d, vmax, vstop, v;
+  double a, d, vmax, vstop, v2;
 
   // compute commanded accelerations and cruise speed
   a = ((rt < 0.0) ? astd : rt * rt * astd);
   d = ((rt < 0.0) ? dstd : rt * rt * dstd);
   vmax = fabs(rt) * vstd;
 
+  // accelerate in direction of target and find resulting speed
+  vel.AddFrac3(dir, a * tupd);
+  if (done < 0)
+    sp = vel.MaxAbs3();
+  else
+    sp = vel.LenVec3();
+
   // determine final deceleration limited target speed
   vstop = sqrt(2.0 * d * dist);
-  vmax = __min(vstop, vmax);
+  vmax = __min(vstop, vmax);                               
+  if (sp <= vmax)
+    return;
 
-  // adjust speed with initial acceleration but keep below limit
-  v = v0 + a * tupd;
-  v = __min(v, vmax);
-  return v;
+  // scale velocity to be slower if needed
+  if (dmax > 0.0)
+  {
+    v2 = sp - dmax * tupd;    
+    vmax = __max(v2, vmax);
+  }
+  vel.ScaleVec3(vmax / sp);   
+  sp = vmax;
 }
 
 

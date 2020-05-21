@@ -73,7 +73,7 @@ public:
 
   // residual geometric calibration
   jhcParam gps;
-  double nx0, ny0, nz0, cfwd;
+  double nx0, ny0, nz0, cfwd, roll;
 
 
 // PUBLIC MEMBER FUNCTIONS
@@ -84,7 +84,7 @@ public:
 
   // configuration
   void Bind (jhcDynamixel *ctrl);
-  int CommOK () const {return nok;}
+  int CommOK (int bad =0) const {return nok;}
   int Reset (int rpt =0, int chk =1);
   int Check (int rpt =0, int tries =2);
   double Voltage ();

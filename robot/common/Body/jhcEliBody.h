@@ -102,7 +102,7 @@ public:
   int SetKinect (int rpt =1);
   int Reset (int rpt =0, int full =0);
   int CfgFile (char *fname, int chk, int ssz); 
-  int CommOK (int rpt =1) const;
+  int CommOK (int rpt =1, int bad =0) const;
   int VideoOK () const {if ((vid == NULL) || !vid->Valid()) return 0; return 1;}
   int BodyNum () const {return __max(0, bnum);}
   const char *Problems ();
@@ -166,7 +166,7 @@ public:
 
   // main functions
   int UpdateImgs ();
-  int Update (int voice =0, int imgs =1);
+  int Update (int voice =0, int imgs =1, int bad =0);
   void CamPose (double& pan, double& tilt, double& ht);
   int Issue (double lead =3.0);
 

@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1998-2018 IBM Corporation
+// Copyright 1998-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1277,6 +1277,19 @@ int jhcImg::fill_arr_4 (UC8 val)
       *d++ = v4;
     d += sk4;
   }
+  return 1;
+}
+
+
+//= Fill whole image with given value irrespective of ROI.
+
+int jhcImg::FillAll (int v)
+{
+  jhcRoi orig(*this);
+
+  MaxRoi();
+  FillArr(v);
+  CopyRoi(orig);
   return 1;
 }
 

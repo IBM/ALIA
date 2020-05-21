@@ -515,6 +515,7 @@ int jhcDynamixel::RobotID ()
   // check for proper return packet
   if (RxArray(up, 6) != 6)
     return -3;
+
   if (noisy > 0)
     print_pod(up, 6, " <-");
   if ((up[0] != 0xFF) || (up[1] != 0xFF) || (up[2] != pic) || (up[3] != 0x02))

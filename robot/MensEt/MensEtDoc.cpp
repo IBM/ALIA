@@ -180,7 +180,7 @@ BOOL CMensEtDoc::OnNewDocument()
   //         =  2 for restricted operation, expiration enforced
   cripple = 0;
   ver = mc.Version(); 
-  LockAfter(8, 2020, 3, 2020);
+  LockAfter(10, 2020, 5, 2020);
 
   // JHC: if this function is called, app did not start with a file open
   // JHC: initializes display object which depends on document
@@ -956,7 +956,7 @@ void CMensEtDoc::OnDemoFilelocal()
   jprintf_open();
   if (mc.Reset(spk, tid) <= 0)
     return;
-  chat.Reset(0);
+  chat.Reset(0, "log");
   chat.Inject(in);
 
   // announce start and input mode
@@ -1029,7 +1029,7 @@ void CMensEtDoc::OnDemoInteract()
   jprintf_open();
   if (mc.Reset(src, tid) <= 0)
     return;
-  chat.Reset(mic);
+  chat.Reset(mic, "log");
 
   // announce start and input mode
   if (mic > 0)

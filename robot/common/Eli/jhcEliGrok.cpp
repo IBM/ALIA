@@ -150,7 +150,7 @@ int jhcEliGrok::watch_params (const char *fname)
   int ok;
 
   ps->SetTag("grok_watch", 0);
-  ps->NextSpec4( &freeze, 27, "Post-cmd freeze bid");
+  ps->NextSpec4( &freeze, 27, "Freeze bid (neg = disable all)");   
   ps->NextSpec4( &speak,  26, "Current speaker bid");
   ps->NextSpec4( &sound,  25, "Most recent sound bid");
   ps->NextSpec4( &close,  24, "Closest head bid");
@@ -196,7 +196,7 @@ int jhcEliGrok::time_params (const char *fname)
   int ok;
 
   ps->SetTag("grok_time", 0);
-  ps->NextSpecF( &bored, 10.0, "Post-cmd freeze (sec)"); 
+  ps->NextSpecF( &bored, 10.0, "Post-cmd freeze (sec)");       
   ps->NextSpecF( &relax,  7.0, "Twitch interval (sec)");  
   ps->NextSpecF( &rdev,   3.0, "Twitch deviation (sec)");
   ps->NextSpecF( &gtime,  0.3, "Gaze response (sec)");  
@@ -205,6 +205,24 @@ int jhcEliGrok::time_params (const char *fname)
 
   ps->NextSpecF( &side,  50.0, "Body rotate thresh (deg)");    // 0 = don't
   ps->NextSpecF( &btime,  1.5, "Rotate response (sec)");      
+  ok = ps->LoadDefs(fname);
+  ps->RevertAll();
+  return ok;
+}
+
+
+//= Parameters controlling where heads are expected to be found.
+
+int jhcEliGrok::vis_params (const char *fname)
+{
+  jhcParam *ps = &vps;
+  int ok;
+
+  ps->SetTag("grok_vis", 0);
+  ps->NextSpecF( &lvis, 20.0, "Max left head offset (deg)");
+  ps->NextSpecF( &rvis, 20.0, "Max right head offset (deg)");
+  ps->NextSpecF( &tvis, 10.0, "Max top head offset (deg)");
+  ps->NextSpecF( &bvis, 10.0, "Max bottom head offset (deg)");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -224,7 +242,9 @@ int jhcEliGrok::Defaults (const char *fname)
   ok &= watch_params(fname);
   ok &= orient_params(fname);
   ok &= time_params(fname);
+  ok &= vis_params(fname);
   ok &= fn.Defaults(fname);      // does s3 also
+  ok &= nav.Defaults(fname);
   return ok;
 }
 
@@ -250,7 +270,9 @@ int jhcEliGrok::SaveVals (const char *fname)
   ok &= wps.SaveVals(fname);
   ok &= ops.SaveVals(fname);
   ok &= tps.SaveVals(fname);
+  ok &= vps.SaveVals(fname);
   ok &= fn.SaveVals(fname);      // does s3 also
+  ok &= nav.SaveVals(fname);
   return ok;
 }
 
@@ -277,22 +299,33 @@ int jhcEliGrok::SaveCfg (const char *fname) const
 
 void jhcEliGrok::Reset ()
 {
+  jhcVideoSrc *v;
+
   // reset vision components
   s3.Reset();
   fn.Reset();
+  nav.Reset();
 
   // after body reset, sensor info will be waiting and need to be read
   if (body != NULL)
   {
+    // configure body and navigation component
+    base->Zero();
     body->InitPose(-1.0);
     body->Update(-1, 1);
+    if ((v = body->vid) != NULL)
+      nav.SrcSize(v->XDim(), v->YDim(), v->Focal(1), v->Scaling(1));
+
+    // make status images
     body->BigSize(mark);
     mark.FillArr(0);
+    mark2.InitSize(nav.map);
   }
 
   // high-level commands
   wlock = 0;
   wwin = 0;
+  slock = 0;
 
   // clear state for sound and twitch behaviors
   seek = 0;
@@ -310,17 +343,22 @@ void jhcEliGrok::Reset ()
 
 int jhcEliGrok::Update (int voice, UL32 resume)
 {
+jtimer(1, "jhcEliGrok::Update");
   // do slow vision processing in background (already started usually)
   if (jhcBackgRWI::Update(0) <= 0)
     return 0;
 
+jtimer(10, "rest of update");
   // do fast sound processing in foreground (needs voice)
   if (mic != NULL)
     mic->Update(voice);
   tk.Analyze(voice);
 
   // create pretty picture then enforce min wait (to simulate robot)
-  interest_img();
+  head_img();
+  nav_img();
+jtimer_x(10);
+jtimer_x(1);
   jms_resume(resume);  
   return 1;
 }
@@ -340,64 +378,111 @@ void jhcEliGrok::Stop ()
 //                          Interaction Overrides                        //
 ///////////////////////////////////////////////////////////////////////////
 
+//= Get sensor inputs and fully process images.
+
+void jhcEliGrok::body_update ()
+{
+  jhcMatrix pos(4), dir(4);
+
+  // wait (if needed) for body sensor data to be received (no mic)
+  if (body == NULL)
+    return;
+jtimer(2, "body update");
+  body->Update(-1, 0);
+jtimer_x(2);
+
+  // do slow head finding and tracking (needs both pose and image)
+  if (seen > 0)
+  {  
+    // find new person location based on current camera pose
+    adjust_heads();
+jtimer(3, "face track");
+    neck->HeadPose(pos, dir, lift->Height());
+    fn.SetCam(pos, dir);
+    fn.Analyze(body->Color(), body->Range());
+jtimer_x(3);
+
+jtimer(4, "navigation");
+    // update navigation map
+    nav.AdjustMaps(base->StepFwd(), base->StepLeft(), base->StepTurn());
+    nav.RefineMaps(body->Range(), pos, dir);
+jtimer_x(4);
+  }
+}
+
+
+//= Alter expected position and visibilty of heads based on robot state.
+
+void jhcEliGrok::adjust_heads ()
+{
+  jhcBodyData *p;
+  double p0, t0, perr, terr, ht = lift->Height();
+  int i, n = s3.PersonLim(1);
+
+  // consider each potential person track 
+  for (i = 0; i < n; i++)
+  {
+    // check for valid person who was not sensed on last cycle
+    p = &(s3.dude[i]);
+    if ((p->TrackID() <= 0) || (p->Last() <= 1))
+      continue;
+
+    // adjust head for base motion (ignores hands)
+    base->AdjustTarget(*p);
+
+    // determine if head should have been matchable (allows erasure)
+    neck->AimFor(p0, t0, *p, ht);
+    perr = neck->PanErr(p0, 0, 0); 
+    terr = neck->TiltErr(t0, 0, 0); 
+    if ((perr >= -lvis) && (perr <= rvis) && (terr >= -bvis) && (terr <= tvis))
+      p->vis = 1;
+    else 
+      p->vis = 0;
+  }
+}
+
+
 //= Run local behaviors then send arbitrated commands to body.
 
 void jhcEliGrok::body_issue ()
 {
+jtimer(12, "body_issue");
   // record current time
   tnow = jms_now();
   if (body == NULL)
     return;
 
   // run some reactive behaviors (tk is up-to-date) 
-  cmd_freeze();
-  watch_talker();
-  gaze_sound();
-  watch_closest();
-  gaze_stare();
-  gaze_face();
-  gaze_random();
-  head_rise();
+  if (freeze >= 0)
+  {
+    cmd_freeze();
+    watch_talker();
+    gaze_sound();
+    watch_closest();
+    gaze_stare();
+    gaze_face();
+    gaze_random();
+    head_rise();
+  }
 
   // interpret high-level commands
   assert_watch();
+  assert_seek();
 
   // start commands and get new raw images
+jtimer(13, "Issue");
   body->Issue();
+jtimer_x(13);
+jtimer(11, "UpdateImgs");
   seen = body->UpdateImgs();         
-}
+jtimer_x(11);
 
-
-//= Get sensor inputs and fully process images.
-
-void jhcEliGrok::body_update ()
-{
-  jhcMatrix pos(4), dir(4);
-  int i, n = s3.PersonLim(1);
-
-  // wait (if needed) for body sensor data to be received (no mic)
-  if (body == NULL)
-    return;
-  body->Update(-1, 0);
-
-  // do slow head finding and tracking (needs both pose and image)
-  if (seen > 0)
-  {  
-    // adjust expected head positions for body motion (ignores hands)
-    for (i = 0; i < n; i++)
-      if ((s3.dude[i]).TrackID() >= 0)
-        base->AdjustTarget(s3.dude[i]);
-
-    // find new person location based on current camera pose
-    neck->HeadPose(pos, dir, lift->Height());
-    fn.SetCam(pos, dir);
-    fn.Analyze(body->Color(), body->Range());
-  }
+jtimer_x(12);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////
-//                           High-Level Commands                         //
+//                     High-Level People Commands                        //
 ///////////////////////////////////////////////////////////////////////////
 
 //= Connect some tracked person to motion controller.
@@ -466,6 +551,54 @@ double jhcEliGrok::PersonErr (int id) const
 
 
 ///////////////////////////////////////////////////////////////////////////
+//                     High-Level Navigation Commands                    //
+///////////////////////////////////////////////////////////////////////////
+
+//= Drive the robot toward the target location (y is forward, not x).
+// bid value must be greater than previous command to take effect
+// returns 1 if newly set, 0 if pre-empted by higher priority
+
+int jhcEliGrok::SeekLoc (double tx, double ty, double sp, int bid)
+{
+  if (bid <= slock)
+    return 0;
+  slock = bid;
+  sx = tx;
+  sy = ty;
+  ssp = sp;
+  return 1;
+}
+
+
+//= Take necessary (pre-emptive) body actions to approach winning target.
+
+void jhcEliGrok::assert_seek ()
+{
+double t0 = -60.0, stop = 2.0;
+  double trav, head;
+  int bid = slock;
+
+  // check if some command, then reset arbitration for next round
+  if (slock <= 0)
+    return;
+  slock = 0;
+ 
+  // make sure map in front of robot exists
+  if (nav.Blind())
+  {  
+    neck->GazeTarget(0.0, t0, 1.0, 0.0, bid + 1);
+    base->DriveTarget(0.0, 0.0, 1.0, bid);
+    return;
+  }
+
+  // pick a steering angle and travel speed
+  nav.Avoid(trav, head, sx, sy);
+  base->MoveTarget(trav, ((trav < 0.0) ? 0.7 : ssp), bid);
+  base->TurnFix(head, 1.0, 1.0, bid);             
+}
+
+
+///////////////////////////////////////////////////////////////////////////
 //                            Innate Behaviors                           //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -504,11 +637,11 @@ void jhcEliGrok::gaze_sound ()
   if (sound <= 0)
     return;
 
-  // trigger behavior when sound is far to either side
+  // trigger when sound is far to either side wrt gaze direction
   if (mic->VoiceStale() <= 0)
   {
     ang = mic->VoiceDir();
-    if (fabs(ang) >= edge)
+    if (fabs(ang - neck->Pan()) >= edge)
     {
       // remember location since sound is often short duration
       rads = D2R * (ang + 90.0);
@@ -648,7 +781,7 @@ void jhcEliGrok::head_rise ()
 
 //= Make a pretty version of color image showing relevant items.
 
-void jhcEliGrok::interest_img ()  
+void jhcEliGrok::head_img ()  
 {
   if ((body == NULL) || !(body->NewFrame()))
     return;
@@ -660,3 +793,14 @@ void jhcEliGrok::interest_img ()
 }
 
 
+//= Make pretty version of overhead map and robot sensors.
+
+void jhcEliGrok::nav_img ()
+{
+  if ((body == NULL) || !(body->NewFrame()))
+    return;
+  nav.LocalMap(mark2);
+  nav.Paths(mark2);
+  nav.RobotBody(mark2);
+  nav.Tail(mark2);
+}

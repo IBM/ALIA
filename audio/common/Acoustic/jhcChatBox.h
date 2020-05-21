@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,11 +52,12 @@ class jhcChatBox : public CDialog
 // Construction
 public:
   jhcChatBox(CWnd* pParent = NULL);            // standard constructor
+  ~jhcChatBox ();                              // cleanup destructor
   void Launch (int x, int y);                  // modeless placement
 
 // Main functions
 public:
-  void Reset (int disable =0);           
+  void Reset (int disable =0, const char *dir =NULL);           
   void Mute (int gray =1); 
   int Interact ();                             // message pump
   char *Get (char *input, int ssz);  
@@ -70,6 +71,7 @@ public:
 
 // Dialog Data 
 private:
+  FILE *log;                                   // log file (if any)
   char entry[200];                             // last unseen user input
   int disable;                                 // ignore user input
   int quit;                                    // escape key seen

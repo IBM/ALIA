@@ -2379,6 +2379,7 @@ int jhcArea::BoxAvgInv (jhcImg &avg, jhcImg& isd, const jhcImg& src,
 //= Like BoxAvg but works uses diamond shaped region instead of a rectangle.
 // w1 is the dimension aint the major diagonal (as displayed), h2 is minor
 // not optimized for scan order access (already hairy enough!)
+// NOTE: clamped output value to 255 as of March 2020
 
 int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc)
 {
@@ -2401,7 +2402,7 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
   a4.SetSize(dest, 4);
 
   // generic ROI case
-  int i, x, y, step, step4, lim, lim2, stop;
+  int i, x, y, v, step, step4, lim, lim2, stop;
   int rw = dest.RoiW(), rh = dest.RoiH();
   int line = dest.Line(), line4 = a4.Line() >> 2;  // line4 = a4.XDim();
   int nd1 = d1z / 2, pd1 = d1z - nd1, nd1i = nd1 + 1;
@@ -2641,7 +2642,8 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
     stop = __min(nd2i, lim2);
     while (i < stop)            
     {
-      *d = (UC8)(sum >> 16);
+      v = sum >> 16;
+      *d = (UC8) __min(v, 255);
       sum -= (*m2);       // subtract bottom border copy
       sum += (*m);        // add leading edge value
       m += step4;         // advance leading edge but not trailing 
@@ -2654,7 +2656,8 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
       stop = __min(nd2i, lim);
       while (i < stop)           
       {
-        *d = (UC8)(sum >> 16);
+        v = sum >> 16;
+        *d = (UC8) __min(v, 255);
         sum -= (*m2);     // subtract off copy of bottom border pixel
         sum += (*m);      // add in copy of top border pixel
         d += step;
@@ -2666,7 +2669,8 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
     // loop skipped if already beyond i = lim2 (e.g. dual overhang)
     while (i < lim2)
     {
-      *d = (UC8)(sum >> 16);
+      v = sum >> 16;
+      *d = (UC8) __min(v, 255);
       sum -= (*m2);       // subtract trailing, add leading, advance both
       sum += (*m);
       m  += step4;
@@ -2678,7 +2682,8 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
     // finish scan - mask is overhanging top or side now
     while (i <= lim)
     {
-      *d = (UC8)(sum >> 16);
+      v = sum >> 16;
+      *d = (UC8) __min(v, 255);
       sum -= (*m2);       // subtract trailing
       sum += (*m);        // add copy of top border
       m2 += step4;        // advance only trailing pointer
@@ -2726,7 +2731,8 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
     stop = __min(nd2i, lim2);
     while (i < stop)
     {
-      *d = (UC8)(sum >> 16);
+      v = sum >> 16;
+      *d = (UC8) __min(v, 255);
       sum -= (*m2);       // subtract bottom border copy
       sum += (*m);        // add leading edge value
       m += step4;         // advance leading edge but not trailing 
@@ -2739,7 +2745,8 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
       stop = __min(nd2i, lim);
       while (i < stop)
       {
-        *d = (UC8)(sum >> 16);
+        v = sum >> 16;
+        *d = (UC8) __min(v, 255);
         sum -= (*m2);     // subtract off copy of bottom border pixel
         sum += (*m);      // add in copy of top border pixel
         d += step;
@@ -2751,7 +2758,8 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
     // loop skipped if already beyond i = lim2 (e.g. dual overhang)
     while (i < lim2)
     {
-      *d = (UC8)(sum >> 16);
+      v = sum >> 16;
+      *d = (UC8) __min(v, 255);
       sum -= (*m2);       // subtract trailing, add leading, advance both
       sum += (*m);
       m  += step4;
@@ -2763,7 +2771,8 @@ int jhcArea::DBoxAvg (jhcImg &dest, const jhcImg& src, int w1, int h2, double sc
     // finish scan - mask is overhanging top or side now
     while (i <= lim)
     {
-      *d = (UC8)(sum >> 16);
+      v = sum >> 16;
+      *d = (UC8) __min(v, 255);
       sum -= (*m2);       // subtract trailing
       sum += (*m);        // add copy of top border
       m2 += step4;        // advance only trailing pointer
@@ -4456,7 +4465,7 @@ int jhcArea::DBoxAvg16 (jhcImg &dest, const jhcImg& src, int w1, int h2, double 
 
 
 //= Mutated version of standard threshold function.
-// can do thresholding in-place, uses under value if less than or equal to th
+// can do thresholding in-place, uses under value if less than th
 
 void jhcArea::thresh (jhcImg& dest, const jhcImg& src, int th, int over, int under) const
 {

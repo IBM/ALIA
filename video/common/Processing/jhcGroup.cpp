@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -228,7 +228,7 @@ int jhcGroup::merge_labels (int now, int old)
 
 
 //= Keep only labels with lots of area, reassign names from label0 + 1 upward.  
-// Assumes region info stored in global "areas" from first pass (ScanLabels).
+// Assumes region info stored in global "areas" from first pass (scan_labels).
 // Images now filled with consistent new labels for regions.
 
 int jhcGroup::norm_labels (jhcImg& dest, int n, int amin, int label0)
@@ -716,7 +716,7 @@ int jhcGroup::EraseBlips (jhcImg& dest, const jhcImg& src, int amin, int th,
 
 //= Keep only labels with lots of area by marking these pixels as 255.
 // If inv is greater then zero, then components marked 0 instead.
-// Assumes region info stored in global "areas" from first pass (ScanLabels).
+// Assumes region info stored in global "areas" from first pass (scan_labels).
 // returns area of largest blob
 
 int jhcGroup::thresh_labels (jhcImg& dest, const jhcImg& marks, int n, 
@@ -789,6 +789,79 @@ int jhcGroup::thresh_labels (jhcImg& dest, const jhcImg& marks, int n,
 int jhcGroup::Biggest (jhcImg& dest, const jhcImg& src, int th)
 {
   return RemSmall(dest, src, 1.0, 0, th);
+}
+
+
+//= Keep only component that includes pixel (x y).
+// returns area or 0 if none
+
+int jhcGroup::Tagged (jhcImg& dest, const jhcImg& src, int x, int y, int th)
+{
+  int n;
+
+  // sanity check
+  if (!dest.Valid(1) || !dest.SameFormat(src))
+    return Fatal("Bad images to jhcGroup::Tagged");
+  dest.CopyRoi(src);
+  if (!src.InBounds(x, y))
+  {
+    dest.FillArr(0);
+    return 0;
+  }
+
+  // do connected components finding and select one
+  tmp.SetSize(src, 2);
+  tmp.CopyRoi(src);
+  n = scan_labels(tmp, src, th);
+  return keep_labels(dest, tmp, n, x, y);
+}
+
+
+//= Keep only label found at pixel (px py) and mark in output image.
+// Assumes region info stored in global "areas" from first pass (scan_labels).
+// returns area of retained blob (0 if none)
+
+int jhcGroup::keep_labels (jhcImg& dest, const jhcImg& marks, int n, int px, int py)
+{
+  int rw = dest.RoiW(), rh = dest.RoiH(), dsk = dest.RoiSkip(), ssk2 = marks.RoiSkip() >> 1;
+  int win, label, i, base, x, y, cnt;
+  const US16 *s = (const US16 *) marks.RoiSrc();
+  UC8 *d = dest.RoiDest();
+
+  // sanity check
+  if (n >= areas.Size())
+    return -2;
+
+  // find canonical label for selected point and save component area
+  if ((win = marks.ARef(px, py)) == 0)
+  {
+    dest.FillArr(0);
+    return 0;
+  }
+  while ((label = areas.ARef(win)) < 0)
+    win = -label;
+  cnt = areas.ARef(win);
+
+  // clear output mark for all raw labels which do not reduce to win
+  for (i = 1; i <= n; i++)
+    if ((base = -areas.ARef(i)) != 0)
+    {
+      if (base < 0)
+        base = i;
+      else
+        while ((label = areas.ARef(base)) < 0)
+          base = -label;
+      areas.ASet(i, ((base == win) ? 255 : 0));      // determine output mark
+    }
+
+  // scan image and save only pixels from selected blob
+  for (y = rh; y > 0; y--, d += dsk, s += ssk2)
+    for (x = rw; x > 0; x--, d++, s++)
+      if (*s == 0)
+        *d = 0;
+      else
+        *d = (UC8) areas.ARef(*s);                   // emit output mark
+  return cnt;
 }
 
 

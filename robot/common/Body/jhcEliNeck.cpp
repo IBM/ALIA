@@ -84,11 +84,11 @@ void jhcEliNeck::std_geom ()
 {
   // pan-to-tilt link: pan angle at base of link (x to right, y is forward)
   jt[0].SetServo(  10,   0,   10.0,  0.031, 90.0, 360.0, 360.0, -2.0 );
-  jt[0].SetGeom(    0.3, 1.8, 90.0, 90.0,    0.0,   0.0, -45.0, 45.0 );  
+  jt[0].SetGeom(    0.3, 1.8, 90.0, 90.0,    0.0,   0.0, -70.0, 70.0 );  
  
   // tilt-to-cam link: tilt angle at base of link (x toward camera, y backward)
-  jt[1].SetServo(  11,   0,   10.0,  0.031, 90.0, 360.0, 360.0, -2.0 );
-  jt[1].SetGeom(    0.5, 1.9, 90.0,  0.0,    0.0,   0.0, -90.0, 45.0 );  
+  jt[1].SetServo(  11,   0,   10.0,  0.031, 90.0, 360.0,  360.0, -2.0 );
+  jt[1].SetGeom(    0.5, 1.9, 90.0,  0.0,    0.0,   0.0, -100.0, 35.0 );  
 }
 
 
@@ -152,6 +152,8 @@ int jhcEliNeck::geom_params (const char *fname)
   ps->NextSpecF( &ny0,   5.6,  "Pan axis in front of wheels (in)");
   ps->NextSpecF( &nz0,  25.4,  "Pan top above arm shelf (in)");
   ps->NextSpecF( &cfwd,  0.5,  "Camera in front of tilt (in)");  
+  ps->Skip();
+  ps->NextSpecF( &roll,  0.0,  "Camera roll (deg)");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -474,7 +476,7 @@ int jhcEliNeck::Update ()
   jt[1].GlobalMap(pos0, tool);
 
   // make up an aiming vector
-  dir.SetVec3(Pan(), Tilt(), 0.0);
+  dir.SetVec3(Pan(), Tilt(), roll);
 
   // set up for new target arbitration
   clr_locks(0);

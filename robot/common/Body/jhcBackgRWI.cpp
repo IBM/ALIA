@@ -96,7 +96,7 @@ int jhcBackgRWI::Update (UL32 resume)
 {
   if (WaitForSingleObject((HANDLE) xchg_done, 1000) != WAIT_OBJECT_0)
     return jprintf(">>> Never got background done in jhcBackgRWI::Update\n");
-  jms_resume(resume);                  // enforce min wait (to simmulate robot)
+  jms_resume(resume);                  // enforce min wait (to simulate robot)
   return 1;
 }
 

@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ public:
   int EraseBlips (jhcImg& dest, const jhcImg& src, int amin =100, 
                   int th =0, jhcImg *vic =NULL);
   int Biggest (jhcImg& dest, const jhcImg& src, int th =0);
+  int Tagged (jhcImg& dest, const jhcImg& src, int x, int y, int th =0);
   int RemSmall (jhcImg& dest, const jhcImg& src, double arel =0.5, int amin =0,
                  int th =0, jhcImg *vic =NULL);
   int RemSmallGray (jhcImg& dest, const jhcImg& src, double arel =0.5, int amin =0,
@@ -89,6 +90,7 @@ protected:
   int merge_horiz (int now, int old, double arel, int amin);
 
   // shape cleanup
+  int keep_labels (jhcImg& dest, const jhcImg& marks, int n, int px, int py);
   int thresh_labels (jhcImg& dest, const jhcImg& marks, int n, 
                      int amin, double arel, int inv);
   int scan_dual (jhcImg& dest, const jhcImg& src, int th);

@@ -30,7 +30,7 @@
 //                         Manhattan Distance                            //
 ///////////////////////////////////////////////////////////////////////////
 
-//= Claim "empty" pixels for nearest "seed" based on Manhatten metric.
+//= Claim "empty" pixels for nearest "seed" based on Manhattan metric.
 // when two seeds are equidistant, higher label dominates
 // default version for labels of 16 bits (2 fields) and 16 bit distances
 

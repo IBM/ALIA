@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -144,6 +144,7 @@ public:
 
   // full alteration
   void MergeRoi (const jhcRoi& src);
+  void AbsorbRoi (int x0, int x1, int y0, int y1);
   void AbsorbRoi (const jhcRoi& src);
   void Union (const jhcRoi *src);
   void StretchRoi (int px, int py);
@@ -160,6 +161,7 @@ public:
   int *RoiPts (int lims[]) const;
   char *RoiText (char *ans, int clip, int ssz) const;
   int FullRoi () const;
+  int NullRoi () const {return((area == 0) ? 1 : 0);}
 
   // utilities - convenience
   template <size_t ssz>

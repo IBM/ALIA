@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -920,6 +920,17 @@ double jhcStats::FracUnder (const jhcImg& src, int th) const
     return Fatal("Bad image to jhcStats::FracUnder");
 
   return(1.0 - FracOver(src, th - 1));
+}
+
+
+//= Like other FracUnder but restricts attention to a patch.
+
+double jhcStats::FracUnder (const jhcImg& src, const jhcRoi& patch, int th) const 
+{
+  if (!src.Valid(1))
+    return Fatal("Bad image to jhcStats::FracUnder");
+
+  return(CountUnder(src, patch, th) / (double) patch.RoiArea());
 }
 
 

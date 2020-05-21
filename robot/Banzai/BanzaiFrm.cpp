@@ -73,10 +73,10 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 
   // JHC: set size and position of window
   // must comment out "ShowWindow(SW_SHOWMAXIMIZED)" in application file
-  cs.x = 0;
+  cs.x = 430;
   cs.y = 5;
-  cs.cx = 710;
-  cs.cy = 970;
+  cs.cx = 1370;
+  cs.cy = 780;
 
 	// JHC: change window title 
   cs.lpszName = _T("Banzai Application - IBM");

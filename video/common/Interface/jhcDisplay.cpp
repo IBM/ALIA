@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1998-2018 IBM Corporation
+// Copyright 1998-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1770,15 +1770,15 @@ int jhcDisplay::DownWait (int *x, int *y, int rel)
 //////////////////////////////////////////////////////////////////////////////
 
 //= Finds current position of the mouse (waiting if needed).
-// returns 0 if none, 1 if left button down, 2 for middle, 3 for right
-// special return of -1 if main menu selected (leaves posted) or app closed
 // changed to BLOCK until some mouse event occurs by default
+// returns 0 if none, 1 if left button down, 2 for middle, 3 for right
+// returns -1 if main menu selected or app closed, -2 if key pressed
 // returns latest mouse button for non-blocking mode (i.e. mbut not cleared)
 
 int jhcDisplay::MousePos (int *x, int *y, int block)
 {
   MSG msg;
-  int some, esc = 0, ans = -1;
+  int some, esc = 0, key = 0, ans = -1;
 
   // no mouse click messages have been found yet
   while (ans < 0)                                     // restored 6/12 for MouseBox
@@ -1786,11 +1786,19 @@ int jhcDisplay::MousePos (int *x, int *y, int block)
     // go through all messages currently on queue
     while ((some = peek_no_menu(&msg)) != 0)
     {
-      if (some < 0)                                   // window menu hit
+      // look for window menu or keyboard action
+      if (some < 0)                             
       {
         esc = 1;
         break;
       }
+      if (msg.message == WM_KEYDOWN)
+      {
+        key = 1;
+        break;
+      }
+
+      // peek at pending mouse messages but process others
       if ((msg.message == WM_MOUSEMOVE)   ||
           (msg.message == WM_LBUTTONDOWN) ||
           (msg.message == WM_MBUTTONDOWN) ||
@@ -1829,8 +1837,12 @@ int jhcDisplay::MousePos (int *x, int *y, int block)
     *x = mx;
   if (y != NULL)
     *y = my;
+
+  // figure out value to return
   if (esc > 0)
     return -1;
+  if (key > 0)
+    return -2;
   return mbut;
 }
 
@@ -1862,14 +1874,14 @@ int jhcDisplay::MouseRel (int *x, int *y, int specs[])
 
 //= Tells mouse position relative to last image but does not block.
 // always returns valid x and y values in image (i.e. clips if outside)
-// returns: -2 = menu, -1 = out of image, 0 = no button, 1-3 = button
+// returns: -2 = menu or key, -1 = out of image, 0 = no button, 1-3 = button
 // Note: only returns button number if mouse clicked inside image
 // Note: make sure grid is not being reset (e.g. by LoopHit)
 
 int jhcDisplay::MouseRel0 (int& x, int& y)
 {
   mbut = 0;                              // added default if no messages
-  if (MousePos(NULL, NULL, 0) == -1)     // refreshes mx, my, and mbut
+  if (MousePos(NULL, NULL, 0) < 0)       // refreshes mx, my, and mbut
     return -2;
   if (img_coords(&x, &y, mx, my, imgx, imgy, imgw, imgh) <= 0)
     return -1;
@@ -1889,6 +1901,7 @@ int jhcDisplay::MouseRel2 (int& x, int& y)
 
 
 //= Given MouseRel0 return code tells whether to exit routine.
+// can optional abort on any keystroke also
 // returns 1 if main menu, or R click plus confirmation
 
 int jhcDisplay::MouseExit (int code)

@@ -1985,29 +1985,31 @@ int jhcResize::Rigid (jhcImg& dest, const jhcImg& src, double degs, double cx, d
 {
   double rads = D2R * degs, c = cos(rads), s = sin(rads);
   double xcos = xsc * c, ycos = ysc * c, xsin = xsc * s, ysin = ysc * s;
-  double sx, sy, sx0 = px - cx * xcos - cy * ysin, sy0 = py + cx * xsin - cy * ycos;
+  int iyc = ROUND(65536.0 * ycos), iys = ROUND(65536.0 * ysin);
+  int ixc = ROUND(65536.0 * xcos), ixs = ROUND(65536.0 * xsin);
+  int isx, isx0 = ROUND(65536.0 * (px - cx * xcos - cy * ysin));
+  int isy, isy0 = ROUND(65536.0 * (py + cx * xsin - cy * ycos));
   int w = dest.XDim(), h = dest.YDim(), dln = dest.Line();
   int x, y, ix, iy, sw = src.XDim(), sh = src.YDim();
   UC8 *d, *d0 = dest.PxlDest();
 
   if (!dest.Valid(1) || !src.Valid(1) || dest.SameImg(src))
     return Fatal("Bad images to jhcResize::Rigid");
+  dest.FillArr(def);
 
   // copy closest source pixel
-  for (y = 0; y < h; y++, d0 += dln, sx0 += ysin, sy0 += ycos)
+  for (y = h; y > 0; y--, d0 += dln, isx0 += iys, isy0 += iyc)
   {
-    sx = sx0;
-    sy = sy0;
+    isx = isx0;
+    isy = isy0;
     d = d0;
-    for (x = 0; x < w; x++, d++, sx += xcos, sy -= xsin)
+    for (x = w; x > 0; x--, d++, isx += ixc, isy -= ixs)
     {
       // make sure valid source pixel
-      ix = (int) sx;
-      iy = (int) sy;
+      ix = (isx + 32768) >> 16;
+      iy = (isy + 32768) >> 16;
       if ((ix >= 0) && (iy >= 0) && (ix < sw) && (iy < sh))
         *d = (UC8) src.ARef(ix, iy);
-      else
-        *d = (UC8) def;
     }
   }
   return 1;
@@ -2106,7 +2108,7 @@ int jhcResize::RigidMix (jhcImg& dest, const jhcImg& src, double degs, double cx
       
       // find corner of lower row for 4 pixel patch in source
       off = ix + iy * sln;
-      sum = 0;
+      sum = 0;                         // truncate, not round
 
       // add in SW pixel if it exists
       f = (256 - fx) * (256 - fy);
@@ -2191,7 +2193,7 @@ int jhcResize::RigidMixRGB (jhcImg& dest, const jhcImg& src, double degs, double
       
       // find corner of lower row for 4 pixel patch in source
       off = (ix + ix + ix) + iy * sln;
-      bsum = 0;
+      bsum = 0;                        // truncate, not round
       gsum = 0;
       rsum = 0;
 
@@ -2267,6 +2269,102 @@ int jhcResize::RigidMixRGB (jhcImg& dest, const jhcImg& src, double degs, double
       d[0] = (UC8)(bsum >> 16);
       d[1] = (UC8)(gsum >> 16);
       d[2] = (UC8)(rsum >> 16);
+    }
+  }
+  return 1;
+}
+
+
+//= Bilinear interpolate monochrome pixel from non-zero neighbors after moving center then rotating.
+// source point (px py) goes to dest point (cx cy) then rotate around (cx cy) 
+// source steps along new axes are xsc and ysc
+
+int jhcResize::RigidMixNZ (jhcImg& dest, const jhcImg& src, double degs, double cx, double cy, 
+                           double px, double py, double xsc, double ysc) const
+{
+  double rads = D2R * degs, c = cos(rads), s = sin(rads);
+  double xcos = xsc * c, ycos = ysc * c, xsin = xsc * s, ysin = ysc * s;
+  double sx, sy, sx0 = px - cx * xcos - cy * ysin, sy0 = py + cx * xsin - cy * ycos;
+  int sum, norm, v, off, f, w = dest.XDim(), h = dest.YDim(), dln = dest.Line();
+  int x, y, ix, iy, fx, fy, xlim = src.XLim(), ylim = src.YLim(), sln = src.Line();
+  const UC8 *p0 = src.PxlSrc();
+  UC8 *d, *d0 = dest.PxlDest();
+
+  if (!dest.Valid(1) || !src.Valid(1) || dest.SameImg(src))
+    return Fatal("Bad images to jhcResize::RigidMixNZ");
+
+  // shift sx and sy up by 8 bits
+  sx0  *= 256.0;
+  sy0  *= 256.0;
+  xcos *= 256.0;
+  ycos *= 256.0;
+  xsin *= 256.0;
+  ysin *= 256.0;
+
+  // copy closest source pixel
+  for (y = 0; y < h; y++, d0 += dln, sx0 += ysin, sy0 += ycos)
+  {
+    sx = sx0;
+    sy = sy0;
+    d = d0;
+    for (x = 0; x < w; x++, d++, sx += xcos, sy -= xsin)
+    {
+      // get integer pixel address and fraction (for mixing)
+      ix = ((int) sx) >> 8;
+      iy = ((int) sy) >> 8;
+      fx = (int)(sx - (ix << 8));
+      fy = (int)(sy - (iy << 8));
+      
+      // find corner of lower row for 4 pixel patch in source
+      off = ix + iy * sln;
+      sum = 0;
+      norm = 0;
+
+      // add in SW pixel if it exists
+      f = (256 - fx) * (256 - fy);
+      if ((ix >= 0) && (ix <= xlim) && (iy >= 0) && (iy <= ylim))
+        if ((v = *(p0 + off)) > 0)
+        {
+          sum += f * v;
+          norm += f;
+        }
+
+      // add in SE pixel if it exists
+      f = fx * (256 - fy);
+      if ((ix >= -1) && (ix < xlim) && (iy >= 0) && (iy <= ylim))
+        if ((v = *(p0 + off + 1)) > 0)
+        {
+          sum += f * v;
+          norm += f;
+        }
+
+      // adjust to upper row of 4 pixel patch in source
+      off += sln;
+      iy++;
+
+      // add in NW pixel if it exists
+      f = (256 - fx) * fy;
+      if ((ix >= 0) && (ix <= xlim) && (iy >= 0) && (iy <= ylim))
+        if ((v = *(p0 + off)) > 0) 
+        {
+          sum += f * v;
+          norm += f;
+        }
+
+      // add in NE pixel if it exists
+      f = fx * fy;
+      if ((ix >= -1) && (ix < xlim) && (iy >= 0) && (iy <= ylim))
+        if ((v = *(p0 + off + 1)) > 0)
+        {
+          sum += f * v;
+          norm += f;
+        }
+
+      // normalize to complete mix (truncate, not round)
+      if (norm <= 0)
+        *d = 0;
+      else
+        *d = (UC8)(sum / norm);
     }
   }
   return 1;
@@ -2868,6 +2966,50 @@ int jhcResize::Shift (jhcImg& dest, const jhcImg& src, int dx, int dy) const
     s += sk;
   }
   return 1; 
+}
+
+
+//= Shift an image in place inserting default value if no valid source for pixel.
+
+int jhcResize::Shift (jhcImg& dest, int dx, int dy, int def) const
+{
+  int dw = abs(dx), dh = abs(dy), w = dest.XDim(), h = dest.YDim(), ln = dest.Line();
+  int x, y, x0 = 0, y0 = 0, xinc = 1, yinc = ln, ndv = -dy * ln;
+  UC8 *d, *d0;
+
+  // check for special cases
+  if (!dest.Valid(1))
+    return Fatal("Bad image to jhcResize::Shift");
+  if ((dw == 0) && (dh == 0))
+    return 1;
+  if ((dw >= w) || (dh >= h))
+    return dest.FillArr(def);
+
+  // figure out start and stepping directions
+  if (dx > 0)
+  {
+    x0 = w - 1;              // right to left
+    xinc = -1;
+  }
+  if (dy > 0)
+  {
+    y0 = h - 1;              // top to bottom
+    yinc = -ln;
+  }
+
+  // scan image in some direction
+  d0 = dest.RoiDest(x0, y0);      
+  for (y = h - dh; y > 0; y--, d0 += yinc)
+  {
+    for (d = d0, x = w - dw; x > 0; x--, d += xinc)
+      d[0] = d[ndv - dx];         
+    for (x = dw; x > 0; x--, d += xinc)              
+      d[0] = (UC8) def;                 
+  }
+  for (y = dh; y > 0; y--, d0 += yinc)           
+    for (d = d0, x = w; x > 0; x--, d += xinc)
+      d[0] = (UC8) def;                 
+  return 1;
 }
 
 

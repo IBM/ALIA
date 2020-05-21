@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2011-2019 IBM Corporation
+// Copyright 2011-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1432,11 +1432,30 @@ void jhcMatrix::DiffVec3 (const jhcMatrix& a, const jhcMatrix& b, double homo)
 
 
 //= Fill self with unit vector pointing from b to a.
+// returns the length of the difference vector
 
-void jhcMatrix::DirVec3 (const jhcMatrix& a, const jhcMatrix& b, double homo)
+double jhcMatrix::DirVec3 (const jhcMatrix& a, const jhcMatrix& b, double homo)
 {
   DiffVec3(a, b, homo);
-  UnitVec3();
+  return UnitVec3();
+}
+
+
+//= Fill seld with "unit" vector pointing from pan. tilt, roll vector b to a.
+// essentially divides through by largest component and saves ratios
+// returns absolute magnitude of biggest component
+
+double jhcMatrix::RotDir3 (const jhcMatrix& a, const jhcMatrix& b)
+{
+#ifdef _DEBUG
+  if (!Vector(4) || !a.Vector(4) || !b.Vector(4))
+    Fatal("Bad input to jhcMatrix::RotDir3");
+#endif
+
+  SetP(ang180(a.P() - b.P()));
+  SetT(ang180(a.T() - b.T()));
+  SetR(ang180(a.R() - b.R()));
+  return RotUnit3();
 }
 
 
@@ -1598,6 +1617,24 @@ double jhcMatrix::UnitVec3 (const jhcMatrix& ref, double homo)
 double jhcMatrix::UnitVec3 (double homo)
 {
   return UnitVec3(*this, homo);
+}
+
+
+//= Normalize all pan, tilt, roll values by one with largest magnitude.
+// returns the largest absolute magnitude
+
+double jhcMatrix::RotUnit3 ()
+{
+  double len = MaxAbs3();
+
+#ifdef _DEBUG
+  if (len < 0.0)
+    Fatal("Bad input to jhcMatrix::RotUnit3");
+#endif
+
+  if (len > 0.0)
+    ScaleVec3(1.0 / len, 0.0);
+  return len;
 }
 
 

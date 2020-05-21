@@ -47,7 +47,7 @@ jhcEliBase::jhcEliBase ()
   // basic info
   *ver = '\0';
   noisy = 0;
-  bok = -1;
+  berr = -1;           // no port yet
   pend = 0;
   grn = 0;             // assume encoders not reversed
   c16 = 0;             // assume 1 byte checksum 
@@ -104,15 +104,15 @@ int jhcEliBase::ctrl_params (const char *fname)
   int ok;
 
   ps->SetTag("base_cfg", 0);
-  ps->NextSpec4( &bport,      6,   "Serial port number");        // was 7
-  ps->NextSpec4( &bbaud,  38400,   "Serial baud rate");
-  ps->NextSpecF( &ploop,     32.0, "Proportional factor");       // was 12M then 0x0200 
-  ps->NextSpecF( &iloop,      8.0, "Integral factor");           // was 4M  then 0x0100 then 4
-  ps->NextSpecF( &dloop,      8.0, "Derivative factor");         // was          0x0080 then 0
-  ps->NextSpec4( &pwm,        0,   "Use PWM mode instead");      // was 1 for old encoders
+  ps->NextSpec4( &bport,     6,   "Serial port number");        // was 7
+  ps->NextSpec4( &bbaud, 38400,   "Serial baud rate");
+  ps->NextSpecF( &ploop,    32.0, "Proportional factor");       // was 12M then 0x0200 
+  ps->NextSpecF( &iloop,     8.0, "Integral factor");           // was 4M  then 0x0100 then 4
+  ps->NextSpecF( &dloop,     8.0, "Derivative factor");         // was          0x0080 then 0
+  ps->NextSpec4( &pwm,       0,   "Use PWM mode instead");      // was 1 for old encoders
 
-  ps->NextSpecF( &rpm,      150.0, "Max rotation rate (rpm)");
-  ps->NextSpec4( &ppr,      144,   "Pulses per revolution");     // was 36 for old encoders
+  ps->NextSpecF( &rpm,     150.0, "Max rotation rate (rpm)");
+  ps->NextSpec4( &ppr,     144,   "Pulses per revolution");     // was 36 for old encoders
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -129,11 +129,11 @@ int jhcEliBase::move_params (const char *fname)
 
   ps->SetTag("base_move", 0);
   ps->NextSpecF( &(mctrl.vstd),  30.0, "Std move speed (ips)");    // 1.5x = 2.5 mph (max 47 ips)
-  ps->NextSpecF( &(mctrl.astd),  20.0, "Std move accel (ips^2)");  // 1.50 sec to full (bobbles @ 22 ?) 
-  ps->NextSpecF( &(mctrl.dstd),  10.0, "Std move decel (ips^2)");  // 3.00 sec to stop (bobbles @ 22) 
+  ps->NextSpecF( &(mctrl.astd),  20.0, "Std move accel (ips^2)");  // 22.5" to full speed
+  ps->NextSpecF( &(mctrl.dstd),  10.0, "Std move decel (ips^2)");  // 45" slow down zone 
   ps->NextSpecF( &(tctrl.vstd),  90.0, "Std turn speed (dps)");  
-  ps->NextSpecF( &(tctrl.astd), 180.0, "Std turn accel (dps^2)");  // 0.50 sec to full (was 360)
-  ps->NextSpecF( &(tctrl.dstd),  90.0, "Std turn decel (dps^2)");  // 1.00 sec to stop (was 180)
+  ps->NextSpecF( &(tctrl.astd), 180.0, "Std turn accel (dps^2)");  // 22.5 deg to full (was 360)
+  ps->NextSpecF( &(tctrl.dstd),  90.0, "Std turn decel (dps^2)");  // 45.0 deg slow zone (was 180)
 
   ps->NextSpecF( &mdead,          0.5, "Move deadband (in)");
   ps->NextSpecF( &tdead,          2.0, "Turn deadband (deg)");
@@ -205,8 +205,8 @@ int jhcEliBase::SaveCfg (const char *fname) const
 
 //= Reset state for the beginning of a sequence (and stop all motion).
 // if rpt > 0 then prints to log file, if chk > 0 measures battery
-// generally bok: -1 = no port, 0 = comm error, 1 = fine
-// returns 1 if port bound correctly, negative for error 
+// generally berr: -1 = no port yet, 0 = fine, pos = comm error count
+// returns 1 if port bound correctly and base initialized, 0 or negative for error 
 
 int jhcEliBase::Reset (int rpt, int chk)
 {
@@ -220,7 +220,7 @@ int jhcEliBase::Reset (int rpt, int chk)
   led0 = 0;
 
   // connect to proper serial port (if needed)
-  if (bok >= 0)
+  if (berr == 0)
     bcom.Flush();
   else if (bcom.SetSource(bport, bbaud) <= 0)
   {
@@ -228,23 +228,23 @@ int jhcEliBase::Reset (int rpt, int chk)
       Complain("Could not open serial port %d in jhcEliBase::Reset", bport);
     else if (rpt > 0)
       jprintf(">>> Could not open serial port %d in jhcEliBase::Reset !\n", bport);
-    return fail(rpt);
+    return fail(-4, rpt);
   }
   jms_sleep(1000);     // await initialization or flush
   pend = 0;
-  bok = 1;
+  berr = 0;
 
   // read version information and set interpretation parameters
   jprintf("  version ...\n");
   if (Version() == NULL)
-    return fail(rpt);
+    return fail(-3, rpt);
   jprintf("    %s [%s] %s\n", ver, ((grn > 0) ? "grn" : "red"), ((c16 > 0) ? "crc16" : "sum7"));
 
   // make sure all motion has stopped then configure control loop
   jprintf(1, rpt, "  freeze ...\n");
   Update();
   if (Freeze() <= 0)
-    return fail(rpt);
+    return fail(-2, rpt);
   loop_vals();
 
   // possibly check battery level
@@ -252,14 +252,14 @@ int jhcEliBase::Reset (int rpt, int chk)
   {
     jprintf(1, rpt, "  battery ...\n");
     if ((v = Battery()) <= 0.0)
-      return fail(rpt);
+      return fail(-1, rpt);
     jprintf(1, rpt, "    %3.1f volts\n", v);
   }
 
   // clear wheel encoders to zero
   jprintf(1, rpt, "  clr odom ...\n");
   if (Zero() <= 0)
-    return fail(rpt);
+    return fail(0, rpt);
 
   // initialize targets and positions
   Update();
@@ -268,18 +268,18 @@ int jhcEliBase::Reset (int rpt, int chk)
 
   // finished
   jprintf(1, rpt, "    ** good **\n");
-  return bok;
+  return 1;
 }
 
 
 //= Failure message for some part of initialization.
+// does not alter berr count, already set by failing fcn (if any)
+// always returns ans (and possibly complains) 
 
-int jhcEliBase::fail (int rpt) 
+int jhcEliBase::fail (int ans, int rpt) 
 {
-  if (bok > 0)
-    bok = 0;
   jprintf(1, rpt, "    >> BAD <<\n");
-  return bok;
+  return ans;
 }
 
 
@@ -287,6 +287,7 @@ int jhcEliBase::fail (int rpt)
 // PID values have 16 bit integer and 16 bit fractional parts
 // new (2106) 2x30 controller needs 4x higher PID values than older red boards
 // NOTE: does not block, tx takes about 11.7ms = (7 + 2 * 19) * 10 / 38400
+// returns 1 if successful, 0 or negative for problem
 
 int jhcEliBase::loop_vals ()
 {
@@ -296,8 +297,7 @@ int jhcEliBase::loop_vals ()
   int k, n = 0; 
 
   // clear any old acknowledgements
-  if (fail_pend())
-    bok = 0;
+  fail_pend();
 
   // set battery to be 10-14 volts (cmd = 57)
   if (c16 > 0)
@@ -310,10 +310,8 @@ int jhcEliBase::loop_vals ()
     pod[n++] = 140;
     start_crc(pod, n);
     n = set_crc(pod, n);
-    if (bcom.TxArray(pod, n) < n)
-      bok = 0;
-    if (fail_ack(1))
-      bok = 0;
+    bcom.TxArray(pod, n);
+    BBARF(-1, fail_ack(1));
   }
 
   // set M1/M2 parameters (cmd = 28/29)
@@ -351,19 +349,18 @@ int jhcEliBase::loop_vals ()
     // compute checksum and send packet
     start_crc(pod, n);
     n = set_crc(pod, n);
-    if (bcom.TxArray(pod, n) < n)
-      bok = 0;
+    bcom.TxArray(pod, n);
   }
 
   // wait for and strip off any acknowledgements
-  if (fail_ack(2))
-    bok = 0;
-  return bok;
+  BBARF(0, fail_ack(2));
+  return 1;
 }
 
 
 //= Check that hardware is still working.
 // does not affect any motion that is in progress
+// returns 1 if okay, 0 for problem
 
 int jhcEliBase::Check (int rpt, int tries)
 {
@@ -374,47 +371,33 @@ int jhcEliBase::Check (int rpt, int tries)
     if (Battery() > 8.0)
     {
       jprintf(1, rpt, "    ** good **\n");
-      break;
+      return 0;
     }
-  return bok;
+  return 0;
 }
 
 
 //= Tells current voltage of main battery (to nearest 100mv).
 // BLOCKS: transaction takes about 1.3ms = (2 + 3) * 10 / 38400
+// returns 0.0 if problem
 
 double jhcEliBase::Battery ()
 {
-  double volts = 0.0;
-
   // make sure hardware is working
-  if (bok < 0)
-    return -1.0;
-  bok = 0;
-  if (fail_pend())
-    return bok;
+  BBARF(0, fail_pend());
 
-  while (1)
-  {
-    // ask about main battery voltage (no CRC needed)
-    pod[0] = 0x80;
-    pod[1] = 24;
-    if (bcom.TxArray(pod, 2) < 2)
-      break;
+  // ask about main battery voltage (no CRC needed)
+  pod[0] = 0x80;
+  pod[1] = 24;
+  bcom.TxArray(pod, 2);
 
-    // get response in 100mv units and check if valid
-    if (bcom.RxArray(pod + 2, 3 + c16) < (3 + c16))
-      break;
-    start_crc(pod, 4);
-    if (fail_crc(pod + 4))
-      break;
+  // get response in 100mv units and check if valid
+  BBARF(0, (bcom.RxArray(pod + 2, 3 + c16) < (3 + c16)));
+  start_crc(pod, 4);
+  BBARF(0, fail_crc(pod + 4))
 
-    // convert to volts
-    volts = 0.1 * ((pod[2] << 8) + pod[3]);
-    bok = 1;
-    break;
-  }
-  return volts;
+  // convert to volts
+  return(0.1 * ((pod[2] << 8) + pod[3]));
 }
 
 
@@ -428,24 +411,18 @@ const char *jhcEliBase::Version ()
   int ch, n, i = 0;
 
   // make sure hardware is working
-  if (bok < 0)
-    return NULL;
-  bok = 0;
-  if (fail_pend())
-    return NULL;
+  BBARF(0, fail_pend());
 
   // set up query to board (no CRC needed)
   pod[0] = 0x80;
   pod[1] = 21;
-  if (bcom.TxArray(pod, 2) < 2)
-    return NULL;
+  bcom.TxArray(pod, 2);
 
   // read basic response string (slow)
   jms_sleep(10);
   for (i = 0; i < 32; i++)
   {
-    if ((ch = bcom.Rcv()) < 0)
-      return NULL;
+    BBARF(0, (ch = bcom.Rcv()) < 0);
     ver[i] = (char) ch;
     if (ch == '\0')
       break;
@@ -465,16 +442,13 @@ const char *jhcEliBase::Version ()
   // compute packet check then verify
   start_crc(pod, 2);
   add_crc((UC8 *) ver, i + 1);
-  if (bcom.RxArray(pod, 1 + c16) < (1 + c16))
-    return NULL;
-  if (fail_crc(pod))
-    return NULL;
+  BBARF(0, bcom.RxArray(pod, 1 + c16) < (1 + c16));
+  BBARF(0, fail_crc(pod));
 
   // strip final CR if name was received properly
   n = __max(0, i - 1);
   if (ver[n] == '\n')
     ver[n] = '\0';
-  bok = 1;
   return ver;
 }
 
@@ -548,12 +522,13 @@ bool jhcEliBase::fail_crc (const UC8 *data) const
 
 
 //= Read and check command acknowledgements (if any).
+// returns true if any expected missing (should all be 0xFF)
 
 bool jhcEliBase::fail_ack (int n)
 {
   int i, val, bad = 0;
 
-  // do not exist for old board
+  // does not exist for old board
   if (c16 <= 0)                
     return false;
 
@@ -576,6 +551,7 @@ bool jhcEliBase::fail_ack (int n)
 //= Make base stop in place (active braking).
 // generally should call Update just before this
 // if tupd > 0 then calls Issue after this
+// returns 1 if successful, 0 for likely problem
 
 int jhcEliBase::Freeze (int doit, double tupd)
 {
@@ -583,7 +559,7 @@ int jhcEliBase::Freeze (int doit, double tupd)
   if (doit <= 0)
   {
     ice = 0;
-    return bok;
+    return CommOK();
   }
 
   // remember position and heading at first call (prevents drift)
@@ -598,20 +574,16 @@ int jhcEliBase::Freeze (int doit, double tupd)
   stiff = 1;
   if (tupd > 0.0)
     Issue(tupd);
-  return bok;
+  return CommOK();
 }
 
 
 //= Make base stop and go passive (pushable).
 // immediately talks to motor controller
+// returns 1 if successful, 0 for likely problem
 
 int jhcEliBase::Limp ()
 {
-  // make sure hardware is working
-  if (bok < 0)
-    return bok;
-  bok = 1;
-
   // no motion or light
   stiff = 0;
   DriveClear();
@@ -625,7 +597,7 @@ int jhcEliBase::Limp ()
 
   // make sure it takes effect
   Issue(ms);
-  return bok;
+  return CommOK();
 }
 
 
@@ -641,15 +613,18 @@ int jhcEliBase::Limp ()
 int jhcEliBase::Update ()
 {
   if (UpdateStart() <= 0)
-    return bok;
+    return -2;
   if (UpdateContinue() <= 0)
-    return bok;
-  return UpdateFinish();
+    return -1;
+  if (UpdateFinish() <= 0)
+    return 0;
+  return 1;
 }
 
 
 //= Clear commands bids and issue request for right encoder.
 // takes about 3ms for right value to be ready to read
+// returns 1 if successful, 0 or negative for likely problem
 
 int jhcEliBase::UpdateStart ()
 {
@@ -658,81 +633,58 @@ int jhcEliBase::UpdateStart ()
   lf0 = lf;
 
   // make sure hardware is working
-  if (bok < 0)
-    return bok;
-  bok = 0;
-  if (fail_pend())
-    return bok;
+  BBARF(0, fail_pend());
 
   // ask for M1 counts (right - no CRC needed)
   pod[0] = 0x80;
   pod[1] = 16;
-  if (bcom.TxArray(pod, 2) < 2)
-    return bok;
+  bcom.TxArray(pod, 2);
 
   // initialize CRC with command
   start_crc(pod, 2);
-  bok = 1;
-  return bok;
+  return 1;
 }
 
 
 //= Pick up right encoder value and issue request for left encoder.
 // takes about 3ms for left value to be ready to read
+// returns 1 if successful, 0 or negative for likely problem
 
 int jhcEliBase::UpdateContinue ()
 {
-  // make sure hardware is working
-  if (bok < 0)
-    return bok;
-  bok = 0;
-
   // read in 32 bit right value (only good to 10 bits --> work with bottom 8)
-  if (bcom.RxArray(pod, 6 + c16) < (6 + c16))
-    return bok;
+  BBARF(-1, bcom.RxArray(pod, 6 + c16) < (6 + c16));
   add_crc(pod, 5);
-  if (fail_crc(pod + 5))
-    return bok;
+  BBARF(0, fail_crc(pod + 5))
   rt = (pod[0] << 24) | (pod[1] << 16) | (pod[2] << 8) | pod[3];
 
   // ask for M2 counts (left - no CRC needed)
   pod[0] = 0x80;
   pod[1] = 17; 
-  if (bcom.TxArray(pod, 2) < 2)
-    return bok;
+  bcom.TxArray(pod, 2);
 
   // initialize CRC with command
   start_crc(pod, 2);
-  bok = 1;
-  return bok;
+  return 1;
 }
 
 
 //= Pick up left encoder value and interpret pair.
 // automatically resets "lock" for new bids and specifies default motion
+// returns 1 if successful, 0 or negative for likely problem
 
 int jhcEliBase::UpdateFinish ()
 {
-  // make sure hardware is working
-  if (bok < 0)
-    return bok;
-  bok = 0;
-
   // read in 32 bit value (only good to 10 bits --> work with bottom 8)
-  if (bcom.RxArray(pod, 6 + c16) < (6 + c16))
-    return bok;
+  BBARF(-1, bcom.RxArray(pod, 6 + c16) < (6 + c16));
   add_crc(pod, 5);
-  if (fail_crc(pod + 5))
-    return bok;
+  BBARF(0, fail_crc(pod + 5));
   lf = (pod[0] << 24) | (pod[1] << 16) | (pod[2] << 8) | pod[3];
 
   // all data gathered successfully so resolve odometry into robot motion
-  bok = 1;
   cvt_cnts();
-
-  // set up to receive new round of commands and bids
-  clr_locks(0);
-  return bok;
+  clr_locks(0);      // set up to receive new round of commands and bids
+  return 1;
 }
 
 
@@ -759,33 +711,37 @@ void jhcEliBase::clr_locks (int hist)
 void jhcEliBase::cvt_cnts ()
 {
   double mid, avg, ipp = (PI * wd) / ppr;
-  int d1, d2;
+  int d1 = 0, d2 = 0;
 
-  // find left side (M2) change since last read (+/- 16")
-  d2 = (lf & 0xFF) - (lf0 & 0xFF);
-  if (d2 <= -128)
-    d2 += 256;
-  else if (d2 > 128)
-    d2 -= 256;
+  // get wheel clicks (if available)
+  if (berr == 0)
+  {
+    // find left side (M2) change since last read (+/- 16")
+    d2 = (lf & 0xFF) - (lf0 & 0xFF);
+    if (d2 <= -128)
+      d2 += 256;
+    else if (d2 > 128)
+      d2 -= 256;
 
-  // find right side (M1) change since last read (+/- 16")
-  d1 = (rt & 0xFF) - (rt0 & 0xFF);
-  if (d1 <= -128)
-    d1 += 256;
-  else if (d1 > 128)
-    d1 -= 256;
+    // find right side (M1) change since last read (+/- 16")
+    d1 = (rt & 0xFF) - (rt0 & 0xFF);
+    if (d1 <= -128)
+      d1 += 256;
+    else if (d1 > 128)
+      d1 -= 256;
 
-  // adjust for different controller boards
-  if (grn > 0)
-    d1 = -d1;
-  else
-    d2 = -d2;
+    // adjust for different controller boards
+    if (grn > 0)
+      d1 = -d1;
+    else
+      d2 = -d2;
+  }
 
   // find length of recent segment and change in direction
   dm = 0.5 * (d1 + d2) * ipp;
   dr = R2D * (d1 - d2) * ipp / ws;
 
-  // find offset in former local coordinate system (y = forward)
+  // find offset in former local coordinate system (y = forward, x = RIGHT)
   avg = D2R * 0.5 * dr;
   dx0 = dm * sin(avg);    // sideways
   dy0 = dm * cos(avg);    // forward
@@ -853,7 +809,7 @@ int jhcEliBase::Issue (double tupd, double lead)
     bcom.SetRTS(led);
   led0 = led;
   led = 0;                   // default for next cycle is off
-  return bok;
+  return CommOK();
 }
 
 
@@ -873,11 +829,7 @@ int jhcEliBase::wheel_vels (double ips, double dps)
     return wheel_pwm(ips, dps);
 
   // check hardware
-  if (bok < 0)
-    return bok;
-  bok = 0;
-  if (fail_pend())
-    return bok;
+  BBARF(0, fail_pend());
 
   // convert to encoder speeds for differential steering
   dv = dps * (D2R * 0.5 * ws);
@@ -917,12 +869,9 @@ int jhcEliBase::wheel_vels (double ips, double dps)
   n = set_crc(pod, n);
 
   // send packet but do not wait for completion 
-  if (bcom.TxArray(pod, n) >= n)
-  {
-    bok = 1;
-    pend++;                  // strip ack later
-  }
-  return bok;
+  bcom.TxArray(pod, n);
+  pend++;                  // strip ack later
+  return 1;
 }
 
 
@@ -939,11 +888,7 @@ int jhcEliBase::wheel_pwm (double ips, double dps)
   int lf, rt, lim, n = 0;
 
   // make sure hardware is working
-  if (bok < 0)
-    return bok;
-  bok = 0;
-  if (fail_pend())
-    return bok;
+  BBARF(0, fail_pend());
 
   // compute left and right speeds for differential steering
   dv = dps * (D2R * 0.5 * ws);
@@ -983,12 +928,9 @@ int jhcEliBase::wheel_pwm (double ips, double dps)
   n = set_crc(pod, n);
 
   // send packet but do not wait for completion 
-  if (bcom.TxArray(pod, n) >= n)
-  {
-    bok = 1;
-    pend++;                  // strip ack later
-  }
-  return bok;
+  bcom.TxArray(pod, n);
+  pend++;                  // strip ack later
+  return 1;
 }
 
 
@@ -1005,12 +947,7 @@ int jhcEliBase::Zero ()
   int n = 0;
 
   // make sure hardware is working
-  if (bok < 0)
-    return bok;
-  bok = 0;
-  if (fail_pend())
-    return bok;
-  bok = 1;
+  BBARF(-1, fail_pend());
 
   // adjust goal (if any)
 //  twin -= head;
@@ -1035,11 +972,9 @@ int jhcEliBase::Zero ()
   n = set_crc(pod, n);
 
   // send command then wait for and strip off any acknowledgement
-  if (bcom.TxArray(pod, n) < n)
-    bok = 0;
-  if (fail_ack(1))
-    bok = 0;
-  return bok;
+  bcom.TxArray(pod, n);
+  BBARF(0, fail_ack(1));
+  return 1;
 }
 
 
@@ -1122,6 +1057,26 @@ int jhcEliBase::TurnAbsolute (double hd, double rate, int bid)
   stiff = 1;
   tctrl.RampTarget(hd, rate);
   return 1;
+}
+
+
+//= Directly set movement velocity both forward and backward (negative).
+
+int jhcEliBase::SetMoveVel (double ips, int bid)
+{
+  double rate = fabs(ips) / mctrl.vstd, dist = ((ips < 0.0) ? -60.0 : 60); 
+
+  return MoveTarget(dist, rate, bid);
+}
+
+
+//= Directly set turn velocity both left and right (negative).
+
+int jhcEliBase::SetTurnVel (double dps, int bid)
+{
+  double rate = fabs(dps) / tctrl.vstd, ang = ((dps < 0.0) ? -180.0 : 180.0);
+
+  return TurnTarget(ang, rate, bid);
 }
 
 

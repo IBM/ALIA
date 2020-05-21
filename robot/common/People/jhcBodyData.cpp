@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2014-2019 IBM Corporation
+// Copyright 2014-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -273,9 +273,10 @@ int jhcBodyData::UpdateHead (const jhcBodyData& d, int suggest)
   jhcMatrix diff(4);
   int snext = suggest;
 
-  // copy over raw arm component numbers
+  // copy over raw arm component numbers 
   bnum = d.bnum;
   alt  = d.alt;
+  vis  = 1;                  // mark as visible (since found)
 
   // smooth head position, assign id (and label string) if newly sure
   if (Update(d, &diff) >= hit0)

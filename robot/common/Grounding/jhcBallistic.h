@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ private:
 
   // reported events
   jhcAliaNote *rpt;
+  UL32 kvetch;
   int pcnt, power, hold;
 
 
@@ -61,16 +62,16 @@ public:
 
   // event parameters
   jhcParam eps;
-  double hmin, ftime;
+  double hmin, nag;
   int tired, fresh, psamp, ptest, hwait;
 
   // parameters for translation
   jhcParam tps;
-  double ips, stf, qtf, step, move, drive, madj, dadj;
+  double stf, qtf, step, move, drive, ftime;
 
   // parameters for rotation
   jhcParam rps;
-  double dps, srf, qrf, turn, rot, spin, radj, sadj;
+  double srf, qrf, turn, rot, spin;
 
   // motion progress
   jhcParam pps;

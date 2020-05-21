@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 1999-2019 IBM Corporation
+// Copyright 1999-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,6 +60,12 @@ public:
   int RectFill (jhcImg& dest, const jhcRoi& src, int r =255, int g =255, int b =255) const;
   int BlockCent (jhcImg& dest, int xc, int yc, int w, int h, 
                  int r =255, int g =255, int b =255) const;
+  int BlockRot (jhcImg& dest, double xc, double yc, double w, double h, 
+                double degs =0.0, int r =255, int g =255, int b =255) const;
+  int FillPoly4 (jhcImg& dest, double nwx, double nwy, double nex, double ney, 
+                 double sex, double sey, double swx, double swy, int r =255, int g =255, int b =255) const;
+  int FillPoly4 (jhcImg& dest, const double x[], const double y[], int r =255, int g =255, int b =255) const
+    {return FillPoly4(dest, x[0], y[0], x[1], y[1], x[2], y[2], x[3], y[3], r, g, b);}
   int Clear (jhcImg& dest, int r =0, int g =0, int b =0) const;
   int Matte (jhcImg& dest, const jhcRoi& src, int r =0, int g =0, int b =0) const;
   int Matte (jhcImg& dest, int r =0, int g =0, int b =0)  const
@@ -87,6 +93,9 @@ public:
   int DrawSide (jhcImg& dest, int side, int t =1, int r =255, int g =255, int b =255) const; 
   int RectCent (jhcImg& dest, double xc, double yc, double w, double h, 
                 double degs =0.0, int t =3, int r =255, int g =255, int b =255) const;
+  int RectRot (jhcImg& dest, double xc, double yc, double w, double h, 
+                double degs =0.0, int t =3, int r =255, int g =255, int b =255) const
+    {return RectCent(dest, xc, yc, w, h, degs, t, r, g, b);}
   int RectFrac (jhcImg& dest, double xcf, double ycf, double wf, double hf, 
                 double degs =0.0, int t =3, int r =255, int g =255, int b =255) const;
   int CircleEmpty (jhcImg& dest, double xc, double yc, double radius, 

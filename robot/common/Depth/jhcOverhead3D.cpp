@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016-2019 IBM Corporation
+// Copyright 2016-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ jhcOverhead3D::jhcOverhead3D (int ncam)
 
   // set up processing parameters (make sure some sensor is valid)
   SetMap(144.0, 144.0, 72.0, 72.0, 0.0, 8.0, 0.2, 42.0);
+  SetFit(4.0, 10000, 2.0, 3.0, 4.0, 2.0);
   SrcSize();
   Defaults();
   Reset();
@@ -225,6 +226,28 @@ int jhcOverhead3D::map_params (const char *fname)
 }
 
 
+//= Parameters used for testing whether plane fit is valid.
+
+int jhcOverhead3D::plane_params (const char *fname)
+{
+  char tag[40];
+  jhcParam *ps = &pps;
+  int ok;
+
+  sprintf_s(tag, "%s_plane", name);
+  ps->SetTag(tag, 0);
+  ps->NextSpecF( &srng,  "Surface search range (in)");
+  ps->NextSpec4( &npts,  "Min points in estimate");  
+  ps->NextSpecF( &rough, "Max surface std dev (in)");  
+  ps->NextSpecF( &dt,    "Max surface tilt (deg)");  
+  ps->NextSpecF( &dr,    "Max surface roll (deg)");  
+  ps->NextSpecF( &dh,    "Max surface offset (in)");  
+  ok = ps->LoadDefs(fname);
+  ps->RevertAll();
+  return ok;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////
 //                           Parameter Utilities                         //
 ///////////////////////////////////////////////////////////////////////////
@@ -242,6 +265,19 @@ void jhcOverhead3D::SetMap (double w, double h, double x, double y,
   zhi  = hi;
   ipp  = pel;
   ztab = ht;
+}
+
+
+//= Set all parameters for plane fitting in order that they appear in configuration file.
+
+void jhcOverhead3D::SetFit (double d, int n, double e, double t, double r, double h)
+{
+  srng = d;
+  npts = n;
+  rough = e;
+  dt = t;
+  dr = r;
+  dh = h;
 }
 
 
@@ -274,6 +310,7 @@ int jhcOverhead3D::Defaults (const char *fname)
   int ok = 1;
 
   ok &= LoadCfg(fname);
+  ok &= plane_params(fname);
   return ok;
 }
 
@@ -309,6 +346,7 @@ int jhcOverhead3D::SaveVals (const char *fname, int geom) const
   int ok = 1;
 
   ok &= SaveCfg(fname, geom);
+  ok &= pps.SaveVals(fname);
   return ok;
 }
 
@@ -629,9 +667,9 @@ void jhcOverhead3D::Reset ()
 // can mark multiple cells for long ranges using zst > 0
 // use Correct to flip image if needed first
 
-int jhcOverhead3D::Ingest (const jhcImg& d16, double bot, double top, int cam, int zst)
+int jhcOverhead3D::Ingest (const jhcImg& d16, double bot, double top, int cam, int zst, double zlim)
 {
-  double zcut = 84.0;                            // ignore above this height
+  double zcut = ((zlim > 0.0) ? zlim : 84.0);              // ignore above this height
   int i, n = __max(0, __min(cam, smax - 1));
 
   if (!d16.Valid(2))
@@ -642,7 +680,7 @@ int jhcOverhead3D::Ingest (const jhcImg& d16, double bot, double top, int cam, i
   SetView(p0[n] - 90.0, t0[n], ImgRoll(n));
 
   // get projection from this camera 
-  SetProject(ztab + bot, ztab + top, zcut, ipp, rmax[n]);  // was ztab + top
+  SetProject(ztab + bot, ztab + top, zcut, ipp, rmax[n]);  // zcut was ztab + top
   FloorMap2(map, d16, rasa, zst); 
 
   // remember which sensors have been used (for graphics)
@@ -662,9 +700,9 @@ int jhcOverhead3D::Ingest (const jhcImg& d16, double bot, double top, int cam, i
 // can mark multiple cells for long ranges using zst > 0
 // use Correct to flip image if needed first
 
-int jhcOverhead3D::Reproject (jhcImg& dest, const jhcImg& d16, double bot, double top, int cam, int zst)
+int jhcOverhead3D::Reproject (jhcImg& dest, const jhcImg& d16, double bot, double top, int cam, int zst, double zlim, int clr)
 {
-  double zcut = 84.0;                            // ignore above this height
+  double zcut = ((zlim > 0.0) ? zlim : 84.0);              // ignore above this height
   int i, n = __max(0, __min(cam, smax - 1));
 
   if (!d16.Valid(2) || !map.SameFormat(dest))
@@ -675,17 +713,14 @@ int jhcOverhead3D::Reproject (jhcImg& dest, const jhcImg& d16, double bot, doubl
   SetView(p0[n] - 90.0, t0[n], ImgRoll(n));
 
   // get projection from this camera 
-  SetProject(ztab + bot, ztab + top, zcut, ipp, rmax[n]);  // was ztab + top
-  FloorMap2(dest, d16, 1, zst); 
+  SetProject(ztab + bot, ztab + top, zcut, ipp, rmax[n]);  // zcut was ztab + top
+  FloorMap2(dest, d16, clr, zst); 
 
   // remember which sensors have been used (for graphics)
-  if (rasa > 0)
-  {
-    for (i = 0; i < smax; i++)
-      used[i] = 0;
-    rasa = 0;
-  }
+  for (i = 0; i < smax; i++)
+    used[i] = 0;
   used[n] = 1;
+  rasa = 0;
   return 1;  
 }
 
@@ -702,7 +737,7 @@ void jhcOverhead3D::Interpolate (int sc, int pmin)
 
 
 ///////////////////////////////////////////////////////////////////////////
-//                           Camera Calibration                          //
+//                             Plane Fitting                             //
 ///////////////////////////////////////////////////////////////////////////
 
 //= Tell if any restriction area for this camera.
@@ -740,11 +775,78 @@ double jhcOverhead3D::EstPose (double& t, double& r, double& h, const jhcImg& d1
     src = &dmsk;
   }
 
-  // process single depth image
+  // process single depth image (map2) with different zlo and zhi
   rasa = 1;
   Ingest(*src, -ztol, ztol, cam);
   Interpolate();
   return CamCalib(t, r, h, map2, ztab, ztol, ztab - ztol, ztab + ztol, ipp);
+}
+
+
+//= Show plane fitting errors from last estimation.
+// assumes projection in "map2" and that "zlo" and "zhi" were over-ridden
+
+int jhcOverhead3D::EstDev (jhcImg& devs, double dmax, double ztol)
+{
+  if (!devs.SameFormat(map))
+    return Fatal("Bad images to jhcOverhead3D::EstDev");  
+  devs.FillArr(0); 
+  return surf_err(devs, map2, dmax, ztab - ztol, ztab + ztol);
+}
+
+
+//= Fit plane to points with +/- search of surface then note pixel-by-pixel deviations.
+// fit must have at least "npt" and adjustments must be less then "dt", "dr", and "dh"
+// surface estimation points must have standard deviation less than "rough" inches
+// returns 1 if successful, 0 if bad fit
+
+int jhcOverhead3D::PlaneDev (jhcImg& devs, const jhcImg& hts, double dmax, double search)
+{
+  double std, t, r, h, sdev = ((search > 0.0) ? search : srng);
+
+  if (!devs.SameFormat(map) || !hts.SameFormat(map))
+    return Fatal("Bad images to jhcOverhead3D::PlaneDev");
+  devs.FillArr(0);
+  std = CamCalib(t, r, h, hts, ztab, sdev, zlo, zhi, ipp);
+  if ((Pts() < npts) || (std > rough) || (fabs(t) > dt) || (fabs(r) > dr) || (fabs(h) > dh))
+    return 0;
+  return surf_err(devs, hts, dmax, zlo, zhi);
+}
+
+
+//= Use fitting coefficients to find plane height at every pixel and get absolute difference.
+// ignores input heights of 0 (unknown) and writes 0 to output (otherwise 1-255 valid) 
+// marks below plane by dmax = 28, on plane = 128 above plane by dmax = 228
+// assumes hts map was created with zlo = lo and zhi = hi, returns 1 for convenience
+// <pre>
+// wz0 = a * wx + b * wy + c where coefficients come from jhcPlaneEst
+//   wx, wy, and wz are in inches, where wx, wy are from lower left corner
+//   wx = x * ipp, wy = y * ipp, wz = z * ipz  where ipz = (zhi - zlo) / 252
+// dev = k * (wz - wz0) + 128  where k = 100 / dmax
+//     = k * (wz - [a * wx + b * wy + c]) + 128
+//     = k * (ipz * z - [a * ipp * x + b * ipp * y + c]) + 128
+//     = (k * ipz) * z - [(k * ipp * a) * x + (k * ipp * b) * y + (k * c - 128)]
+// </pre>
+
+int jhcOverhead3D::surf_err (jhcImg& devs, const jhcImg& hts, double dmax, double lo, double hi) const
+{ 
+  double k = 100.0 / dmax, sc = 4096.0 * k * ipp;
+  int sum, dx = ROUND(sc * CoefX()), dy = ROUND(sc * CoefY()); 
+  int sum0 = ROUND(4096.0 * (k * Offset() - 128.0)) + 2048;        // for final rounding
+  int dz, zsc = ROUND(4096.0 * k * (hi - lo) / 252.0);
+  int x, y, rw = hts.XDim(), rh = hts.YDim(), sk = hts.Skip();
+  const UC8 *m = hts.PxlSrc();
+  UC8 *d = devs.PxlDest();
+
+  for (y = rh; y > 0; y--, d += sk, m += sk, sum0 += dy)
+   for (sum = sum0, x = rw; x > 0; x--, d++, m++, sum += dx)
+     if (*m > 0)
+     {
+       dz = (zsc * (*m) - sum) >> 12;
+       dz = __max(1, __min(dz, 255));
+       *d = (UC8) dz;
+     }
+  return 1;
 }
 
 
@@ -852,7 +954,7 @@ int jhcOverhead3D::ShowPads (jhcImg& dest, int t, int r, int g, int b) const
 
 
 //= Show rough boundaries for a particular sensor of viewing area on the surface.
-// FOV hardcoded to 57x43 degrees
+// FOV is derived from focal length in SrcSize() = 57x43 degrees for Kinect1
 
 int jhcOverhead3D::Footprint (jhcImg& dest, int cam, int t, int r, int g, int b) const
 {

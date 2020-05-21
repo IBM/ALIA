@@ -34,7 +34,7 @@
 jhcEliCoord::jhcEliCoord ()
 {
   // current software version
-  ver = 2.90;
+  ver = 3.10;
   
   // connect processing to basic robot I/O
   rwi.BindBody(&body);

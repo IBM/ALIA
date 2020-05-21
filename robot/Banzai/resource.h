@@ -123,6 +123,24 @@
 #define ID_PEOPLE_SOCIALMOVE            32851
 #define ID_UTILITIES_EXTRACTWORDS       32852
 #define ID_UTILITIES_CHKGRAMMAR         32853
+#define ID_ENVIRON_FLOORMAP             32854
+#define ID_NAVIGATION_MAOSIZE           32855
+#define ID_NAVIGATION_UPDATING          32856
+#define ID_ENVIRON_INTEGRATED           32857
+#define ID_NAV_MAPCLEAR                 32858
+#define ID_ENVIRON_AIRCONF              32859
+#define ID_ENVIRON_FLATAREA             32860
+#define ID_NAV_CAMCALIB                 32861
+#define ID_NAV_GUIDANCE                 32862
+#define ID_ENVIRON_AVOIDANCE            32863
+#define ID_ENVIRON_WANDER               32864
+#define ID_ENVIRON_COZYUP               32865
+#define ID_ENVIRON_LOCALPATHS           32866
+#define ID_ENVIRON_DISTANCES            32867
+#define ID_NAV_FOVLIMITS                32868
+#define ID_ENVIRON_GOTO                 32869
+#define ID_NAV_CONFIDENCE               32870
+#define ID_PEOPLE_VISIBILITY            32871
 
 // Next default values for new objects
 // 
@@ -130,7 +148,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        131
-#define _APS_NEXT_COMMAND_VALUE         32854
+#define _APS_NEXT_COMMAND_VALUE         32872
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

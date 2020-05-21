@@ -316,15 +316,15 @@ int jhcEliBody::Reset (int rpt, int full)
     lift.Reset(rpt, 1);
     mic.mport = 8;                 // serial port for sound direction
     mic.Reset(rpt);
+  }
 
-    // finished with actuators
-    if (rpt > 0)
-    {
-      jprintf("\n");
-      jprintf("BODY -> %s\n", ((CommOK(0) > 0) ? "OK" : "FAILED !!!"));
-      jprintf("=========================\n");
-      jprintf("\n");
-    }
+  // finished with actuators
+  if (rpt > 0)
+  {
+    jprintf("\n");
+    jprintf("BODY -> %s\n", ((CommOK(0) > 0) ? "OK" : "FAILED !!!"));
+    jprintf("=========================\n");
+    jprintf("\n");
   }
 
   // zero idle counts
@@ -389,7 +389,7 @@ int jhcEliBody::CfgFile (char *fname, int chk, int ssz)
   FILE *in;
   int first = ((bnum < 0) ? 1 : 0);
 
-  if ((bnum < 0) && (chk > 0))
+  if ((bnum <= 0) && (chk > 0))
   {
     // connect to proper serial port (if needed) 
     if (mok < 0)
@@ -423,25 +423,25 @@ int jhcEliBody::CfgFile (char *fname, int chk, int ssz)
 //= Tell if all communications seem to be working properly.
 // generally -1 = not open, 0 = protocol error, 1 = okay
 
-int jhcEliBody::CommOK (int rpt) const
+int jhcEliBody::CommOK (int rpt, int bad) const
 {
   int ok = mok;
 
   // compute overall value as OR of components
-  ok = __min(ok, arm.CommOK());
-  ok = __min(ok, neck.CommOK());
-  ok = __min(ok, base.CommOK());
-  ok = __min(ok, lift.CommOK());
-  ok = __min(ok, mic.CommOK());
+  ok = __min(ok, arm.CommOK(bad));
+  ok = __min(ok, neck.CommOK(bad));
+  ok = __min(ok, base.CommOK(bad));
+  ok = __min(ok, lift.CommOK(bad));
+  ok = __min(ok, mic.CommOK(bad));
 
   // tell reason for failure (if any)
   if ((ok <= 0) && (rpt > 0))
     jprintf("!!! Comm failure:%s%s%s%s%s !!!\n\n",
-            ((arm.CommOK()  <= 0) ? " arm" : ""), 
-            ((neck.CommOK() <= 0) ? " neck" : ""), 
-            ((base.CommOK() <= 0) ? " base" : ""), 
-            ((lift.CommOK() <= 0) ? " lift" : ""), 
-            ((mic.CommOK()  <= 0) ? " mic" : ""));
+            ((arm.CommOK(bad)  <= 0) ? " arm" : ""), 
+            ((neck.CommOK(bad) <= 0) ? " neck" : ""), 
+            ((base.CommOK(bad) <= 0) ? " base" : ""), 
+            ((lift.CommOK(bad) <= 0) ? " lift" : ""), 
+            ((mic.CommOK(bad)  <= 0) ? " mic" : ""));
   return ok;
 }
 
@@ -630,7 +630,7 @@ int jhcEliBody::UpdateImgs ()
 // NOTE: if voice < 0 then mic.Update should be called separately
 // useful since mic depends on voice while nothing else does
 
-int jhcEliBody::Update (int voice, int imgs)
+int jhcEliBody::Update (int voice, int imgs, int bad)
 {
   // possibly skip getting new images (for timing usually)
   if (imgs > 0)
@@ -659,7 +659,7 @@ int jhcEliBody::Update (int voice, int imgs)
 
   // collect second base value
   base.UpdateFinish();
-  return CommOK();
+  return CommOK(1, bad);
 }
 
 

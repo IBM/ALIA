@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include <conio.h>
+#include <share.h>
 
 #include "Interface/jhcString.h"       // common video  
+#include "Interface/jms_x.h"
 
 #include "Acoustic/jhcChatBox.h"
 
@@ -44,12 +46,22 @@ static char THIS_FILE[] = __FILE__;
 jhcChatBox::jhcChatBox(CWnd* pParent /*=NULL*/)
 	: CDialog(jhcChatBox::IDD, pParent)
 {
+  log = NULL;
   *entry = '\0';
   disable = 0;
   quit = 0;
 
 	//{{AFX_DATA_INIT(jhcChatBox)
 	//}}AFX_DATA_INIT
+}
+
+
+//= Destructor makes sure log file is closed at end.
+
+jhcChatBox::~jhcChatBox ()
+{
+  if (log != NULL)
+    fclose(log);
 }
 
 
@@ -66,17 +78,31 @@ void jhcChatBox::Launch (int x, int y)
 
 //= Clear all parts of the interaction dialog and set mute status.
 // call this first to make sure previous conversation finishes
+// if "dir" log directory is non-NULL (even "") then saves interaction to file
 
-void jhcChatBox::Reset (int disable)
+void jhcChatBox::Reset (int disable, const char *dir)
 {
+  char fname[200], date[80];
+
+  // initialize graphics (Mute closes any old log)
   m_hist.Clear();
   Mute(disable);
   Interact();
+
+  // create chat log file (if desired)
+  if (dir != NULL)
+  {
+    if (*dir == '\0')
+      sprintf_s(fname, "chat_%s.txt", jms_date(date));
+    else
+      sprintf_s(fname, "%s/chat_%s.txt", dir, jms_date(date));
+    log = _fsopen(fname, "w", _SH_DENYWR);
+  }
 }
 
 
 //= Allow user input (or not).
-// flushes any pending user text when activated
+// flushes any pending user text and closes log file when activated
 // typically called at the end of a conversation
 
 void jhcChatBox::Mute (int gray)
@@ -96,6 +122,11 @@ void jhcChatBox::Mute (int gray)
     m_input.SetFocus();
     ShowWindow(SW_SHOWNORMAL);         // in case minimized
   }  
+
+  // finish off any log file
+  if (log != NULL)
+    fclose(log);
+  log = NULL;
 }
 
 
@@ -152,6 +183,13 @@ char *jhcChatBox::Get (char *input, int ssz)
 const char *jhcChatBox::Post (const char *output, int user)
 {
   m_hist.AddTurn(output, user);
+  if ((log != NULL) && (output != NULL) && (*output != '\0'))
+  {
+    if (user > 0)
+      fprintf(log, "> %s\n", output);
+    else
+      fprintf(log, "%s\n\n", output);
+  }
   return output;
 }
 
