@@ -360,12 +360,10 @@ int jhcAliaCore::Interpret (const char *input, int awake, int amode)
   const char *sent = ((input != NULL) ? input : alist);
   int nt, attn = 0;
 
-  // get parse results and check if name mentioned
+  // check if name mentioned and get parse results
+  attn = gr.NameSaid(sent, amode);
   if ((nt = gr.Parse(sent)) > 0)
-  {
     gr.AssocList(alist, 1);
-    attn = net.NameSaid(alist, amode);
-  }
   if ((awake == 0) && (attn <= 0))
     return 0;
 
@@ -375,8 +373,7 @@ int jhcAliaCore::Interpret (const char *input, int awake, int amode)
     gr.PrintInput();
     gr.PrintResult(3, 1);
   }
-  if (net.Convert(alist) <= 0)         // for "huh?" response
-    return 0;
+  net.Convert(alist);            // if nt = 0 then gives huh? response
   return((attn > 0) ? 2 : 1);
 }
 

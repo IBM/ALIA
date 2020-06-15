@@ -765,10 +765,10 @@ double jhcEliBase::norm_ang (double degs) const
 {
   double a = degs;
 
-  while (a > 180.0)
-    a -= 360.0;
-  while (a <= -180.0)
-    a += 360.0;
+  if (a > 180.0)
+    a -= 360.0 * ROUND(a / 360.0);
+  else if (a <= -180.0)
+    a += 360.0 * ROUND(a / 360.0);
   return a;
 }
 

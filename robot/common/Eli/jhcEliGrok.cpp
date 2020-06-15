@@ -79,12 +79,11 @@ jhcEliGrok::jhcEliGrok ()
 
 void jhcEliGrok::BindBody (jhcEliBody *b)
 {
-  const jhcImg *src;
-
   // possible unbind body and pieces
   clr_ptrs();
   if (b == NULL)
     return;
+  phy = 1;
 
   // make direct pointers to body parts (for convenience)
   // and use voice tracker mic for speaker direction
@@ -95,10 +94,6 @@ void jhcEliGrok::BindBody (jhcEliBody *b)
   arm  = &(b->arm);
   mic  = &(b->mic);
   tk.RemoteMic(mic);         
-  
-  // configure visual analysis for camera images
-  src = body->View();
-  s3.SetSize(*src);
 }
 
 
@@ -113,6 +108,7 @@ void jhcEliGrok::clr_ptrs ()
   arm  = NULL;
   mic  = NULL;
   tk.RemoteMic(NULL);
+  phy = 0;
 }
 
 
@@ -124,8 +120,8 @@ const char *jhcEliGrok::Watching () const
   int i, win;
 
   // see which bid value won last command arbitration  
-  if (body == NULL)
-    return NULL;
+  if (phy <= 0)
+    return wtarg[8];
   win = neck->GazeWin();
   if (win <= 0)
     return wtarg[8];
@@ -196,15 +192,15 @@ int jhcEliGrok::time_params (const char *fname)
   int ok;
 
   ps->SetTag("grok_time", 0);
-  ps->NextSpecF( &bored, 10.0, "Post-cmd freeze (sec)");       
-  ps->NextSpecF( &relax,  7.0, "Twitch interval (sec)");  
-  ps->NextSpecF( &rdev,   3.0, "Twitch deviation (sec)");
-  ps->NextSpecF( &gtime,  0.3, "Gaze response (sec)");  
-  ps->NextSpecF( &ttime,  0.7, "Twitch response (sec)");  
-  ps->NextSpecF( &rtime,  1.5, "Rise response (sec)");  
+  ps->NextSpecF( &bored,  10.0, "Post-cmd freeze (sec)");       
+  ps->NextSpecF( &relax,   7.0, "Twitch interval (sec)");  
+  ps->NextSpecF( &rdev,    3.0, "Twitch deviation (sec)");
+  ps->NextSpecF( &gtime,   0.3, "Gaze response (sec)");  
+  ps->NextSpecF( &ttime,   0.7, "Twitch response (sec)");  
+  ps->NextSpecF( &rtime,   1.5, "Rise response (sec)");  
 
-  ps->NextSpecF( &side,  50.0, "Body rotate thresh (deg)");    // 0 = don't
-  ps->NextSpecF( &btime,  1.5, "Rotate response (sec)");      
+  ps->NextSpecF( &side,  -50.0, "Body rotate thresh (deg)");    // 0 = don't
+  ps->NextSpecF( &btime,   1.5, "Rotate response (sec)");      
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -295,37 +291,52 @@ int jhcEliGrok::SaveCfg (const char *fname) const
 ///////////////////////////////////////////////////////////////////////////
 
 //= Restart background processing loop.
+// if rob > 0 then runs with body active (else motion disabled)
 // NOTE: body should be reset outside of this
 
-void jhcEliGrok::Reset ()
+void jhcEliGrok::Reset (int rob)
 {
   jhcVideoSrc *v;
+  const jhcImg *src;
 
   // reset vision components
   s3.Reset();
   fn.Reset();
   nav.Reset();
 
-  // after body reset, sensor info will be waiting and need to be read
-  if (body != NULL)
+  // configure body 
+  phy = 0;
+  seen = 0;
+  if ((rob > 0) && (body != NULL))
   {
-    // configure body and navigation component
+    phy = 1; 
     base->Zero();
     body->InitPose(-1.0);
-    body->Update(-1, 1);
+    body->Update(-1, 1);       // sensor info will be waiting and need to be read
+  }
+
+  // configure vision elements
+  if (body != NULL) 
     if ((v = body->vid) != NULL)
+    {
+      // setup navigation
       nav.SrcSize(v->XDim(), v->YDim(), v->Focal(1), v->Scaling(1));
 
-    // make status images
-    body->BigSize(mark);
-    mark.FillArr(0);
-    mark2.InitSize(nav.map);
-  }
+      // make status images
+      body->BigSize(mark);
+      mark.FillArr(0);
+      mark2.InitSize(nav.map);
+
+      // configure visual analysis for camera images
+      src = body->View();
+      s3.SetSize(*src);
+    }
 
   // high-level commands
   wlock = 0;
   wwin = 0;
   slock = 0;
+  vlock = 0;
 
   // clear state for sound and twitch behaviors
   seek = 0;
@@ -348,7 +359,6 @@ jtimer(1, "jhcEliGrok::Update");
   if (jhcBackgRWI::Update(0) <= 0)
     return 0;
 
-jtimer(10, "rest of update");
   // do fast sound processing in foreground (needs voice)
   if (mic != NULL)
     mic->Update(voice);
@@ -357,7 +367,6 @@ jtimer(10, "rest of update");
   // create pretty picture then enforce min wait (to simulate robot)
   head_img();
   nav_img();
-jtimer_x(10);
 jtimer_x(1);
   jms_resume(resume);  
   return 1;
@@ -369,7 +378,7 @@ jtimer_x(1);
 void jhcEliGrok::Stop ()
 {
   jhcBackgRWI::Stop();
-  if (body != NULL)
+  if (phy > 0)
     body->Limp();
 }
 
@@ -385,11 +394,12 @@ void jhcEliGrok::body_update ()
   jhcMatrix pos(4), dir(4);
 
   // wait (if needed) for body sensor data to be received (no mic)
-  if (body == NULL)
-    return;
+  if (phy > 0)
+{
 jtimer(2, "body update");
-  body->Update(-1, 0);
+    body->Update(-1, 0);
 jtimer_x(2);
+}
 
   // do slow head finding and tracking (needs both pose and image)
   if (seen > 0)
@@ -468,13 +478,17 @@ jtimer(12, "body_issue");
   // interpret high-level commands
   assert_watch();
   assert_seek();
+  assert_servo();
 
-  // start commands and get new raw images
+  // start actuator commands and get new raw images
+  if (phy > 0)
+{
 jtimer(13, "Issue");
-  body->Issue();
+    body->Issue();
 jtimer_x(13);
+}
 jtimer(11, "UpdateImgs");
-  seen = body->UpdateImgs();         
+  seen = body->UpdateImgs();    
 jtimer_x(11);
 
 jtimer_x(12);
@@ -574,7 +588,7 @@ int jhcEliGrok::SeekLoc (double tx, double ty, double sp, int bid)
 
 void jhcEliGrok::assert_seek ()
 {
-double t0 = -60.0, stop = 2.0;
+double t0 = -60.0;
   double trav, head;
   int bid = slock;
 
@@ -598,6 +612,53 @@ double t0 = -60.0, stop = 2.0;
 }
 
 
+//= Try to keep robot at td = 0 from target at azimuth ta (0 is forward).
+// tries to aim toward target at all times, moving backward if too close
+// generally speed to follow (1.5) is higher than speed to approach (1.0)
+// bid value must be greater than previous command to take effect
+// returns 1 if newly set, 0 if pre-empted by higher priority
+
+int jhcEliGrok::ServoPolar (double td, double ta, double sp, int bid)
+{
+  if (bid <= vlock)
+    return 0;
+  vlock = bid;
+  vd = td;
+  va = ta;
+  vsp = sp;
+  return 1;
+}
+
+
+//= Take necessary (pre-emptive) body actions to maintain distance from target.
+
+void jhcEliGrok::assert_servo ()
+{
+double t0 = -60.0, ttime = 1.0, atime = 2.0, orient = 60.0;
+  double trav, head;
+  int bid = vlock;
+
+  // check if some command, then reset arbitration for next round
+  if (vlock <= 0)
+    return;
+  vlock = 0;
+ 
+  // make sure map in front of robot exists
+  if (nav.Blind())
+  {  
+    neck->GazeTarget(0.0, t0, 1.0, 0.0, bid + 1);
+    base->DriveTarget(0.0, 0.0, 1.0, bid);
+    return;
+  }
+
+  // pick a steering angle and travel speed
+  nav.Swerve(trav, head, vd, va);
+  base->TurnFix(head, ttime, 1.0, bid);
+  if (fabs(head) < orient)
+    base->MoveFix(trav, atime, vsp, bid);   
+}
+
+
 ///////////////////////////////////////////////////////////////////////////
 //                            Innate Behaviors                           //
 ///////////////////////////////////////////////////////////////////////////
@@ -608,10 +669,10 @@ void jhcEliGrok::cmd_freeze ()
 {
   if (freeze <= 0)
     return;
-  if (body->NeckIdle(tnow) <= bored)
-    neck->ShiftTarget(0.0, 0.0, 1.0, freeze);
-  if (body->BaseIdle(tnow) <= bored)
-    base->DriveTarget(0.0, 0.0, 1.0, freeze);
+  if (body->NeckIdle(tnow) <= bored)                 
+    neck->ShiftTarget(0.0, 0.0, 0.0, freeze);        // lock in place
+  if (body->BaseIdle(tnow) <= bored)                 
+    base->DriveTarget(0.0, 0.0, 1.0, freeze);        // active limp
 }
 
 
@@ -770,7 +831,7 @@ void jhcEliGrok::head_rise ()
     return;
   hd.SetVec3(0.0, pdist, s3.h1 - hdec);
   neck->AimFor(pan, tilt, hd, lift->Height());
-  if (neck->TiltErr(tilt) > aimed)
+  if (neck->TiltErr(tilt) > aimed)                 // should add hysteresis
     neck->TiltFix(tilt, rtime, rise);
 }
 
@@ -783,7 +844,7 @@ void jhcEliGrok::head_rise ()
 
 void jhcEliGrok::head_img ()  
 {
-  if ((body == NULL) || !(body->NewFrame()))
+  if (!(body->NewFrame()))
     return;
   body->ImgBig(mark);
   s3.HeadsCam(mark);                               // magenta - heads
@@ -797,7 +858,7 @@ void jhcEliGrok::head_img ()
 
 void jhcEliGrok::nav_img ()
 {
-  if ((body == NULL) || !(body->NewFrame()))
+  if (!(body->NewFrame()))
     return;
   nav.LocalMap(mark2);
   nav.Paths(mark2);

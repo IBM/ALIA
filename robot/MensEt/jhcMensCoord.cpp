@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ jhcMensCoord::~jhcMensCoord ()
 jhcMensCoord::jhcMensCoord ()
 {
   // current software version
-  ver = 3.62;
+  ver = 3.70;
 
   // connect processing to basic robot I/O
   rwi.BindBody(&body);
@@ -100,11 +100,10 @@ int jhcMensCoord::SaveVals (const char *fname) const
 ///////////////////////////////////////////////////////////////////////////
 
 //= Reset state for the beginning of a sequence.
-// speech: 0 for none, 1 for TTS only, 2 for reco/TTS, 3 for attn word 
 // can also optionally run system without physical robot (id = 0)
 // returns 2 if robot ready, 1 if ready but no robot, 0 or negative for error
 
-int jhcMensCoord::Reset (int speech, int id)
+int jhcMensCoord::Reset (int id)
 {
   int rc;
 
@@ -113,7 +112,7 @@ int jhcMensCoord::Reset (int speech, int id)
   rwi.Reset();
 
   // initialize timing and speech components
-  if (jhcAliaSpeech::Reset(speech) <= 0)
+  if (jhcAliaSpeech::Reset() <= 0)
     return 0;
   return((rc <= 0) ? 1 : 2);
 }

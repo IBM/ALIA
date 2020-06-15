@@ -45,7 +45,7 @@ jhcBallistic::~jhcBallistic ()
 
 jhcBallistic::jhcBallistic ()
 {
-  ver = 1.32;
+  ver = 1.35;
   strcpy_s(tag, "Ballistic");
   Platform(NULL);
   rpt = NULL;
@@ -405,7 +405,7 @@ void jhcBallistic::power_state ()
   int pct, repeat;
 
   // lock to sensor cycle
-  if ((rpt == NULL) || (rwi == NULL) || (rwi->body == NULL))
+  if ((rpt == NULL) || (rwi == NULL) || rwi->Ghost())
     return;
   if (!rwi->Accepting())
     return;
@@ -451,7 +451,7 @@ void jhcBallistic::hand_drop ()
   int h0 = hold;
 
   // lock to sensor cycle
-  if ((rpt == NULL) || (rwi == NULL) || (rwi->body == NULL))
+  if ((rpt == NULL) || (rwi == NULL) || rwi->Ghost())
     return;
   if (!rwi->Accepting())
     return;

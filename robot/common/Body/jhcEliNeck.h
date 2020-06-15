@@ -55,7 +55,6 @@ private:
   int plock0, plock;                /** Winning bid for pan command.          */
   int tlock0, tlock;                /** Winning bid for tilt command.         */
   int stiff;                        /** Whether neck is under active control. */
-  int ice;                          /** Whether neck is already frozen.       */
 
 
 // PUBLIC MEMBER VARIABLES
@@ -230,7 +229,8 @@ private:
   int fail (int rpt);
   void std_geom ();
 
-  // basic interaction
+  // core interaction
+  void current_pose (jhcMatrix& xyz, jhcMatrix& ptr);
   void clr_locks (int hist);
 
   // profiled motion

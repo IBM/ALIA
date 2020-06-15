@@ -140,7 +140,7 @@ private:
   // acoustic status
   char qtext[500], atext[500];
   unsigned int now, last;
-  int hear, talk, tlast, tlock;
+  int txtin, hear, talk, tlast, tlock;
 
   // keyboard interaction
   int suspend;
@@ -163,7 +163,7 @@ public:
   jhcSpeechX ();
   ~jhcSpeechX ();
   int Init (int dbg =0, int noisy =0);
-  int InitTTS ();
+  int InitTTS (int noisy =0);
   void Reset ();
   int Ready () const {if (__min(__min(r_ok, p_ok), t_ok) <= 0) return 0; return 1;}
   bool Escape ();
@@ -208,7 +208,7 @@ public:
   void SuggestPos (double azim, double elev =0.0, double dist =36.0);
   int SuggestUser (const char *name, ...);
   int AwaitOrQuit (double secs =10.0);
-  int AwaitPhrase (double secs =10.0);
+  int AwaitPhrase (double secs =10.0, int syl =2);
   int AwaitQuiet (double secs =10.0);
   const char *SpeakerId ();
   
@@ -237,6 +237,9 @@ public:
   // debugging
   void PrintTree (int top =1);
 
+  // speech processing
+  int syllables (const char *txt) const;
+
   // speech synthesis
   int Say (const char *msg, ...);
   int Say (int bid, const char *msg, ...);
@@ -255,6 +258,7 @@ public:
 
   // alternate pronunciations
   int LoadAlt (const char *fname, int clr =1);
+  int Fixes () const {return nalt;}
 
 
 // PRIVATE MEMBER FUNCTIONS

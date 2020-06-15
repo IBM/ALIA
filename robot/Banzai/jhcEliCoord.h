@@ -75,7 +75,7 @@ public:
 
   // main functions
   int SetPeople (const char *fname, int append =0);
-  int Reset (int speech =0, int robot =0);
+  int Reset (int mech =0);
   int Respond ();
   void Done (int face =0);
 

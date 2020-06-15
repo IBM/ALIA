@@ -143,11 +143,12 @@ int jhcSpeechX::Init (int dbg, int noisy)
   // TTS
   if (t_ok <= 0)
   {
-    // try to attach to specified TTS DLL and configure
+    LoadAlt("pronounce.map");
     if (noisy > 0)
     {
       jprintf("\n--------- TTS --------\n");
       jprintf("DLL = %s\ncfg = %s\n", tfile, tcfg);
+      jprintf("  %d re-spellings from: pronounce.map\n", Fixes());
     }
     ans = BindTTS(tfile, tcfg);
     if ((ans <= 0) && (noisy > 0))
@@ -167,9 +168,23 @@ int jhcSpeechX::Init (int dbg, int noisy)
 
 //= Basic initialization of just text-to-speech system.
 
-int jhcSpeechX::InitTTS ()
+int jhcSpeechX::InitTTS (int noisy)
 {
-  return BindTTS(tfile, tcfg);
+  char info[80];
+  int ans;
+
+  LoadAlt("pronounce.map");
+  ans = BindTTS(tfile, tcfg);
+  if (noisy > 0)
+  {
+    jprintf("TTS\t= DLL version %s\n", tts_version(info, 80));
+    jprintf("Voice\t= %s\n", tts_voice(info, 80));
+    jprintf("Output\t= %s\n", tts_output(info, 80));
+    jprintf("  %d re-spellings from: pronounce.map\n", Fixes());
+    jprintf("TTS -> %s\n", ((ans > 0) ? "OK" : "FAILED !!!"));
+    jprintf("=========================\n\n");
+  }
+  return ans;
 }
 
 
@@ -190,6 +205,7 @@ void jhcSpeechX::Reset ()
   suspend = 0;
   reco_list_users(model);
   acc = 0;
+  txtin = 0;
 }
 
 
@@ -553,6 +569,7 @@ int jhcSpeechX::PrintCfg ()
     jprintf("TTS\t= DLL version %s\n", tts_version(info, 80));
     jprintf("Voice\t= %s\n", tts_voice(info, 80));
     jprintf("Output\t= %s\n", tts_output(info, 80));
+    jprintf("  %d re-spellings from: pronounce.map\n", Fixes());
   }
 
   // return system status
@@ -566,12 +583,19 @@ int jhcSpeechX::PrintCfg ()
 ///////////////////////////////////////////////////////////////////////////
 
 //= Possibly stop processing via some other signal.
-// ignores text string (if any)
 
 void jhcSpeechX::Inject (const char *txt, int stop)
 {
   if (stop > 0)
     _ungetch(0x1B);
+  if ((txt != NULL) && (*txt != '\0'))
+  {
+    // prefer this string to reco result
+    strcpy_s(utt, txt);
+    rcv = utt;
+    hear = 2;
+    txtin = 1;               
+  }
 }
 
 
@@ -581,11 +605,14 @@ void jhcSpeechX::Inject (const char *txt, int stop)
 int jhcSpeechX::Update (int reco) 
 {
   // see if finished talking and check grammar parser
-  rcv = NULL;
-  emit = NULL;
   ChkOutput(); 
-  if (reco > 0)
+  if ((reco > 0) && (txtin <= 0))
+  {
+    rcv = NULL;
     AwaitPhrase(0.0);
+  }
+  txtin = 0;
+  emit = NULL;
 
   // adjust silence counter (neither user or robot speaking)
   now = jms_now();
@@ -711,7 +738,7 @@ int jhcSpeechX::AwaitOrQuit (double secs)
 // can use to poll background recognition engine status
 // leaves focus on first important (capitalized) non-terminal
 
-int jhcSpeechX::AwaitPhrase (double secs)
+int jhcSpeechX::AwaitPhrase (double secs, int syl)
 {
   char t[500], c[200];
   int rc, rc2, i = 0, n = ROUND(secs / 0.1), nmax = 0, hyp = 100;
@@ -772,13 +799,47 @@ int jhcSpeechX::AwaitPhrase (double secs)
     }
   }
 
-  // restore parser to state of best match
+  // restore parser to state of best match (reject likely motor noise)
   if (i > 1)
     parse_analyze(utt, conf);
   rcv = utt;
-  if ((nw > 0) && (cf > 0))
+  if ((nw > 0) && (cf > 0) && (syllables(utt) >= syl))
     hear = 2;
   return hear;
+}
+
+
+//= Guess how many syllables heard as an aid to rejecting spurious noises (e.g. "spin").
+// counts vowel clusters ("ia" = 2) but adjusts for word breaks, leading "y", and final "e"
+
+int jhcSpeechX::syllables (const char *txt) const
+{
+  const char *t = txt;
+  char t0, v = '\0';
+  int sp = 1, n = 0;
+
+  // scan through lowercase string
+  while (*t != '\0')
+  {
+    t0 = (char) tolower(*t++);
+    if ((strchr("aiou", t0) != NULL) ||
+        ((t0 == 'e') && (*t != ' ') && (*t != '\0')) ||        
+        ((t0 == 'y') && (sp <= 0)))
+    {
+      // vowel cluster (except leading "y" or final "e", split "ia")
+      if ((v == '\0') || ((v == 'i') && (t0 == 'a')))
+        n++;
+      v = t0;
+      sp = 0;
+    }
+    else 
+    { 
+      // consonant or word break
+      v = '\0';
+      sp = ((t0 == ' ') ? 1 : 0);
+    }
+  }
+  return n;
 }
 
 
@@ -1401,7 +1462,7 @@ int jhcSpeechX::Utter ()
 
     // turn off recognition engine and start new sentence
     Listen(0, 0);
-    jprintf("\n==> \"%c%s\"\n", toupper(emit[0]), emit + 1);
+    jprintf("\n==> \"%c%s\"\n\n", toupper(emit[0]), emit + 1);
     rc = tts_say(alt_pron(emit));
     talk = 1;
   }
@@ -1412,7 +1473,7 @@ int jhcSpeechX::Utter ()
 //= Blocks when any spoken utterance is in progress.
 // returns when finished or given time is elapses
 // value indicates whether still busy (0) or silent (1)
-// re-enables recognition when complete
+// re-enables recognition when complete 
 
 int jhcSpeechX::Finish (double secs)
 {

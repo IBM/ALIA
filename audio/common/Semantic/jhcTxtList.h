@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2013 IBM Corporation
+// Copyright 2013-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ class jhcTxtList
 private:
   char txt[200];       /** Name of list element. */
   double wt;           /** Degree of membership. */
+  int vlen;            /** Length of string val. */
   jhcTxtList *next;    /** Remainder of list.    */
 
 
@@ -53,15 +54,17 @@ public:
 // PUBLIC MEMBER FUNCTIONS
 public:
   // creation and configuration
-  jhcTxtList () {*txt = '\0'; wt = 1.0; next = NULL; mark = 0;}
+  jhcTxtList () {*txt = '\0'; vlen = 0; wt = 1.0; next = NULL; mark = 0;}
 
   // read only access
   const char *ValTxt () const {return txt;}
+  int ValLen () const {return vlen;}
   double ValWt () const {return wt;}
   const jhcTxtList *NextVal () const {return next;}
 
   // modification
-  void SetTxt (const char *vtxt) {strncpy_s(txt, vtxt, 200); txt[199] = '\0';}
+  void SetTxt (const char *vtxt) 
+    {strncpy_s(txt, vtxt, 200); txt[199] = '\0'; vlen = (int) strlen(txt);}
   void SetWt (double amt) {wt = amt;}
   void IncWt (double amt =1.0) {wt += amt;}
   void SetNext (jhcTxtList *v) {next = v;}

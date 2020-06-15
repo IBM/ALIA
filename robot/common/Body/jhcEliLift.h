@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2011-2019 IBM Corporation
+// Copyright 2011-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ private:
   // actuator command
   int llock0, llock;            /** Winning bid for fork height command.   */
   int stiff;                    /** Whether lift is under active control.  */
-  int ice;                      /** Whether lift is already frozen.        */
 
 
 // PUBLIC MEMBER VARIABLES

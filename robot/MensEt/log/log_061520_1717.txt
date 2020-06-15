@@ -1,0 +1,2249 @@
+Reco	= DLL version 1.70 Microsoft
+Input	= Microphone Array (Synaptics Audio)
+Engine	= Microsoft Speech Recognizer 8.0 for Windows (English - US)
+User	= Jon_Connell_VTI
+---
+Parser	= DLL version 1.70 Microsoft
+Grammar	= language/alia_top.sgm
+---
+TTS	= DLL version 1.30 Microsoft
+Voice	= CereVoice William - English (England)
+Output	= Speakers (Synaptics Audio)
+  1 re-spellings from: pronounce.map
+
+SPEECH -> OK
+=========================
+
+Initializing ALIA core 1.60
+
+Loading kernel rules and operators:
+   2 action operators from: KB/TalkFcn.ops
+  14 action operators from: KB/BasicAct.ops
+   1 inference rules  from: KB/BasicAct.rules
+   4 action operators from: KB/TargetVis.ops
+  13 inference rules  from: KB/TargetVis.rules
+  17 action operators from: KB/SoundFcn.ops
+ TOTAL = 37 operators, 14 rules
+
+Adding baseline knowledge from: KB2/baseline.lst
+   9 action operators from: KB2/chitchat.ops
+  12 action operators from: KB2/acknowledge.ops
+   6 action operators from: KB2/status.ops
+  TOTAL = 27 operators, 0 rules
+
+---------------------------------
+>>> New focus 0:
+
+  NOTE[   hq-10 -lex-  awake
+                -hq--> self-1  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ awake ]
+
+    Expanding to:
+      DO[ act-12 -lex-  announce
+                 -obj-> hq-10  ]
+
+  0 choices left for ANTE[ announce ]
+  2 choices left for DO[ announce ]
+
+    Expanding to:
+      DO[ act-14 -lex-  say
+                 -obj-> txt-15
+          txt-15 -str-  finally, someone to play with ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[ fcn-17 -lex-  echo_wds
+                 -pat-> txt-15 ]
+
+*** success: FCN[ echo_wds ]
+
+==> "Finally, someone to play with"
+
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ announce ]
+*** success: DO[ announce ]
+*** success: NOTE[ awake ]
+
+==========================================================
+
+"drive forward"
+
+  --> %Attn !do ACT=drive DIR=forward ! %
+
+331 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                drive
+              <vmod3>
+                <vmod>
+                  <dir3>
+                    <DIR>
+                      forward
+
+---------------------------------
+>>> New focus 1:
+
+  NOTE[ meta-23 -lex-   tell
+                -agt--> dude-5 
+                -dest-> self-1 
+                -cmd--> act-19  ]
+    DO[ act-19 -lex-  drive
+        dir-21 -lex-  forward
+               -dir-> act-19 ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  0 choices left for ANTE[ drive ]
+  1 choices left for DO[ drive ]
+
+    Expanding to:
+     FCN[ fcn-25 -lex-  base_drive
+                 -arg-> act-19 ]
+
+*** success: FCN[ base_drive ]
+  0 choices left for POST[ drive ]
+*** success: DO[ drive ]
+
+==========================================================
+
+"to shimmy turn left then turn right"
+
+  --> %Operator $trig !do ACT=shimmy ! $ $proc !do ACT=turn DIR=left ! !do ACT=turn DIR=right ! $ %
+
+710 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Operator>
+      <$trig>
+        <inf>
+          to
+        <cmd>
+          <!do>
+            <ACT>
+              shimmy
+      <$proc>
+        <chain>
+          <step>
+            <cmd>
+              <!do>
+                <ACT>
+                  turn
+                <vmod3>
+                  <vmod>
+                    <dir3>
+                      <DIR>
+                        left
+          <seq>
+            then
+          <step>
+            <cmd>
+              <!do>
+                <ACT>
+                  turn
+                <vmod3>
+                  <vmod>
+                    <dir3>
+                      <DIR>
+                        right
+
+---------------------------------
+>>> New focus 2:
+
+  NOTE[ meta-27 -lex-   give
+                -agt--> dude-5 
+                -dest-> self-1 
+                -obj--> obj-29 
+         ako-30 -lex-   operator
+                -ako--> obj-29  ]
+   ADD[  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-32 -lex-  acknowledge
+                  -obj-> meta-27 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-34 -lex-   say
+                  -dest-> dude-5 
+                  -obj--> txt-35 
+           txt-35 -str-   good advice ?0 ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-37 -lex-   echo_wds
+                  -pat--> txt-35 
+                  -arg0-> dude-5  ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+---------------------------------
+>>> Newly added:
+
+// OPERATOR 65
+trig:
+    DO[ act-1 -lex-  shimmy ]
+-----------------
+    DO[ act-3 -lex-  turn
+        dir-5 -lex-  left
+              -dir-> act-3 ]
+    DO[ act-7 -lex-  turn
+        dir-9 -lex-  right
+              -dir-> act-7 ]
+
+---------------------------------
+
+*** success: ADD[  ]
+
+==> "Good advice"
+
+
+  ... timeout ... attention off
+
+
+==========================================================
+
+"shimmy Robby"
+
+  --> %Attn !do ACT=shimmy ! % ATTN=Robby
+
+249 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                shimmy
+  <ATTN>
+    Robby
+
+---------------------------------
+>>> New focus 3:
+
+  NOTE[ meta-41 -lex-   tell
+                -agt--> dude-5 
+                -dest-> self-1 
+                -cmd--> act-39  ]
+    DO[ act-39 -lex-  shimmy ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  0 choices left for ANTE[ shimmy ]
+  1 choices left for DO[ shimmy ]
+
+    Expanding to:
+      DO[ act-43 -lex-  turn
+          dir-45 -lex-  left
+                 -dir-> act-43 ]
+      DO[ act-47 -lex-  turn
+          dir-49 -lex-  right
+                 -dir-> act-47 ]
+
+  0 choices left for ANTE[ turn ]
+  1 choices left for DO[ turn ]
+
+    Expanding to:
+     FCN[ fcn-51 -lex-  base_turn
+                 -arg-> act-43 ]
+
+*** success: FCN[ base_turn ]
+  0 choices left for POST[ turn ]
+*** success: DO[ turn ]
+  0 choices left for ANTE[ turn ]
+  1 choices left for DO[ turn ]
+
+    Expanding to:
+     FCN[ fcn-53 -lex-  base_turn
+                 -arg-> act-47 ]
+
+*** success: FCN[ base_turn ]
+  0 choices left for POST[ turn ]
+*** success: DO[ turn ]
+  0 choices left for POST[ shimmy ]
+*** success: DO[ shimmy ]
+
+  ... timeout ... attention off
+
+
+==========================================================
+
+"to cha-cha drive forward then drive backwards"
+
+  --> %Operator $trig !do ACT=cha-cha ! $ $proc !do ACT=drive DIR=forward ! !do ACT=drive DIR=backwards ! $ %
+
+710 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Operator>
+      <$trig>
+        <inf>
+          to
+        <cmd>
+          <!do>
+            <ACT>
+              cha-cha
+      <$proc>
+        <chain>
+          <step>
+            <cmd>
+              <!do>
+                <ACT>
+                  drive
+                <vmod3>
+                  <vmod>
+                    <dir3>
+                      <DIR>
+                        forward
+          <seq>
+            then
+          <step>
+            <cmd>
+              <!do>
+                <ACT>
+                  drive
+                <vmod3>
+                  <vmod>
+                    <dir3>
+                      <DIR>
+                        backwards
+
+---------------------------------
+>>> New focus 4:
+
+  NOTE[ meta-55 -lex-   give
+                -agt--> dude-5 
+                -dest-> self-1 
+                -obj--> obj-57 
+         ako-58 -lex-   operator
+                -ako--> obj-57  ]
+   ADD[  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-60 -lex-  acknowledge
+                  -obj-> meta-55 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-62 -lex-   say
+                  -dest-> dude-5 
+                  -obj--> txt-63 
+           txt-63 -str-   good advice ?0 ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-65 -lex-   echo_wds
+                  -pat--> txt-63 
+                  -arg0-> dude-5  ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+---------------------------------
+>>> Newly added:
+
+// OPERATOR 66
+trig:
+    DO[ act-1 -lex-  cha-cha ]
+-----------------
+    DO[ act-3 -lex-  drive
+        dir-5 -lex-  forward
+              -dir-> act-3 ]
+    DO[ act-7 -lex-  drive
+        dir-9 -lex-  backwards
+              -dir-> act-7 ]
+
+---------------------------------
+
+*** success: ADD[  ]
+
+==> "Good advice"
+
+
+==========================================================
+
+"to dance cha-cha then shimmy"
+
+  --> %Operator $trig !do ACT=dance ! $ $proc !do ACT=cha-cha ! !do ACT=shimmy ! $ %
+
+540 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Operator>
+      <$trig>
+        <inf>
+          to
+        <cmd>
+          <!do>
+            <ACT>
+              dance
+      <$proc>
+        <chain>
+          <step>
+            <cmd>
+              <!do>
+                <ACT>
+                  cha-cha
+          <seq>
+            then
+          <step>
+            <cmd>
+              <!do>
+                <ACT>
+                  shimmy
+
+---------------------------------
+>>> New focus 5:
+
+  NOTE[ meta-67 -lex-   give
+                -agt--> dude-5 
+                -dest-> self-1 
+                -obj--> obj-69 
+         ako-70 -lex-   operator
+                -ako--> obj-69  ]
+   ADD[  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-72 -lex-  acknowledge
+                  -obj-> meta-67 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-74 -lex-   say
+                  -dest-> dude-5 
+                  -obj--> txt-75 
+           txt-75 -str-   I'm glad to learn that ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-77 -lex-   echo_wds
+                  -pat--> txt-75 
+                  -arg0-> dude-5  ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+---------------------------------
+>>> Newly added:
+
+// OPERATOR 67
+trig:
+    DO[ act-1 -lex-  dance ]
+-----------------
+    DO[ act-3 -lex-  cha-cha ]
+    DO[ act-5 -lex-  shimmy ]
+
+---------------------------------
+
+*** success: ADD[  ]
+
+==> "I'm glad to learn that"
+
+
+==========================================================
+
+"please dance"
+
+  --> %Attn POLITE=please !do ACT=dance ! %
+
+301 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <POLITE>
+        please
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                dance
+
+---------------------------------
+>>> New focus 6:
+
+  NOTE[ meta-81 -lex-   tell
+                -agt--> dude-5 
+                -dest-> self-1 
+                -cmd--> act-79 
+         mod-82 -lex-   polite
+                -mod--> meta-81 ]
+    DO[ act-79 -lex-  dance ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  0 choices left for ANTE[ dance ]
+  1 choices left for DO[ dance ]
+
+    Expanding to:
+      DO[ act-85 -lex-  cha-cha ]
+      DO[ act-87 -lex-  shimmy ]
+
+  0 choices left for ANTE[ cha-cha ]
+  1 choices left for DO[ cha-cha ]
+
+    Expanding to:
+      DO[ act-89 -lex-  drive
+          dir-91 -lex-  forward
+                 -dir-> act-89 ]
+      DO[ act-93 -lex-  drive
+          dir-95 -lex-  backwards
+                 -dir-> act-93 ]
+
+  0 choices left for ANTE[ drive ]
+  1 choices left for DO[ drive ]
+
+    Expanding to:
+     FCN[ fcn-97 -lex-  base_drive
+                 -arg-> act-89 ]
+
+*** success: FCN[ base_drive ]
+  0 choices left for POST[ drive ]
+*** success: DO[ drive ]
+  0 choices left for ANTE[ drive ]
+  1 choices left for DO[ drive ]
+
+    Expanding to:
+     FCN[ fcn-99 -lex-  base_drive
+                 -arg-> act-93 ]
+
+
+  ... timeout ... attention off
+
+*** success: FCN[ base_drive ]
+  0 choices left for POST[ drive ]
+*** success: DO[ drive ]
+  0 choices left for POST[ cha-cha ]
+*** success: DO[ cha-cha ]
+  0 choices left for ANTE[ shimmy ]
+  1 choices left for DO[ shimmy ]
+
+    Expanding to:
+      DO[ act-101 -lex-  turn
+          dir-103 -lex-  left
+                  -dir-> act-101 ]
+      DO[ act-105 -lex-  turn
+          dir-107 -lex-  right
+                  -dir-> act-105 ]
+
+  0 choices left for ANTE[ turn ]
+  1 choices left for DO[ turn ]
+
+    Expanding to:
+     FCN[ fcn-109 -lex-  base_turn
+                  -arg-> act-101 ]
+
+*** success: FCN[ base_turn ]
+  0 choices left for POST[ turn ]
+*** success: DO[ turn ]
+  0 choices left for ANTE[ turn ]
+  1 choices left for DO[ turn ]
+
+    Expanding to:
+     FCN[ fcn-111 -lex-  base_turn
+                  -arg-> act-105 ]
+
+*** success: FCN[ base_turn ]
+  0 choices left for POST[ turn ]
+*** success: DO[ turn ]
+  0 choices left for POST[ shimmy ]
+*** success: DO[ shimmy ]
+  0 choices left for POST[ dance ]
+*** success: DO[ dance ]
+
+==========================================================
+
+"if something is very close then drive backwards"
+
+  --> %Operator $trig %obj-i0 % $add DEG=very HQ=close $ $ $proc !do ACT=drive DIR=backwards ! $ %
+
+672 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Operator>
+      <$trig>
+        <if>
+          if
+        <fact>
+          <%obj-i0>
+            <n-ind>
+              something
+          <$add>
+            <cop>
+              <cop-p>
+                <be>
+                  <be-sing>
+                    is
+            <desc>
+              <nmod>
+                <DEG>
+                  very
+                <HQ>
+                  close
+      <then>
+        then
+      <$proc>
+        <chain>
+          <step>
+            <cmd>
+              <!do>
+                <ACT>
+                  drive
+                <vmod3>
+                  <vmod>
+                    <dir3>
+                      <DIR>
+                        backwards
+
+---------------------------------
+>>> New focus 0:
+
+  NOTE[ meta-113 -lex-   give
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> obj-115 
+         ako-116 -lex-   operator
+                 -ako--> obj-115  ]
+   ADD[  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-118 -lex-  acknowledge
+                   -obj-> meta-113 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-120 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-121 
+           txt-121 -str-   good advice ?0 ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-123 -lex-   echo_wds
+                   -pat--> txt-121 
+                   -arg0-> dude-5   ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+---------------------------------
+>>> Newly added:
+
+// OPERATOR 68
+trig:
+  NOTE[  hq-2 -lex-  close
+              -hq--> obj-1
+        deg-4 -lex-  very
+              -deg-> hq-2  ]
+-----------------
+    DO[ act-6 -lex-  drive
+        dir-8 -lex-  backwards
+              -dir-> act-6 ]
+
+---------------------------------
+
+*** success: ADD[  ]
+
+==> "Good advice"
+
+
+  ... timeout ... attention off
+
+
+==========================================================
+
+"something is very close"
+
+  --> %Attn %obj-i0 % $add DEG=very HQ=close $ %
+
+244 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <fact>
+        <%obj-i0>
+          <n-ind>
+            something
+        <$add>
+          <cop>
+            <cop-p>
+              <be>
+                <be-sing>
+                  is
+          <desc>
+            <nmod>
+              <DEG>
+                very
+              <HQ>
+                close
+
+---------------------------------
+>>> New focus 1:
+
+  NOTE[ meta-130 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> data-132 ]
+  NOTE[  hq-126 -lex-  close
+                -hq--> obj-125
+        deg-128 -lex-  very
+                -deg-> hq-126  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ tell ]
+
+    Expanding to:
+      DO[  act-133 -lex-  acknowledge
+                   -obj-> meta-130 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-135 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-136 
+           txt-136 -str-   got it ?0 ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-138 -lex-   echo_wds
+                   -pat--> txt-136 
+                   -arg0-> dude-5   ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ tell ]
+  1 choices left for NOTE[ close ]
+
+    Expanding to:
+      DO[ act-140 -lex-  drive
+          dir-142 -lex-  backwards
+                  -dir-> act-140 ]
+
+  0 choices left for ANTE[ drive ]
+
+==> "Got it"
+
+  1 choices left for DO[ drive ]
+
+    Expanding to:
+     FCN[ fcn-144 -lex-  base_drive
+                  -arg-> act-140 ]
+
+*** success: FCN[ base_drive ]
+  0 choices left for POST[ drive ]
+*** success: DO[ drive ]
+*** success: NOTE[ close ]
+
+==========================================================
+
+"you should never grab a person but instead say I'm not allowed to"
+
+  --> %Operator $trig-n !do ACT=grab %obj-i AKO=person % ! $ $proc !do SAY=say QUOTE=I'm_not_allowed_to ! $ %
+
+947 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Operator>
+      <$trig-n>
+        <dont>
+          you should never
+        <cmd>
+          <!do>
+            <ACT>
+              grab
+            <np>
+              <%obj-i>
+                <ind>
+                  a
+                <AKO>
+                  person
+      but instead
+      <$proc>
+        <chain>
+          <step>
+            <cmd>
+              <!do>
+                <SAY>
+                  say
+                <QUOTE>
+                  I'm not allowed to
+
+---------------------------------
+>>> New focus 2:
+
+  NOTE[ meta-146 -lex-   give
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> obj-148 
+         ako-149 -lex-   operator
+                 -ako--> obj-148  ]
+   ADD[  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-151 -lex-  acknowledge
+                   -obj-> meta-146 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-153 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-154 
+           txt-154 -str-   I'm glad to learn that ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-156 -lex-   echo_wds
+                   -pat--> txt-154 
+                   -arg0-> dude-5   ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+---------------------------------
+>>> Newly added:
+
+// OPERATOR 69
+trig:
+  ANTE[ act-1 -lex-  grab
+              -obj-> obj-3
+        ako-4 -lex-  person
+              -ako-> obj-3 ]
+-----------------
+    DO[ act-6 -lex-  say
+              -obj-> txt-8
+        txt-8 -str-  I'm not allowed to ]
+  PUNT[  ]
+
+---------------------------------
+
+*** success: ADD[  ]
+
+==> "I'm glad to learn that"
+
+
+==========================================================
+
+"if something is a girl it is a person"
+
+  --> %Rule $cond %obj-i0 % $add %obj-i AKO=girl % $ $ $res %obj REF=it % $add %obj-i AKO=person % $ $ %
+
+466 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Rule>
+      <$cond>
+        <if>
+          if
+        <fact>
+          <%obj-i0>
+            <n-ind>
+              something
+          <$add>
+            <cop>
+              <cop-p>
+                <be>
+                  <be-sing>
+                    is
+            <%obj-i>
+              <ind>
+                a
+              <AKO>
+                girl
+      <$res>
+        <fact>
+          <%obj>
+            <REF>
+              it
+          <$add>
+            <cop>
+              <cop-p>
+                <be>
+                  <be-sing>
+                    is
+            <%obj-i>
+              <ind>
+                a
+              <AKO>
+                person
+
+---------------------------------
+>>> New focus 3:
+
+  NOTE[ meta-158 -lex-   give
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> obj-160 
+         ako-161 -lex-   rule
+                 -ako--> obj-160  ]
+   ADD[  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-163 -lex-  acknowledge
+                   -obj-> meta-158 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-165 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-166 
+           txt-166 -str-   okay I'll remember ?0 ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-168 -lex-   echo_wds
+                   -pat--> txt-166 
+                   -arg0-> dude-5   ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+---------------------------------
+>>> Newly added:
+
+// RULE 15
+    if: ako-2 -lex-  girl
+              -ako-> obj-1
+  then: ako-4 -lex-  person
+              -ako-> obj-1
+
+---------------------------------
+
+*** success: ADD[  ]
+
+==> "Okay I'll remember"
+
+
+==========================================================
+
+"grab the block"
+
+  --> %Attn !do ACT=grab %obj AKO=block % ! %
+
+372 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                grab
+              <np>
+                <%obj>
+                  <def>
+                    the
+                  <n>
+                    <AKO>
+                      block
+
+---------------------------------
+>>> New focus 4:
+
+  NOTE[ meta-175 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-170  ]
+    DO[ act-170 -lex-  grab
+                -obj-> obj-172
+        ako-173 -lex-  block
+                -ako-> obj-172 ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+
+==========================================================
+
+"grab the block"
+
+  --> %Attn !do ACT=grab %obj AKO=block % ! %
+
+372 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                grab
+              <np>
+                <%obj>
+                  <def>
+                    the
+                  <n>
+                    <AKO>
+                      block
+
+---------------------------------
+>>> New focus 5:
+
+  NOTE[ meta-179 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-177  ]
+    DO[ act-177 -lex-  grab
+                -obj-> obj-172 ]
+
+---------------------------------
+
+  0 choices left for ANTE[ grab ]
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  1 choices left for DO[ grab ]
+
+    Expanding to:
+      DO[ act-181 -lex-  close
+                  -obj-> obj-182
+          ako-184 -lex-  gripper
+                  -ako-> obj-182 ]
+
+  0 choices left for ANTE[ close ]
+  0 choices left for ANTE[ grab ]
+  1 choices left for DO[ close ]
+
+    Expanding to:
+     FCN[ fcn-186 -lex-  base_grip
+                  -arg-> act-181 ]
+
+  1 choices left for DO[ grab ]
+
+    Expanding to:
+      DO[ act-188 -lex-  close
+                  -obj-> obj-189
+          ako-191 -lex-  gripper
+                  -ako-> obj-189 ]
+
+  0 choices left for ANTE[ close ]
+*** success: FCN[ base_grip ]
+
+==========================================================
+
+"grab the block"
+
+  --> %Attn !do ACT=grab %obj AKO=block % ! %
+
+372 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                grab
+              <np>
+                <%obj>
+                  <def>
+                    the
+                  <n>
+                    <AKO>
+                      block
+
+---------------------------------
+>>> New focus 6:
+
+  NOTE[ meta-195 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-193  ]
+    DO[ act-193 -lex-  grab
+                -obj-> obj-172 ]
+
+---------------------------------
+
+  1 choices left for DO[ close ]
+
+    Expanding to:
+     FCN[ fcn-197 -lex-  base_grip
+                  -arg-> act-188 ]
+
+  0 choices left for POST[ close ]
+*** success: DO[ close ]
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  0 choices left for POST[ grab ]
+*** success: DO[ grab ]
+  0 choices left for ANTE[ grab ]
+  1 choices left for DO[ grab ]
+
+    Expanding to:
+      DO[ act-199 -lex-  close
+                  -obj-> obj-200
+          ako-202 -lex-  gripper
+                  -ako-> obj-200 ]
+
+  0 choices left for ANTE[ close ]
+  1 choices left for DO[ close ]
+
+    Expanding to:
+     FCN[ fcn-204 -lex-  base_grip
+                  -arg-> act-199 ]
+
+
+==========================================================
+
+"grab the block"
+
+  --> %Attn !do ACT=grab %obj AKO=block % ! %
+
+372 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                grab
+              <np>
+                <%obj>
+                  <def>
+                    the
+                  <n>
+                    <AKO>
+                      block
+
+---------------------------------
+>>> New focus 7:
+
+  NOTE[ meta-208 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-206  ]
+    DO[ act-206 -lex-  grab
+                -obj-> obj-172 ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  0 choices left for ANTE[ grab ]
+  1 choices left for DO[ grab ]
+
+    Expanding to:
+      DO[ act-210 -lex-  close
+                  -obj-> obj-211
+          ako-213 -lex-  gripper
+                  -ako-> obj-211 ]
+
+  0 choices left for ANTE[ close ]
+  1 choices left for DO[ close ]
+
+    Expanding to:
+     FCN[ fcn-215 -lex-  base_grip
+                  -arg-> act-210 ]
+
+
+==========================================================
+
+"grab the block"
+
+  --> %Attn !do ACT=grab %obj AKO=block % ! %
+
+372 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                grab
+              <np>
+                <%obj>
+                  <def>
+                    the
+                  <n>
+                    <AKO>
+                      block
+
+---------------------------------
+>>> New focus 8:
+
+  NOTE[ meta-219 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-217  ]
+    DO[ act-217 -lex-  grab
+                -obj-> obj-172 ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  0 choices left for ANTE[ grab ]
+  1 choices left for DO[ grab ]
+
+    Expanding to:
+      DO[ act-221 -lex-  close
+                  -obj-> obj-222
+          ako-224 -lex-  gripper
+                  -ako-> obj-222 ]
+
+  0 choices left for ANTE[ close ]
+  1 choices left for DO[ close ]
+
+    Expanding to:
+     FCN[ fcn-226 -lex-  base_grip
+                  -arg-> act-221 ]
+
+*** success: FCN[ base_grip ]
+*** success: FCN[ base_grip ]
+*** success: FCN[ base_grip ]
+*** success: FCN[ base_grip ]
+  0 choices left for POST[ close ]
+*** success: DO[ close ]
+  0 choices left for POST[ close ]
+*** success: DO[ close ]
+  0 choices left for POST[ close ]
+*** success: DO[ close ]
+  0 choices left for POST[ close ]
+*** success: DO[ close ]
+  0 choices left for POST[ grab ]
+*** success: DO[ grab ]
+  0 choices left for POST[ grab ]
+*** success: DO[ grab ]
+  0 choices left for POST[ grab ]
+*** success: DO[ grab ]
+  0 choices left for POST[ grab ]
+*** success: DO[ grab ]
+
+==========================================================
+
+"release the block"
+
+  --> %Attn !do ACT=release %obj AKO=block % ! %
+
+372 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                release
+              <np>
+                <%obj>
+                  <def>
+                    the
+                  <n>
+                    <AKO>
+                      block
+
+---------------------------------
+>>> New focus 9:
+
+  NOTE[ meta-230 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-228  ]
+    DO[ act-228 -lex-  release
+                -obj-> obj-172 ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  0 choices left for ANTE[ release ]
+  1 choices left for DO[ release ]
+
+    Expanding to:
+      DO[ act-232 -lex-  open
+                  -obj-> obj-233
+          ako-235 -lex-  gripper
+                  -ako-> obj-233 ]
+
+  0 choices left for ANTE[ open ]
+  1 choices left for DO[ open ]
+
+    Expanding to:
+     FCN[ fcn-237 -lex-  base_grip
+                  -arg-> act-232 ]
+
+*** success: FCN[ base_grip ]
+  0 choices left for POST[ open ]
+*** success: DO[ open ]
+  0 choices left for POST[ release ]
+*** success: DO[ release ]
+
+==========================================================
+
+"Mary is a girl"
+
+  --> %Attn %obj NAME=Mary % $add %obj-i AKO=girl % $ %
+
+232 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <fact>
+        <%obj>
+          <NAME>
+            Mary
+        <$add>
+          <cop>
+            <cop-p>
+              <be>
+                <be-sing>
+                  is
+          <%obj-i>
+            <ind>
+              a
+            <AKO>
+              girl
+
+---------------------------------
+>>> New focus 10:
+
+  NOTE[ meta-243 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> data-245 ]
+  NOTE[ ako-241 -lex-  girl
+                -ako-> obj-239
+        obj-239 -lex-  Mary ]
+
+---------------------------------
+
+  1 choices left for NOTE[ tell ]
+
+    Expanding to:
+      DO[  act-246 -lex-  acknowledge
+                   -obj-> meta-243 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-248 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-249 
+           txt-249 -str-   got it ?0 ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-251 -lex-   echo_wds
+                   -pat--> txt-249 
+                   -arg0-> dude-5   ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ tell ]
+  0 choices left for NOTE[ girl ]
+*** success: NOTE[ girl ]
+
+==> "Got it"
+
+
+==========================================================
+
+"grab Mary"
+
+  --> %Attn !do ACT=grab %obj NAME=Mary % ! %
+
+357 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                grab
+              <np>
+                <%obj>
+                  <NAME>
+                    Mary
+
+---------------------------------
+>>> New focus 11:
+
+  NOTE[ meta-255 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-253  ]
+    DO[ act-253 -lex-  grab
+                -obj-> obj-239 ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  1 choices left for ANTE[ grab ]
+
+    Expanding to:
+      DO[ act-259 -lex-  say
+                  -obj-> txt-260
+          txt-260 -str-  I'm not allowed to ]
+    PUNT[  ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[ fcn-262 -lex-  echo_wds
+                  -pat-> txt-260 ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+--- failure: PUNT[  ]
+--- failure: ANTE[ grab ]
+
+==> "I'm not allowed to"
+
+
+==========================================================
+
+"if Rick tells you to do something don't but instead complain"
+
+  --> %Operator $trig-n %obj NAME=Rick % ACT-S=tells %obj REF=you % !do ACT=do_something ! $ $proc !do ACT=complain ! $ %
+
+819 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Operator>
+      <$trig-n>
+        <if>
+          if
+        <fact>
+          <np>
+            <%obj>
+              <NAME>
+                Rick
+          <vp>
+            <ACT-S>
+              tells
+          <np>
+            <%obj>
+              <REF>
+                you
+          to
+          <cmd>
+            <!do>
+              <ACT>
+                do something
+        <punt>
+          don't
+      but instead
+      <$proc>
+        <chain>
+          <step>
+            <cmd>
+              <!do>
+                <ACT>
+                  complain
+
+---------------------------------
+>>> New focus 12:
+
+  NOTE[ meta-264 -lex-   give
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> obj-266 
+         ako-267 -lex-   operator
+                 -ako--> obj-266  ]
+   ADD[  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-269 -lex-  acknowledge
+                   -obj-> meta-264 ]
+
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-271 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-272 
+           txt-272 -str-   I'm glad to learn that ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-274 -lex-   echo_wds
+                   -pat--> txt-272 
+                   -arg0-> dude-5   ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+---------------------------------
+>>> Newly added:
+
+// OPERATOR 70
+trig:
+  ANTE[ act-7
+        obj-3 -lex-   Rick
+        obj-5 -lex-   you
+        act-1 -lex-   tell
+              -agt--> obj-3
+              -dest-> obj-5
+              -cmd--> act-7 ]
+-----------------
+    DO[ act-8 -lex-  complain ]
+  PUNT[  ]
+
+---------------------------------
+
+*** success: ADD[  ]
+
+==> "I'm glad to learn that"
+
+
+==========================================================
+
+"to complain say I don't take orders from you"
+
+  --> %Operator $trig !do ACT=complain ! $ $proc !do SAY=say QUOTE=I_don't_take_orders_from_you ! $ %
+
+984 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Operator>
+      <$trig>
+        <inf>
+          to
+        <cmd>
+          <!do>
+            <ACT>
+              complain
+      <$proc>
+        <chain>
+          <step>
+            <cmd>
+              <!do>
+                <SAY>
+                  say
+                <QUOTE>
+                  I don't take orders from you
+
+---------------------------------
+>>> New focus 13:
+
+  NOTE[ meta-276 -lex-   give
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> obj-278 
+         ako-279 -lex-   operator
+                 -ako--> obj-278  ]
+   ADD[  ]
+
+---------------------------------
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-281 -lex-  acknowledge
+                   -obj-> meta-276 ]
+
+  0 choices left for ANTE[ acknowledge ]
+
+==========================================================
+
+"to complain say I don't take orders from you"
+
+  --> %Operator $trig !do ACT=complain ! $ $proc !do SAY=say QUOTE=I_don't_take_orders_from_you ! $ %
+
+984 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Operator>
+      <$trig>
+        <inf>
+          to
+        <cmd>
+          <!do>
+            <ACT>
+              complain
+      <$proc>
+        <chain>
+          <step>
+            <cmd>
+              <!do>
+                <SAY>
+                  say
+                <QUOTE>
+                  I don't take orders from you
+
+---------------------------------
+>>> New focus 14:
+
+  NOTE[ meta-283 -lex-   give
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> obj-285 
+         ako-286 -lex-   operator
+                 -ako--> obj-285  ]
+   ADD[  ]
+
+---------------------------------
+
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-288 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-289 
+           txt-289 -str-   good advice ?0 ]
+
+  1 choices left for NOTE[ give ]
+
+    Expanding to:
+      DO[  act-291 -lex-  acknowledge
+                   -obj-> meta-283 ]
+
+  0 choices left for ANTE[ say ]
+  0 choices left for ANTE[ acknowledge ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-293 -lex-   echo_wds
+                   -pat--> txt-289 
+                   -arg0-> dude-5   ]
+
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-295 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-296 
+           txt-296 -str-   I'm glad to learn that ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for ANTE[ say ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-298 -lex-   echo_wds
+                   -pat--> txt-296 
+                   -arg0-> dude-5   ]
+
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+---------------------------------
+>>> Newly added:
+
+// OPERATOR 71
+trig:
+    DO[ act-1 -lex-  complain ]
+-----------------
+    DO[ act-3 -lex-  say
+              -obj-> txt-5
+        txt-5 -str-  I don't take orders from you ]
+
+---------------------------------
+
+*** success: ADD[  ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ give ]
+--- failure: ADD[  ]
+
+==> "I'm glad to learn that"
+
+
+==========================================================
+
+"turn left"
+
+  --> %Attn !do ACT=turn DIR=left ! %
+
+331 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                turn
+              <vmod3>
+                <vmod>
+                  <dir3>
+                    <DIR>
+                      left
+
+---------------------------------
+>>> New focus 15:
+
+  NOTE[ meta-304 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-300  ]
+    DO[ act-300 -lex-  turn
+        dir-302 -lex-  left
+                -dir-> act-300 ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  0 choices left for ANTE[ turn ]
+  1 choices left for DO[ turn ]
+
+    Expanding to:
+     FCN[ fcn-306 -lex-  base_turn
+                  -arg-> act-300 ]
+
+
+==========================================================
+
+"I am Rick"
+
+  --> %Attn %obj REF=I % $add NAME=Rick $ %
+
+212 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <fact>
+        <%obj>
+          <REF>
+            I
+        <$add>
+          <cop>
+            <cop-p>
+              <be>
+                <be-sing>
+                  am
+          <NAME>
+            Rick
+
+---------------------------------
+>>> New focus 16:
+
+  NOTE[ meta-309 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -obj--> data-311 ]
+  NOTE[ dude-5 -lex-  Rick ]
+
+---------------------------------
+
+*** success: FCN[ base_turn ]
+  1 choices left for NOTE[ tell ]
+
+    Expanding to:
+      DO[  act-312 -lex-  acknowledge
+                   -obj-> meta-309 ]
+
+  0 choices left for POST[ turn ]
+*** success: DO[ turn ]
+  0 choices left for ANTE[ acknowledge ]
+  2 choices left for DO[ acknowledge ]
+
+    Expanding to:
+      DO[  act-314 -lex-   say
+                   -dest-> dude-5  
+                   -obj--> txt-315 
+           txt-315 -str-   that's interesting ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[  fcn-317 -lex-   echo_wds
+                   -pat--> txt-315 
+                   -arg0-> dude-5   ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ acknowledge ]
+*** success: DO[ acknowledge ]
+*** success: NOTE[ tell ]
+  0 choices left for NOTE[ Rick-308 ]
+*** success: NOTE[ Rick-308 ]
+
+==> "That's interesting"
+
+
+==========================================================
+
+"turn right"
+
+  --> %Attn !do ACT=turn DIR=right ! %
+
+331 parse states
+
+Tree 0:    <== CHOSEN out of 1
+<toplevel>
+  <main>
+    <%Attn>
+      <chain>
+        <step>
+          <cmd>
+            <!do>
+              <ACT>
+                turn
+              <vmod3>
+                <vmod>
+                  <dir3>
+                    <DIR>
+                      right
+
+---------------------------------
+>>> New focus 17:
+
+  NOTE[ meta-323 -lex-   tell
+                 -agt--> dude-5  
+                 -dest-> self-1  
+                 -cmd--> act-319  ]
+    DO[ act-319 -lex-  turn
+        dir-321 -lex-  right
+                -dir-> act-319 ]
+
+---------------------------------
+
+  0 choices left for NOTE[ tell ]
+*** success: NOTE[ tell ]
+  1 choices left for ANTE[ turn ]
+
+    Expanding to:
+      DO[ act-325 -lex-  complain ]
+    PUNT[  ]
+
+  0 choices left for ANTE[ complain ]
+  1 choices left for DO[ complain ]
+
+    Expanding to:
+      DO[ act-327 -lex-  say
+                  -obj-> txt-328
+          txt-328 -str-  I don't take orders from you ]
+
+  0 choices left for ANTE[ say ]
+  1 choices left for DO[ say ]
+
+    Expanding to:
+     FCN[ fcn-330 -lex-  echo_wds
+                  -pat-> txt-328 ]
+
+*** success: FCN[ echo_wds ]
+  0 choices left for POST[ say ]
+*** success: DO[ say ]
+  0 choices left for POST[ complain ]
+*** success: DO[ complain ]
+--- failure: PUNT[  ]
+--- failure: ANTE[ turn ]
+
+==> "I don't take orders from you"
+
+
+:::::::::::::::::::::::::::::::::::::
+
+WMEM =
+   fcn-330 -lex-   echo_wds
+           -blf-   0.0000
+           -pat--> txt-328 
+   txt-328 -str-   I don't take orders from you
+   act-327 -lex-   say
+           -tag-   vimp
+           -obj--> txt-328 
+   act-325 -lex-   complain
+           -tag-   vimp
+  meta-323 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-319 
+   dir-321 -lex-   right
+           -blf-   0.0000
+           -dir--> act-319 
+           -dir--> act-325 
+           -dir--> act-327 
+           -dir--> fcn-330 
+   act-319 -lex-   turn
+           -blf-   0.0000
+           -tag-   vimp
+   txt-315 -str-   that's interesting
+   act-314 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-315 
+   act-312 -lex-   acknowledge
+           -obj--> meta-309
+  meta-309 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> data-311
+   fcn-306 -lex-   base_turn
+           -blf-   0.0000
+           -arg--> act-300 
+  meta-304 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-300 
+   dir-302 -lex-   left
+           -blf-   0.0000
+           -dir--> act-300 
+           -dir--> fcn-306 
+   act-300 -lex-   turn
+           -tag-   vimp
+   txt-296 -str-   I'm glad to learn that
+   act-295 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-296 
+   act-291 -lex-   acknowledge
+           -obj--> meta-283
+   txt-289 -str-   good advice ?0
+   act-288 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-289 
+   ako-286 -lex-   operator
+           -ako--> obj-285 
+  meta-283 -lex-   give
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> obj-285 
+   act-281 -lex-   acknowledge
+           -obj--> meta-276
+   ako-279 -lex-   operator
+           -ako--> obj-278 
+  meta-276 -lex-   give
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> obj-278 
+   txt-272 -str-   I'm glad to learn that
+   act-271 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-272 
+   act-269 -lex-   acknowledge
+           -obj--> meta-264
+   ako-267 -lex-   operator
+           -ako--> obj-266 
+  meta-264 -lex-   give
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> obj-266 
+   fcn-262 -lex-   echo_wds
+           -blf-   0.0000
+           -pat--> txt-260 
+   txt-260 -str-   I'm not allowed to
+   act-259 -lex-   say
+           -tag-   vimp
+           -obj--> txt-260 
+   ako-258 -lex-   person
+           -ako--> obj-239 
+  meta-255 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-253 
+   act-253 -lex-   grab
+           -blf-   0.0000
+           -tag-   vimp
+           -obj--> obj-239 
+   txt-249 -str-   got it ?0
+   act-248 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-249 
+   act-246 -lex-   acknowledge
+           -obj--> meta-243
+  meta-243 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> data-245
+   ako-241 -lex-   girl
+           -ako--> obj-239 
+   obj-239 -lex-   Mary
+  meta-230 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-228 
+   act-228 -lex-   release
+           -tag-   vimp
+           -obj--> obj-172 
+  meta-219 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-217 
+   act-217 -lex-   grab
+           -tag-   vimp
+           -obj--> obj-172 
+  meta-208 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-206 
+   act-206 -lex-   grab
+           -tag-   vimp
+           -obj--> obj-172 
+  meta-195 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-193 
+   act-193 -lex-   grab
+           -tag-   vimp
+           -obj--> obj-172 
+  meta-179 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-177 
+   act-177 -lex-   grab
+           -tag-   vimp
+           -obj--> obj-172 
+  meta-175 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -cmd--> act-170 
+   ako-173 -lex-   block
+           -ako--> obj-172 
+   obj-172 -tag-   nsing
+   act-170 -lex-   grab
+           -blf-   0.0000
+           -tag-   vimp
+           -obj--> obj-172 
+   txt-166 -str-   okay I'll remember ?0
+   act-165 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-166 
+   act-163 -lex-   acknowledge
+           -obj--> meta-158
+   ako-161 -lex-   rule
+           -ako--> obj-160 
+  meta-158 -lex-   give
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> obj-160 
+   txt-154 -str-   I'm glad to learn that
+   act-153 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-154 
+   act-151 -lex-   acknowledge
+           -obj--> meta-146
+   ako-149 -lex-   operator
+           -ako--> obj-148 
+  meta-146 -lex-   give
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> obj-148 
+   fcn-144 -lex-   base_drive
+           -blf-   0.0000
+           -arg--> act-140 
+   dir-142 -lex-   backwards
+           -blf-   0.0000
+           -dir--> act-140 
+           -dir--> fcn-144 
+   act-140 -lex-   drive
+           -tag-   vimp
+   txt-136 -str-   got it ?0
+   act-135 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-136 
+   act-133 -lex-   acknowledge
+           -obj--> meta-130
+  meta-130 -lex-   tell
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> data-132
+   deg-128 -lex-   very
+           -deg--> hq-126  
+    hq-126 -lex-   close
+           -hq---> obj-125 
+   txt-121 -str-   good advice ?0
+   act-120 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-121 
+   act-118 -lex-   acknowledge
+           -obj--> meta-113
+   ako-116 -lex-   operator
+           -ako--> obj-115 
+  meta-113 -lex-   give
+           -agt--> dude-5  
+           -dest-> self-1  
+           -obj--> obj-115 
+    txt-75 -str-   I'm glad to learn that
+    act-74 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-75  
+    txt-63 -str-   good advice ?0
+    act-62 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-63  
+    txt-35 -str-   good advice ?0
+    act-34 -lex-   say
+           -dest-> dude-5  
+           -obj--> txt-35  
+    act-12 -lex-   announce
+           -obj--> hq-10   
+     hq-10 -lex-   awake
+           -hq---> self-1  
+     ako-8 -lex-   person
+           -ako--> dude-5  
+    dude-5 -lex-   I
+           -lex-   me
+           -lex-   Rick
+     ako-3 -lex-   person
+           -ako--> self-1  
+    self-1 -lex-   you
+
+Done.
+
+Think 80.7 Hz, Sense 30.0 Hz

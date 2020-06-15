@@ -28,6 +28,12 @@
 #include <direct.h>                  // for _getcwd in Windows
 #include <conio.h>
 
+#include <mmdeviceapi.h>
+#include <endpointvolume.h>
+
+#define SAFE_RELEASE(x) if(x) { x->Release(); x = NULL; } 
+
+
 
 // JHC: for filtered video file open
 
@@ -211,7 +217,7 @@ BOOL CBanzaiDoc::OnNewDocument()
   //         =  2 for restricted operation, expiration enforced
   cripple = 0;
   ver = ec.Version();
-  LockAfter(10, 2020, 5, 2020);
+  LockAfter(11, 2020, 6, 2020);
 
   // JHC: if this function is called, app did not start with a file open
   // JHC: initializes display object which depends on document
@@ -674,7 +680,7 @@ void CBanzaiDoc::OnUtilitiesPlayboth()
 
       // show frame on screen
       d.ShowGrid(eb->Color(), 0, 0, 0, "%d: %s", v.Last(), v.FrameName());
-      d.ShowGrid(d8, 0, 1, 0, "Depth");
+      d.ShowGrid(d8, 1, 0, 0, "Depth");
     }
   }
   catch (...){Tell("Unexpected exit!");}
@@ -1638,14 +1644,15 @@ int CBanzaiDoc::interact_params (const char *fname)
   int ok;
 
   ps->SetTag("banzai_opt", 0);
-  ps->NextSpec4( &rob, 0, "Body connected");
-  ps->NextSpec4( &cam, 0, "Camera available");
-  ps->NextSpec4( &mic, 0, "Speech input (2 = attn)");  
-  ps->NextSpec4( &spk, 0, "Read output always");
-  ps->Skip(2);
+  ps->NextSpec4( &rob,        0, "Body connected");
+  ps->NextSpec4( &cam,        0, "Camera available");
+  ps->NextSpec4( &(ec.spin),  0, "Speech (none, local, web)");  
+  ps->NextSpec4( &(ec.amode), 2, "Attn (none, any, front, only)");
+  ps->NextSpec4( &(ec.tts),   0, "Read output always");
+  ps->Skip();
 
-  ps->NextSpec4( &(ec.acc), 0, "Accumulate knowledge");
-  ps->NextSpec4( &fsave,    0, "Update face models");
+  ps->NextSpec4( &(ec.acc),   0, "Accumulate knowledge");
+  ps->NextSpec4( &fsave,      0, "Update face models");
   ok = ps->LoadDefs(fname);
   ps->RevertAll();
   return ok;
@@ -1670,7 +1677,7 @@ void CBanzaiDoc::OnDemoResetrobot()
     (ec.body).BindVideo(&v);
   else
     (ec.body).BindVideo(NULL);
-  ec.Reset(0, 2);
+  ec.Reset(2);
 }
 
 
@@ -1683,6 +1690,7 @@ void CBanzaiDoc::OnDemoTextfile()
   HWND me = GetForegroundWindow();
   FILE *f;
   char in[200] = "";
+  int sp0 = ec.spin;
 
   // select file to read 
   sprintf_s(test.ch, "%s\\test\\trial.tst", cwd);
@@ -1712,7 +1720,8 @@ void CBanzaiDoc::OnDemoTextfile()
   // reset all required components
   system("cls");
   jprintf_open();
-  if (ec.Reset(spk, 0) <= 0)
+  ec.spin = 0;
+  if (ec.Reset(0) <= 0)
   {
     jprintf_close();
     return;
@@ -1757,10 +1766,11 @@ void CBanzaiDoc::OnDemoTextfile()
   jprintf("\n:::::::::::::::::::::::::::::::::::::\n");
   ec.PrintMem();
   ec.Done(fsave);
+  ec.spin = sp0;
   jprintf("Done.\n\n");
-  fclose(f);
   jprintf("Think %3.1f Hz, Sense %3.1f Hz\n", ec.Thinking(), ec.Sensing()); 
   jprintf_close();
+  fclose(f);
 
   // window configuration
   d.StatusText("Stopped."); 
@@ -1777,7 +1787,6 @@ void CBanzaiDoc::OnDemoInteractive()
   HWND me = GetForegroundWindow();
   char in[200];
   jhcImg map, col(640, 480, 3);
-  int src = ((mic > 0) ? (mic + 1) : spk);
 
   // possibly check for video
   (ec.body).BindVideo(NULL);
@@ -1789,7 +1798,6 @@ void CBanzaiDoc::OnDemoInteractive()
     {
       ec.SpeakError("I can't see anything");
       d.StatusText("Failed");
-      jprintf_close();
       return;
     }
   }
@@ -1798,7 +1806,7 @@ void CBanzaiDoc::OnDemoInteractive()
   system("cls");
   jprintf_open();
   d.StatusText("Initializing robot ...");
-  if (ec.Reset(src, rob) <= 0)
+  if (ec.Reset(rob) <= 0)
   {
     if (cmd_line > 0)
       ec.SpeakError("My body is not working");
@@ -1808,10 +1816,10 @@ void CBanzaiDoc::OnDemoInteractive()
     return;
   }
   ec.SetPeople("VIPs.txt");
-  chat.Reset(mic, "log");
+  chat.Reset(0, "log");
 
   // announce start and input mode
-  if (mic > 0)
+  if ((ec.spin) > 0)
     d.Clear(1, "Voice input (ESC to quit) ...");
   else
     d.Clear(1, "Text input (ESC to quit) ...");
@@ -1826,10 +1834,7 @@ jtimer_clr();
     while (chat.Interact() >= 0)
     {
       // get inputs and compute response
-      if (mic > 0)
-        ec.Accept(NULL, chat.Done());
-      else
-        ec.Accept(chat.Get(in), chat.Done());
+      ec.Accept(chat.Get(in), chat.Done());
       if (ec.Respond() <= 0)
         break;
 
@@ -2083,14 +2088,15 @@ void CBanzaiDoc::OnDepthTrackhead()
   jhcImg map, col;
   jhcMatrix cam(4), dir(4), targ(4);
   double pan = 0.0, tilt = 0.0, dist = 0.0, side = 50.0, turn = 30.0;
-  int index, id;
+  int index, id, sp0 = ec.spin;
 
   // make sure video is working
   if (!ChkStream())
     return;
 
   // initialize robot system
-  if (ec.Reset(0, 1) < 2)
+  ec.spin = 0;
+  if (ec.Reset(1) < 2)
     return;
 
   // loop over selected set of frames  
@@ -2150,6 +2156,7 @@ void CBanzaiDoc::OnDepthTrackhead()
   catch (...){Tell("Unexpected exit!");}
   v.Prefetch(0);
   ec.Done();
+  ec.spin = sp0;
   d.StatusText("Stopped.");  
   FalseClone(res, map);
   sprintf_s(rname, "%s_pmap.bmp", v.FrameName());
@@ -2166,14 +2173,15 @@ void CBanzaiDoc::OnDepthPersonmap()
   jhcImg map, col;
   jhcMatrix pos(4), dir(4);
   const jhcBodyData *p;
-  int i;
+  int i, sp0 = ec.spin;
 
   // make sure video is working
   if (!ChkStream())
     return;
 
   // initialize robot system
-  if (ec.Reset(0, 1) < 2)
+  ec.spin = 0;
+  if (ec.Reset(1) < 2)
     return;
   ec.SetPeople("VIPs.txt");
   (eb->neck).Limp();
@@ -2236,6 +2244,7 @@ void CBanzaiDoc::OnDepthPersonmap()
   b->ForceLED(0);
   PlaySound(NULL, NULL, SND_ASYNC);
   ec.Done();
+  ec.spin = sp0;
   d.StatusText("Stopped."); 
   res.Clone(col); 
   sprintf_s(rname, "%s_heads.bmp", v.FrameName());
@@ -2250,14 +2259,15 @@ void CBanzaiDoc::OnPeopleSpeaking()
   jhcSpeaker *tk = &((ec.rwi).tk);
   jhcImg map, col;
   jhcMatrix pos(4), dir(4);
-  int spk;
+  int spk, sp0 = ec.spin;
 
   // make sure video is working
   if (!ChkStream())
     return;
 
   // initialize robot system
-  if (ec.Reset(2, 1) < 2)
+  ec.spin = 1;
+  if (ec.Reset(1) < 2)
     return;
   ec.SetPeople("VIPs.txt");
   (eb->neck).Limp();
@@ -2305,6 +2315,7 @@ void CBanzaiDoc::OnPeopleSpeaking()
   catch (...){Tell("Unexpected exit!");}
   v.Prefetch(0);
   ec.Done();
+  ec.spin = sp0;
   d.StatusText("Stopped."); 
   FalseClone(res, map); 
   sprintf_s(rname, "%s_beam.bmp", v.FrameName());
@@ -2552,7 +2563,6 @@ void CBanzaiDoc::OnEnvironFloormap()
     return;
   }
   (ec.rwi).freeze = -abs(fbid);
-  (ec.rwi).BindBody(eb);
   (ec.rwi).Reset();
   fw.SetSize(nav->map);
   eb->Limp();
@@ -2618,7 +2628,6 @@ void CBanzaiDoc::OnEnvironIntegrated()
     return;
   }
   (ec.rwi).freeze = -abs(fbid);
-  (ec.rwi).BindBody(eb);
   (ec.rwi).Reset();
   eb->Limp();
 
@@ -2683,7 +2692,6 @@ void CBanzaiDoc::OnEnvironLocalpaths()
     return;
   }
   (ec.rwi).freeze = -abs(fbid);
-  (ec.rwi).BindBody(eb);
   (ec.rwi).Reset();
   eb->Limp();
   nd  = nav->ndir;
@@ -2754,7 +2762,6 @@ void CBanzaiDoc::OnEnvironDistances()
     return;
   }
   (ec.rwi).freeze = -abs(fbid);
-  (ec.rwi).BindBody(eb);
   (ec.rwi).Reset();
   eb->Limp();
 
@@ -2808,7 +2815,7 @@ void CBanzaiDoc::OnEnvironGoto()
   jhcMatrix z(4);
   char label[80] = "";
   double p0 = 60.0, t0 = -40.0, tol = 2.0, arrive = 4.0, tsp = 0.7;
-  double cx, cy, ipp, circ, ix, iy, err, tx, ty, d0, trav = 0.0, head = 0.0;
+  double cx, cy, ipp, circ, ix, iy, err, tx, ty, d0;
   int mx, my, fbid = (ec.rwi).freeze, mbut = 0, step = 0;
 
   // make sure video is working
@@ -2824,7 +2831,6 @@ jprintf_open();
     return;
   }
   (ec.rwi).freeze = -abs(fbid);
-  (ec.rwi).BindBody(eb);
   (ec.rwi).Reset();
   z.Zero();
   (eb->arm).ShiftTarget(z);
@@ -2912,7 +2918,7 @@ jprintf_open();
       (ec.rwi).Issue();
 
       // show overhead map with navigation data
-      d.ShowGrid(map, 0, 0, 2, label, d0, ((trav < 0.0) ? "-  BACKUP" : ""));
+      d.ShowGrid(map, 0, 0, 2, label, d0);
 
       // check for mouse event in image or if motion done
       mbut = d.MouseRel0(mx, my);
@@ -2950,77 +2956,6 @@ jprintf_close();
 
 void CBanzaiDoc::OnUtilitiesTest()
 {
-  jhcImg dest(640, 480, 1);
-  double rot = 15.0;
-  int i;
-
-  dest.FillArr(0);
-  jtimer_clr();
-  for (i = 0; i < 1000; i++)
-  {
-    jtimer(2, "BlockRot");
-    BlockRot(dest, 300, 300, 150, 50, rot, 200); 
-    jtimer_x(2);
-    jtimer(1, "BlockCent");
-    BlockCent(dest, 100, 100, 150, 50, 50);
-    jtimer_x(1);
-  }
-  jtimer_rpt();
-  d.Clear();
-  d.ShowGrid(dest, 0, 0, 2, "Rotated block");
-
-/*
-  jhcRoi roi, roi2;
-  jhcImg col, rng, d8, zmin, z8, rng2, r8;
-  int sz = 3;
-  double avg, zavg, avg2, a, za, ra;
-  
-  // define sample region
-  roi.SetRoi(170, 320, 100, 100);
-  roi2.ScaleRoi(roi, 1.0 / sz);
-
-  // set image sizes
-  v.SizeFor(col, 0);
-  v.SizeFor(rng, 1);
-  zmin.SetSize(rng);
-  rng2.SetSize(rng, 1.0 / sz);
-  d8.SetSize(rng, 1);
-  z8.SetSize(d8);
-  r8.SetSize(d8, 1.0 / sz);
-
-jtimer_clr();
-  // get various versions of depth
-  v.DualGet(col, rng);
-  avg = AvgVal_16(rng, roi);
-jtimer(1, "BoxMin16");
-  BoxMin16(zmin, rng, sz);
-jtimer_x(1);
-  zavg = AvgVal_16(zmin, roi);
-jtimer(2, "Sample");
-  Sample(rng2, zmin);
-jtimer_x(2);
-  avg2 = AvgVal_16(rng2, roi2);
-jtimer_rpt();
-
-  // make pretty images with sample region marked
-  Night8(d8, rng,  v.Shift);
-  a = AvgVal(d8, roi);
-  RectEmpty(d8, roi, 1, 0); 
-  Night8(z8, zmin, v.Shift);
-  za = AvgVal(z8, roi);
-  RectEmpty(z8, roi, 1, 0); 
-  Night8(r8, rng2, v.Shift);
-  ra = AvgVal(r8, roi2);
-  RectEmpty(r8, roi2, 1, 0); 
-
-  // show results
-  d.Clear();
-  d.ShowGrid(d8,  0, 0, 0, "Depth: %3.1f -> %3.1f", avg, a);
-  d.ShowGrid(z8,  1, 0, 0, "Min: %3.1f -> %3.1f", zavg, za);
-  
-  d.ShowGrid(col, 0, 1, 0, "Color");
-  d.ShowGrid(r8,  1, 1, 0, "Small: %3.1f -> %3.1f", avg2, ra);
-*/
 }
 
 

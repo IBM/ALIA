@@ -33,6 +33,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 //= See if attention (to speech) should be renewed based on association list.
+// basically looks for the presense of the ATTN non-terminal category
 // mode: 0 = always, 1 = ATTN anywhere, 2 = ATTN at start, 3 = ATTN only (hail)
 
 int jhcGraphizer::NameSaid (const char *alist, int mode) const
@@ -75,24 +76,24 @@ int jhcGraphizer::Convert (const char *alist)
   if (core == NULL) 
     return -1;
   ClearLast();
-  if (alist == NULL)                   
-    return huh_tag();                  // misheard utterance
+  if ((alist == NULL) || (*alist == '\0'))               
+    return huh_tag();                        // misheard utterance
 
   // generate core interpretation then add speech act
   ans = Assemble(alist);
   if ((ans == 1) || (ans == 2))
-    return attn_tag(alist);            // fact or command
+    return attn_tag(alist);                  // fact or command
   if ((ans == 3) || (ans == 4))
-    return add_tag(ans, alist);        // new rule or operator
+    return add_tag(ans, alist);              // new rule or operator
 
   // handle superficial speech acts
-  if (HasSlot(alist, "HELLO"))         // simple greeting
+  if (HasSlot(alist, "HELLO"))               // simple greeting
     return greet_tag();
-  if (HasSlot(alist, "BYE"))           // simple farewell
+  if (HasSlot(alist, "BYE"))                 // simple farewell
     return farewell_tag();
-  if (HasSlot(alist, "ATTN"))          // calling robot name
+  if (HasSlot(alist, "ATTN"))                // calling robot name
     return hail_tag();
-  return huh_tag();                    // no network created
+  return huh_tag();                          // no network created
 }
 
 

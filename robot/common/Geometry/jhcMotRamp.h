@@ -39,6 +39,7 @@
 // then treats vector coefficients as angles (i.e. mod 360 degrees).
 // NOV 2019: Added velocity deadband, moved progress to jhcTimedFcns::Stuck
 // MAY 2020: Added vector velocity to more closely match physical systems
+// special command of rt = 0 freezes control at pose where first issued
 
 class jhcMotRamp
 {
@@ -46,7 +47,9 @@ class jhcMotRamp
 private:
   // state variables
   jhcMatrix vel;     /** Motion for ideal trajectory. */
+  jhcMatrix keep;    /** Pose to use with freeze.     */
   double sp;         /** Speed along trajectory.      */
+  int ice;
 
   // progress monitoring
   double dist;      /** Current distance from goal.    */
@@ -78,7 +81,7 @@ public:
   void RampCfg (double v =90.0, double a =180.0, double d =180.0, double tol =2.0, double e =0.0)
     {vstd = v; astd = a; dstd = d; done = tol; dmax = e;} 
   void RampReset () 
-    {vel.Zero(); sp = 0.0, d0 = 0.0; stuck = 0.0; rt = 1.0;} 
+    {vel.Zero(); sp = 0.0, d0 = 0.0; stuck = 0.0; rt = 1.0; ice = 0;} 
 
   // goal specification
   void RampTarget (double val, double rate =1.0) 
@@ -109,6 +112,7 @@ public:
   // read only state
   double RampVel (double dead =0.0) const {return((dist > dead) ? sp : 0.0);}
   double RampCmd (int i =0) const {return cmd.VRef(i);}
+  int RampFrozen () const {return ice;}
 
 
 // PRIVATE MEMBER FUNCTIONS

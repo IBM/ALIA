@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2011-2019 IBM Corporation
+// Copyright 2011-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -53,12 +53,12 @@ jhcEliLift::jhcEliLift ()
 
   // motion control
   stiff = 0;
-  ice = 0;
   clr_lock(1);
 
   // processing parameters
   LoadCfg();
   Defaults();
+  ht = ht0;
 }
 
 
@@ -189,7 +189,6 @@ int jhcEliLift::Reset (int rpt, int chk)
   Update();
   if (rpt > 0)
     jprintf("    %3.1f inches\n", ht);
-  ice = 0;
   Freeze();
 
   // finished
@@ -255,25 +254,17 @@ int jhcEliLift::Check (int rpt, int tries)
 //                           Low Level Commands                          //
 ///////////////////////////////////////////////////////////////////////////
 
-//= Make lift stage stop in place with brakes on.
+//= Make lift stage stop in place with brakes on (beware potential bounce!).
 // generally should call Update just before this
 // if tupd > 0 then calls Issue after this
+// NOTE: for continuing freeze set rate = 0 like LiftShift(0.0, 0.0, 0.0, 1000)
 
 int jhcEliLift::Freeze (int doit, double tupd)
 {
-  // reset edge trigger
+  // tell ramp controller to remember position
   if (doit <= 0)
-  {
-    ice = 0;
     return lok;
-  }
-
-  // remember height at first call (prevents drift)
-//  if (ice <= 0)                                      // bounces!
-  {
-    RampTarget(ht);
-    ice = 1;
-  }
+  rt = 0.0;
 
   // possibly talk to lift stage
   stiff = 1;
@@ -283,8 +274,9 @@ int jhcEliLift::Freeze (int doit, double tupd)
 }
 
 
-//= Make lift stage stop and turn motor off.
-// immediately talks to motor controller
+//= Make lift stage stop and turn motor off and immediately talk to motor controller.
+// for continuing limp set current position like LiftShift(0.0, 1.0, 1000)
+// NOTE: this is "freer" then recycling current position since motor is disabled
 
 int jhcEliLift::Limp ()
 {
@@ -333,7 +325,7 @@ int jhcEliLift::UpdateStart ()
     return lok;
 
   // request current position of stage
-  if (lcom.Xmit(0xA7) < 1)
+ if (lcom.Xmit(0xA7) < 1)
     lok = 0;
   return lok;
 }

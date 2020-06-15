@@ -295,6 +295,8 @@
     <ClCompile Include="BanzaiDoc.cpp" />
     <ClCompile Include="BanzaiFrm.cpp" />
     <ClCompile Include="BanzaiView.cpp" />
+    <ClCompile Include="..\..\audio\common\Semantic\jhcTxtAssoc.cpp" />
+    <ClCompile Include="..\..\audio\common\Acoustic\jhcSpeechWeb.cpp" />
     <ClCompile Include="..\common\Environ\jhcLocalOcc.cpp" />
     <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp" />
     <ClCompile Include="..\..\audio\common\Language\jhcMorphFcns.cpp" />
@@ -430,6 +432,8 @@
     <ClInclude Include="..\..\audio\common\Acoustic\jhcChatBox.h" />
     <ClInclude Include="..\..\audio\common\Acoustic\jhcChatHist.h" />
     <ClInclude Include="..\..\audio\common\Acoustic\jhcGenIO.h" />
+    <ClInclude Include="..\..\audio\common\Acoustic\jhcSpeechWeb.h" />
+    <ClInclude Include="..\..\audio\common\Acoustic\sp_reco_web.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcDegrapher.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcGraphizer.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcMorphFcns.h" />
@@ -457,6 +461,8 @@
     <ClInclude Include="..\..\audio\common\Semantic\jhcNodeList.h" />
     <ClInclude Include="..\..\audio\common\Semantic\jhcNodePool.h" />
     <ClInclude Include="..\..\audio\common\Semantic\jhcSituation.h" />
+    <ClInclude Include="..\..\audio\common\Semantic\jhcTxtAssoc.h" />
+    <ClInclude Include="..\..\audio\common\Semantic\jhcTxtList.h" />
     <ClInclude Include="..\..\video\common\Data\jhcBBox.h" />
     <ClInclude Include="..\..\video\common\Data\jhcBlob.h" />
     <ClInclude Include="..\..\video\common\Face\ffind_ocv.h" />

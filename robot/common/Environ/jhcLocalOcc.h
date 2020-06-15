@@ -126,6 +126,8 @@ public:
   bool Stymied (double delay =0.5) const
     {return(stuck > ROUND((stime + btime + delay) * rate));}
 
+  int Swerve (double& trav, double& head, double td, double ta) const;
+
   // debugging graphics
   int LocalMap (jhcImg &dest, int rot =1) const;
   int Confidence (jhcImg& dest, int rot =1) const;

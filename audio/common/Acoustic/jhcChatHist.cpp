@@ -143,12 +143,25 @@ void CChatHist::DrawItem (LPDRAWITEMSTRUCT lpDIS)
   POINT corner = {round, round};
   HFONT font;
 	CString txt;
-  int shrink, ln, dw, id = lpDIS->itemID;
+  int mid, shrink, ln, dw, id = lpDIS->itemID;
 
-  // for click in bad places
+  // check for click in bad places else get basic info
   if (id < 0)
    return;
+	GetItemRect(id, r0);
+	GetText(id, txt);
 
+  // see if special gray separator line is needed
+  if (txt == "---")
+  {
+    mid = r0.bottom + ROUND(0.25 * (r0.top - r0.bottom));
+    CPen pen(PS_SOLID, 1, (COLORREF) RGB(200, 200, 200));
+    pdc->SelectObject(&pen);
+    pdc->MoveTo(r0.left, mid);
+    pdc->LineTo(r0.right, mid);
+    return;
+  }
+  
   // switch to font which will be used to display
   font = CreateFont(abs(sz), 0, 0, 0, ((sz > 0) ? FW_REGULAR : FW_BOLD), 
                     FALSE, FALSE, FALSE, ANSI_CHARSET, 
@@ -157,9 +170,7 @@ void CChatHist::DrawItem (LPDRAWITEMSTRUCT lpDIS)
   SelectObject(lpDIS->hDC, font);
 
   // adjust display region for indenting and side margins then find text box
-	GetItemRect(id, r0);
   r0.DeflateRect(indent + hpad + edge, 0, hpad + edge, 0);
-	GetText(id, txt);
   pdc->DrawText(txt, -1, r0, DT_WORDBREAK | DT_CALCRECT);
 
   // compute minimum rectangle width needed and sideways shrinking

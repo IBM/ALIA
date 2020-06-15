@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2013-2017 IBM Corporation
+// Copyright 2013-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ private:
   char key[200];               /** Indexing term string.    */
   jhcTxtAssoc *next;           /** Rest of indexing terms.  */
   jhcTxtList *vals;            /** Expansion for index.     */
+  int klen;                    /** Length of key string.    */
   int last;                    /** Set if last request.     */
 
 
@@ -75,6 +76,7 @@ public:
 
   // keys and values
   const char *KeyTxt () const {return key;}
+  int KeyLen () const {return klen;}
   const jhcTxtAssoc *NextKey () const {return next;}
   const jhcTxtAssoc *ReadKey (const char *ktag) const;
   jhcTxtAssoc *GetKey (const char *ktag);

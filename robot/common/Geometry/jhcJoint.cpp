@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2011-2016 IBM Corporation
+// Copyright 2011-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -64,6 +64,8 @@ jhcJoint::jhcJoint ()
   vstd = 200.0;
   SetServo( 1,   0,   10.0, 0.031, 180.0, 180.0,  180.0,  -2.0 );
   SetGeom(  0.0, 7.0,  0.0, 0.0,     0.0,   0.0, -150.0, 150.0 );
+  a0 = amin;
+  a1 = amax;
   LoadCfg();
   Defaults(); 
   Reset();
@@ -452,10 +454,10 @@ double jhcJoint::Clamp (double degs) const
 {
   double a = degs;
 
-  while (a > 180.0)
-    a -= 360.0;
-  while (a <= -180.0)
-    a += 360.0;
+  if (a > 180.0)
+    a -= 360.0 * ROUND(a / 360.0);
+  else if (a <= -180.0)
+    a += 360.0 * ROUND(a / 360.0);
   return __max(a0, __min(a, a1));
 }
 

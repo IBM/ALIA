@@ -459,9 +459,9 @@ int jhcAliaDir::report (int val)
   if (noisy >= 1)
   {
     if (verdict < 0)
-      jprintf("--- failure: %s[ %s ]\n\n", KindTag(), key.MainTag());
+      jprintf("--- failure: %s[ %s ]\n", KindTag(), key.MainTag());
     else if (verdict > 0)
-      jprintf("*** success: %s[ %s ]\n\n", KindTag(), key.MainTag());
+      jprintf("*** success: %s[ %s ]\n", KindTag(), key.MainTag());
   }
   return verdict;
 }
@@ -511,12 +511,12 @@ int jhcAliaDir::pick_method ()
     return -1;
   if (nri >= hmax)
     return jprintf(">>> More than %d operators failed in jhcAliaDir::pick_method !\n", hmax);
-  jprintf(1, noisy, "            >>>>>> PICK <<<<<<\n\n");
+//  jprintf(1, noisy, "            >>>>>> PICK <<<<<<\n\n");
 
   // pick among valid operators (can comment out max_spec)
   cnt = match_ops(sel);
   cnt = max_spec(sel);
-  jprintf(1, noisy, "  %d choices left for %s[ %s ]\n\n", cnt, ktag[kind], key.MainTag());
+  jprintf(1, noisy, "  %d choices left for %s[ %s ]\n", cnt, ktag[kind], key.MainTag());
   if (cnt <= 0)
     return 0;
   if (cnt > 1)
@@ -542,7 +542,7 @@ int jhcAliaDir::pick_method ()
     core->SetPref(op[sel]->pref);
   if (noisy >= 1)
   {
-    jprintf("    Expanding to:\n");
+    jprintf("\n    Expanding to:\n");
     meth->Print(4);
     jprintf("\n");
   }

@@ -75,7 +75,7 @@ public:
 
   // overall configuration choices
   jhcParam ips;
-  int rob, cam, mic, spk, fsave;
+  int rob, cam, fsave;
 
 
 // JHC: helper functions

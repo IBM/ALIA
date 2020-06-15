@@ -28,6 +28,7 @@
 #include "jhcGlobal.h"
 
 #include "Acoustic/jhcSpeechX.h"       // common audio
+#include "Acoustic/jhcSpeechWeb.h"
 
 #include "Action/jhcAliaCore.h"        // common robot
 
@@ -44,7 +45,6 @@ private:
   // speech input and TTS status
   char alist[1000];
   UL32 awake;
-  int voice;
 
   // reasoning interface
   char lastin[500], input[500];
@@ -60,8 +60,10 @@ private:
 
 // PROTECTED MEMBER VARIABLES
 protected:
+public:
   // full speech controls
-  jhcSpeechX sp;
+  jhcSpeechX sp;                       // includes standard TTS
+  jhcSpeechWeb web;                    // dictation input only
 
 
 // PUBLIC MEMBER VARIABLES
@@ -73,7 +75,10 @@ public:
   // timing parameters
   jhcParam tps;
   double thz, shz, stretch;  
-  int amode, wait, acc;
+  int wait;
+
+  // externally settable I/O parameters
+  int spin, amode, tts, acc;
 
 
 // PUBLIC MEMBER FUNCTIONS
@@ -89,21 +94,21 @@ public:
     {return((1000.0 * think) / jms_diff(last, start));}
   UL32 NextSense () const
     {return(start + ROUND((1000.0 * sense) / shz));}
-  int SpMode () const {return voice;}
-  int SpeechRC () const {return sp.Hearing();}
   int Attending () const {return((awake != 0) ? 1 : 0);}
+  int SpeechIn () const {return spin;}
+  int SpeechRC () const;
 
   // processing parameter bundles 
   int Defaults (const char *fname =NULL);
   int SaveVals (const char *fname) const;
 
   // main functions
-  int Reset (int speech =0, const char *rname =NULL, const char *vname =NULL);
+  int Reset (const char *rname =NULL, const char *vname =NULL);
   int VoiceInit ();
   int UpdateSpeech ();
   int Respond (int alert =0);
   void DayDream ();
-  void Listen () {if (voice > 0) sp.Update();}
+  void Listen () {if (spin > 0) sp.Update();}
   void Done ();
 
   // intercepted I/O

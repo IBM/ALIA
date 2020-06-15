@@ -546,6 +546,12 @@
     <ClCompile Include="..\common\Environ\jhcLocalOcc.cpp">
       <Filter>Source Files\common robot\Environ</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\audio\common\Acoustic\jhcSpeechWeb.cpp">
+      <Filter>Source Files\common audio\Acoustic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\audio\common\Semantic\jhcTxtAssoc.cpp">
+      <Filter>Source Files\common audio\Semantic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BanzaiDoc.h">
@@ -967,6 +973,18 @@
     </ClInclude>
     <ClInclude Include="..\common\Environ\jhcLocalOcc.h">
       <Filter>Header Files\common robot\Environ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Acoustic\sp_reco_web.h">
+      <Filter>Header Files\common audio\Acoustic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Acoustic\jhcSpeechWeb.h">
+      <Filter>Header Files\common audio\Acoustic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Semantic\jhcTxtAssoc.h">
+      <Filter>Header Files\common audio\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Semantic\jhcTxtList.h">
+      <Filter>Header Files\common audio\Semantic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -69,10 +69,16 @@ public:
   void Inject (const char *input);
 
 
+// helper functions
+private:
+  void grab_text ();
+
+
 // Dialog Data 
 private:
   FILE *log;                                   // log file (if any)
   char entry[200];                             // last unseen user input
+  UL32 last;                                   // time of last post
   int disable;                                 // ignore user input
   int quit;                                    // escape key seen
 
@@ -93,15 +99,16 @@ private:
 
 // Implementation
 protected:
-
   // Generated message map functions
   //{{AFX_MSG(jhcChatBox)
     // NOTE: the ClassWizard will add member functions here
   //}}AFX_MSG
   DECLARE_MESSAGE_MAP()
+
 public:
   CChatHist m_hist;
   CEdit m_input;
+  double scene;                                  // separator gap (sec)
 
 };
 

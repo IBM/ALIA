@@ -9,6 +9,8 @@ This is an end-to-end symbolic cognitive system that is able to learn from natur
 
 The system is implemented in C++ for Windows because Microsoft's OS has embedded (non-network) real-time speech recognition. The code normally compiles under VS2010, but newer versions should work as well. A precompiled executable, "MensEt.exe", can be found in directory "robot/MensEt". To run this you will need the DLLs as well as the "KB", "KB2", "language" and "test" directories. To see the sequences from the video use menu option "Demo / Local Text File" with [test/1-dance.tst](robot/MensEt/test/1-dance.tst) or [test/2-tiger.tst](robot/MensEt/test/2-tiger.tst). Hit ENTER to accept each line as it appears in the Conversation window.
 
+Alternatively you can try running with Microsoft Azure speech recognition. The accuracy is generally better, but you need an active network connection and an [Azure account](https://ms.portal.azure.com/#create/Microsoft.CognitiveServicesSpeechServices). Enter the credentials you obtain into text file "sp_reco_web.key" in the executable directory. Then, for both MensEt and Banzai, select menu "Demo / Demo Options" and set "Speech" to 2. 
+
 ---
 
 #### Experimenting with the MensEt Program
@@ -67,6 +69,6 @@ Finally, grounding classes often "volunteer" information when specific events oc
 
 ---
 
-March 2020 - Jonathan Connell - jconnell@alum.mit.edu
+June 2020 - Jonathan Connell - jconnell@alum.mit.edu
 
 

@@ -59,7 +59,7 @@ private:
 
   // overall configuration choices
   jhcParam ips;
-  int tid, cam, mic, spk;
+  int tid, cam;
 
 
 public:

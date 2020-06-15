@@ -180,7 +180,7 @@ BOOL CMensEtDoc::OnNewDocument()
   //         =  2 for restricted operation, expiration enforced
   cripple = 0;
   ver = mc.Version(); 
-  LockAfter(10, 2020, 5, 2020);
+  LockAfter(11, 2020, 6, 2020);
 
   // JHC: if this function is called, app did not start with a file open
   // JHC: initializes display object which depends on document
@@ -706,11 +706,12 @@ int CMensEtDoc::interact_params (const char *fname)
   int ok;
 
   ps->SetTag("mens_opt", 0);
-  ps->NextSpec4( &tid, 0, "Target robot");
-  ps->NextSpec4( &cam, 0, "Camera available");
-  ps->NextSpec4( &mic, 0, "Speech input (2 = attn)");  
-  ps->NextSpec4( &spk, 0, "Read output always");
-  ps->Skip(2);
+  ps->NextSpec4( &tid,        0, "Target robot");
+  ps->NextSpec4( &cam,        0, "Camera available");
+  ps->NextSpec4( &(mc.spin),  0, "Speech (none, local, web)");  
+  ps->NextSpec4( &(mc.amode), 2, "Attn (none, any, front, only)");
+  ps->NextSpec4( &(mc.tts),   0, "Read output always");
+  ps->Skip();
 
   ps->NextSpec4( &(mc.acc), 0, "Accumulate knowledge");
   ok = ps->LoadDefs(fname);
@@ -954,7 +955,7 @@ void CMensEtDoc::OnDemoFilelocal()
   // reset all required components
   system("cls");
   jprintf_open();
-  if (mc.Reset(spk, tid) <= 0)
+  if (mc.Reset(tid) <= 0)
     return;
   chat.Reset(0, "log");
   chat.Inject(in);
@@ -998,9 +999,9 @@ void CMensEtDoc::OnDemoFilelocal()
   mc.PrintMem();
   mc.Done();
   jprintf("Done.\n\n");
-  fclose(f);
   jprintf("Think %3.1f Hz, Sense %3.1f Hz\n", mc.Thinking(), mc.Sensing()); 
   jprintf_close();
+  fclose(f);
 
   // window configuration
   d.StatusText("Stopped."); 
@@ -1016,7 +1017,6 @@ void CMensEtDoc::OnDemoInteract()
 {
   HWND me = GetForegroundWindow();
   char in[200];
-  int src = ((mic > 0) ? (mic + 1) : spk);
 
   // possibly check for video 
   if ((cam > 0) && (ChkStream() > 0))
@@ -1027,21 +1027,16 @@ void CMensEtDoc::OnDemoInteract()
   // reset all required components
   system("cls");
   jprintf_open();
-  if (mc.Reset(src, tid) <= 0)
+  if (mc.Reset(tid) <= 0)
     return;
-  chat.Reset(mic, "log");
+  chat.Reset(0, "log");
 
   // announce start and input mode
-  if (mic > 0)
-  {
+  if ((mc.spin) > 0)
     d.Clear(1, "Voice input (ESC to quit) ...");
-    SetForegroundWindow(GetConsoleWindow());
-  }
   else
-  {
     d.Clear(1, "Text input (ESC to quit) ...");
-    SetForegroundWindow(chat);
-  }
+  SetForegroundWindow(chat);
 
   // keep taking sentences until ESC
 #ifndef _DEBUG
@@ -1051,10 +1046,7 @@ void CMensEtDoc::OnDemoInteract()
     while (chat.Interact() >= 0)
     {
       // get inputs and compute response
-      if (mic > 0)
-        mc.Accept(NULL, chat.Done());
-      else
-        mc.Accept(chat.Get(in), chat.Done());
+      mc.Accept(chat.Get(in), chat.Done());
       if (mc.Respond() <= 0)
         break;
 

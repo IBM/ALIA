@@ -61,7 +61,7 @@ jhcEliBody::jhcEliBody ()
   bnum = -1;
 
   // default robot name
-  strcpy_s(rname, "robot");
+  strcpy_s(rname, "hey you");
   *vname = '\0';
   loud = 0;
 

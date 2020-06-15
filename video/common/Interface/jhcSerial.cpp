@@ -44,6 +44,7 @@ jhcSerial::~jhcSerial ()
 
 jhcSerial::jhcSerial ()
 {
+  dcb.DCBlength = sizeof(DCB);
   init_vals();
 }
 
@@ -299,7 +300,6 @@ int jhcSerial::Rcv ()
     if (jms_now() >= end)
       return -2;
     jms_sleep(1);
-//    jms_sleep(5);
   }
   return((int) val);
 }
@@ -362,20 +362,20 @@ int jhcSerial::TxLine (const char *line)
 
 
 //= Receive a fixed number of bytes from the port.
-// returns number of bytes actually received (may timeout)
+// returns number of bytes actually received (may timeout = -2)
 // Note: call blocks until correct number received or timeout
 
 int jhcSerial::RxArray (UC8 *dest, int n)
 {
   UL32 len;
-  DWORD end;
-  int got = 0;
+  DWORD start;
+  int wait = ROUND(1000.0 * wtime), got = 0;
 
   if (!Valid())
     return 0;
 
   // keep trying to read the port for a while
-  end = jms_now() + (DWORD)(wtime * 1000.0 + 0.5);
+  start = jms_now();
   while (1)
   {
     // read some (possibly not all) bytes from port
@@ -386,7 +386,7 @@ int jhcSerial::RxArray (UC8 *dest, int n)
       break;
 
     // see if timeout expired else try again in a while
-    if (jms_now() >= end)
+    if (jms_diff(jms_now(), start) > wait)
       return -2;
     jms_sleep(1);
   }
@@ -405,7 +405,7 @@ int jhcSerial::TxArray (UC8 *src, int n)
     return 0;
   if (!WriteFile(sport, src, n, &len, NULL))
     return -1;
-FlushFileBuffers(sport);
+  FlushFileBuffers(sport);
   return len;
 }
 

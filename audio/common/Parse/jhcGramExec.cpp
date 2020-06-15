@@ -36,7 +36,7 @@
 jhcGramExec::jhcGramExec ()
 {
   // current version
-  ver = 1.52;
+  ver = 1.60;
 
   // max number of words that "+" can match
   dict_n = 5; 
@@ -627,6 +627,59 @@ void jhcGramExec::append (char *dest, const char *extra, int ssz) const
 }
 
 
+//= See if attention (to speech) should be renewed based on input sentence.
+// mode: 0 = always, 1 = ATTN anywhere, 2 = ATTN at start, 3 = ATTN only (hail)
+
+int jhcGramExec::NameSaid (const char *sent, int mode) const
+{
+  const char *tail;
+  int i, len, sz;
+
+  // simplest cases
+  if (mode <= 0)
+    return 1;
+  if (*sent == '\0')
+    return 0;
+
+  // see if sentence begins with a name for the robot
+  for (i = 0; i < nn; i++)
+  {
+    len = (int) strlen(alert[i]);
+    if ((_strnicmp(sent, alert[i], len) == 0) && 
+        (isalpha(sent[len]) == 0)) 
+    {
+      // see if this is the ONLY thing said
+      if (mode >= 3)
+      {
+        tail = sent + len;
+        while (*tail != '\0')
+          if (isalpha(*tail++) != 0)
+            return 0;
+      }
+      return 1;
+    }
+  }
+
+  // strip any final punctuation 
+  if (mode > 1)
+    return 0;
+  sz = (int) strlen(sent);
+  if ((sz > 1) && (isalpha(sent[sz - 1]) == 0))
+    sz--;
+  tail = sent + sz;
+
+  // see if sentence ends with a name for the robot
+  for (i = 0; i < nn; i++)
+  {
+    len = (int) strlen(alert[i]);
+    if ((len <= sz) && (_strnicmp(tail - len, alert[i], len) == 0) && 
+        ((len == sz) || (isalpha(*(tail - len - 1)) == 0)))
+      return 1;
+  }
+  return 0;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////
 //                              Debugging                                //
 ///////////////////////////////////////////////////////////////////////////
@@ -949,9 +1002,11 @@ int jhcGramExec::build_phrase (const char *rname, const char *line)
   jhcGramStep *s, *s0 = NULL;
   int n;
 
-  // ignore any null expansions
+  // ignore any null expansions, add attention words to special list
   if ((*rname == '\0') || (*line == '\0'))
     return 0;
+  if ((strcmp(rname, "ATTN") == 0) && (nn < 10))
+    strcpy_s(alert[nn++], line);
 
   // make a new rule for given non-terminal
   if ((t = new jhcGramRule) == NULL)
@@ -1090,6 +1145,9 @@ void jhcGramExec::parse_clear ()
   gram = NULL;
   last = NULL;
   *gfile = '\0';             // can be problematic
+
+  // no names for self yet (from ATTN in grammar)
+  nn = 0;
 }
 
 

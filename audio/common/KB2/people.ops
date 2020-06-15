@@ -87,7 +87,7 @@
   ---------------
       DO[ act-2 -lex-  look
           loc-1 -lex-  at
-                -loc-> look
+                -loc-> act-2
                 -wrt-> dude-1 ]
 
 

@@ -46,11 +46,16 @@ static char THIS_FILE[] = __FILE__;
 jhcChatBox::jhcChatBox(CWnd* pParent /*=NULL*/)
 	: CDialog(jhcChatBox::IDD, pParent)
 {
+  // separator gap (sec)
+  scene = 10.0;           
+
+  // state
   log = NULL;
   *entry = '\0';
+  last = 0;
   disable = 0;
   quit = 0;
-
+  
 	//{{AFX_DATA_INIT(jhcChatBox)
 	//}}AFX_DATA_INIT
 }
@@ -88,6 +93,7 @@ void jhcChatBox::Reset (int disable, const char *dir)
   m_hist.Clear();
   Mute(disable);
   Interact();
+  last = 0;                            // suppress separator
 
   // create chat log file (if desired)
   if (dir != NULL)
@@ -152,7 +158,7 @@ int jhcChatBox::Interact ()
     // handle ENTER and ESC key messages specially
     GetMessage(&msg, NULL, 0, 0);
     if ((msg.message == WM_KEYDOWN) && (msg.wParam == VK_RETURN))        
-      OnOK();
+      grab_text();
     else if ((msg.message == WM_KEYDOWN) && (msg.wParam == VK_ESCAPE))   
       quit = 1;
     else
@@ -163,6 +169,31 @@ int jhcChatBox::Interact ()
     }
   }
   return((quit > 0) ? 0 : 1);
+}
+
+
+//= Get text from edit control and add to chat history.
+// also make an internal copy as a conventional char string
+
+void jhcChatBox::grab_text()
+{
+  jhcString guts;
+  int n;
+
+  // ignore if input muted
+  if (disable > 0)
+    return;
+
+  // extract the text part as an old-fashioned string
+  if ((n = m_input.GetWindowTextLength()) <= 0)
+    return;
+  m_input.GetWindowText(guts.Txt(), n + 1);
+  guts.Sync();
+  strcpy_s(entry, guts.ch);
+
+  // clear for next input (might be added in normalized form)
+  m_input.SetWindowText(_T(""));
+  m_input.SetFocus();
 }
 
 
@@ -182,13 +213,30 @@ char *jhcChatBox::Get (char *input, int ssz)
 
 const char *jhcChatBox::Post (const char *output, int user)
 {
+  UL32 old = last;
+  int sep = 0;
+
+  // sanity check
+  if ((output == NULL) || (*output == '\0'))
+    return output;
+  
+  // see if a separator line should be drawn
+  last = jms_now();
+  if (old != 0)
+    if (jms_diff(last, old) > ROUND(1000.0 * scene))
+      sep = 1;
+
+  // update display panel
+  if (sep > 0)
+    m_hist.AddTurn("---");
   m_hist.AddTurn(output, user);
+
+  // update log file (if any)
   if ((log != NULL) && (output != NULL) && (*output != '\0'))
   {
-    if (user > 0)
-      fprintf(log, "> %s\n", output);
-    else
-      fprintf(log, "%s\n\n", output);
+    if (sep > 0)
+      fprintf(log, "\n");
+    fprintf(log, "%s%s\n", ((user > 0) ? "> " : ""), output);
   }
   return output;
 }
@@ -239,27 +287,13 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // jhcChatBox message handlers
 
-//= Get text from edit control and add to chat history.
-// also make an internal copy as a conventional char string
+//= Mark interaction as finsihed when button hit.
+// Note: this used to be the "OK" button which called grab_text()
 
 void jhcChatBox::OnOK()
 {
-  jhcString guts;
-  int n;
-
-  // ignore if input muted
-  if (disable > 0)
-    return;
-
-  // extract the text part as an old-fashioned string
-  if ((n = m_input.GetWindowTextLength()) <= 0)
-    return;
-  m_input.GetWindowText(guts.Txt(), n + 1);
-  guts.Sync();
-  strcpy_s(entry, guts.ch);
-
-  // clear for next input (might be added in normalized form)
-  m_input.SetWindowText(_T(""));
-  m_input.SetFocus();
+  if (disable <= 0)
+    quit = 1;
 }
+
 

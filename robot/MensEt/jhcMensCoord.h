@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2019 IBM Corporation
+// Copyright 2019-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public:
   int SaveVals (const char *fname) const;
 
   // main functions
-  int Reset (int speech =0, int id =1);
+  int Reset (int id =1);
   int Respond ();
   void Done ();
 

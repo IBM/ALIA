@@ -453,6 +453,12 @@
     <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp">
       <Filter>Source Files\common audio\Language</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\audio\common\Semantic\jhcTxtAssoc.cpp">
+      <Filter>Source Files\common audio\Semantic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\audio\common\Acoustic\jhcSpeechWeb.cpp">
+      <Filter>Source Files\common audio\Acoustic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MensEtDoc.h">
@@ -805,6 +811,18 @@
     </ClInclude>
     <ClInclude Include="..\..\audio\common\Language\jhcNetBuild.h">
       <Filter>Header Files\common audio\Language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Semantic\jhcTxtAssoc.h">
+      <Filter>Header Files\common audio\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Semantic\jhcTxtList.h">
+      <Filter>Header Files\common audio\Semantic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Acoustic\jhcSpeechWeb.h">
+      <Filter>Header Files\common audio\Acoustic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\audio\common\Acoustic\sp_reco_web.h">
+      <Filter>Header Files\common audio\Acoustic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

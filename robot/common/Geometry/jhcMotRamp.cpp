@@ -37,6 +37,7 @@ jhcMotRamp::jhcMotRamp ()
 {
   cmd.SetSize(4);
   vel.SetSize(4);
+  keep.SetSize(4);
   *rname = '\0';
   RampCfg(); 
   RampReset();
@@ -62,6 +63,7 @@ double jhcMotRamp::RampNext (double now, double tupd, double lead)
 
 //= Give a motion control target stop position and based on current real position.
 // "tupd" is the time since last call, presumed to be approximate time to next call also
+// special command of rt = 0 freezes control at pose where first issued (prevents drift)
 
 void jhcMotRamp::RampNext (jhcMatrix& stop, const jhcMatrix& now, double tupd, double lead) 
 {
@@ -71,6 +73,17 @@ void jhcMotRamp::RampNext (jhcMatrix& stop, const jhcMatrix& now, double tupd, d
   // make sure vectors are okay
   if (!stop.Vector(4) || !now.Vector(4) || (tupd <= 0.0))
     Fatal("Bad input to jhcMotRamp::RampNext");
+
+  // check frozen state ("rt" will be from winning bid)
+  if (rt != 0.0)
+    ice = 0;
+  else
+  {
+    if (ice <= 0) 
+      keep.Copy(now);                  // remember initial pose
+    cmd.Copy(keep);
+    ice = 1;
+  }
 
   // update velocity based on current position and accelerations
   goal_dir(dir, now, tupd);

@@ -293,6 +293,8 @@
     <ClCompile Include="MensEtFrm.cpp" />
     <ClCompile Include="MensEtView.cpp" />
     <ClCompile Include="jhcMensCoord.cpp" />
+    <ClCompile Include="..\..\audio\common\Acoustic\jhcSpeechWeb.cpp" />
+    <ClCompile Include="..\..\audio\common\Semantic\jhcTxtAssoc.cpp" />
     <ClCompile Include="..\..\audio\common\Language\jhcNetBuild.cpp" />
     <ClCompile Include="..\..\audio\common\Language\jhcMorphFcns.cpp" />
     <ClCompile Include="..\common\Body\jhcBackgRWI.cpp" />
@@ -403,11 +405,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\audio\common\Acoustic\jhcAliaSpeech.h" />
+    <ClInclude Include="..\..\audio\common\Acoustic\jhcSpeechWeb.h" />
+    <ClInclude Include="..\..\audio\common\Acoustic\sp_reco_web.h" />
     <ClInclude Include="..\..\audio\common\Comm\zmq.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcMorphFcns.h" />
     <ClInclude Include="..\..\audio\common\Language\jhcNetBuild.h" />
     <ClInclude Include="..\..\audio\common\Reasoning\jhcAliaNote.h" />
     <ClInclude Include="..\..\audio\common\Semantic\jhcAliaDesc.h" />
+    <ClInclude Include="..\..\audio\common\Semantic\jhcTxtAssoc.h" />
+    <ClInclude Include="..\..\audio\common\Semantic\jhcTxtList.h" />
     <ClInclude Include="..\..\video\common\Data\jhcBBox.h" />
     <ClInclude Include="..\..\video\common\Data\jhcBlob.h" />
     <ClInclude Include="..\..\video\common\Processing\jhcALU.h" />

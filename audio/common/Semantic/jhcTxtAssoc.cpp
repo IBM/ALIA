@@ -4,7 +4,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2013-2017 IBM Corporation
+// Copyright 2013-2020 IBM Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@
 jhcTxtAssoc::jhcTxtAssoc ()
 {
   *key = '\0';
+  klen = 0;
   next = NULL;
   vals = NULL;
   last = 0;
@@ -457,6 +458,7 @@ jhcTxtAssoc *jhcTxtAssoc::AddKey (const char *ktag, double p, int force)
   if ((k = new jhcTxtAssoc) == NULL)
     return NULL;
   strcpy_s(k->key, ((ktag != NULL) ? ktag : ""));
+  k->klen = (int) strlen(k->key);
   k->prob = p;
 
   // link it after the last key in current list
@@ -497,11 +499,13 @@ int jhcTxtAssoc::RemKey (const char *ktag)
   // else get rid of own values and clear key string
   ClrVals();
   *key = '\0';
+  klen = 0;
   if (next == NULL)
     return 1;
 
   // transfer second element properties to head  
   strcpy_s(key, next->key);
+  klen = next->klen;
   vals = next->vals;
   next = next->next;
 
@@ -519,6 +523,7 @@ int jhcTxtAssoc::RemKey (const char *ktag)
 void jhcTxtAssoc::ClrKeys ()
 {
   *key = '\0';
+  klen = 0;
   ClrVals();
   if (next != NULL)
     delete next;

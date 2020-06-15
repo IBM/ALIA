@@ -139,6 +139,10 @@ private:
   jhcTxtSrc txt2;            /** Nice version of input word list.  */       
   char norm[200];            /** Input with proper capitalization. */ 
 
+  // robot names
+  char alert[10][40];        /** Phrases referring to robot.  */
+  int nn;                    /** Number of valid alert terms. */
+
 
 // PROTECTED MEMBER VARIABLES
 protected:
@@ -181,6 +185,7 @@ public:
   virtual const char *Root ();
   const char *TopCat ();
   char *AssocList (char *alist, int close, int ssz);
+  int NameSaid (const char *sent, int amode) const;
 
   // parse results - convenience
   template <size_t ssz> 
@@ -237,6 +242,7 @@ private:
   void tree_slots (char *alist, int close, int ssz);
   int all_caps (const char *name) const;
   void append (char *dest, const char *extra, int ssz) const;
+
 
   // debugging
   void print_focus (int indent, int start, int end);

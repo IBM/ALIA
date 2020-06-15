@@ -92,8 +92,8 @@ int jhcSocial::move_params (const char *fname)
   ps->SetTag("soc_move", 0);
   ps->NextSpecF( &cozy,   36.0, "Approach distance (in)");
   ps->NextSpecF( &aquit,  10.0, "Timeout for approach (sec)");
-  ps->NextSpecF( &ideal,  28.0, "Following distance (in)");
-  ps->NextSpecF( &worry,  48.0, "Too far distance (in)");
+  ps->NextSpecF( &ideal,  36.0, "Following distance (in)");
+  ps->NextSpecF( &worry,  60.0, "Too far distance (in)");
   ps->NextSpecF( &ttime,   1.0, "Turn response (sec)");
   ps->NextSpecF( &orient, 60.0, "Alignment for move (deg)");
 
@@ -364,7 +364,8 @@ int jhcSocial::soc_approach_set (const jhcAliaDesc *desc, int i)
 {
   if ((cst[i] = get_dude(desc->Val("arg"))) <= 0)
     return -1;
-  ct0[i] += ROUND(1000.0 * aquit);
+//  ct0[i] += ROUND(1000.0 * aquit);
+ct0[i] += ROUND(10000.0 * aquit);
   return 1;
 }
 
@@ -392,10 +393,7 @@ int jhcSocial::soc_approach_chk (const jhcAliaDesc *desc, int i)
   if (jms_diff(jms_now(), ct0[i]) > 0)
     return -1;
   if ((targ = s3->GetID(cst[i])) == NULL)
-{
-jprintf("Lost target: person %d !\n", cst[i]);
     return -1;
-}
 
   // get heading and distance to target, check if done
   ang = targ->PanVec3() - 90.0;
@@ -405,7 +403,16 @@ jprintf("Lost target: person %d !\n", cst[i]);
   // re-issue basic command (drive forward if orientation okay)
   jprintf(1, dbg, ">> REQUEST %d: approach person %d\n", cbid[i], cst[i]);
   rwi->WatchPerson(cst[i], cbid[i]);
-  rwi->SeekLoc(*targ, 0.7, cbid[i]);
+  rwi->ServoPolar(dist - goal, ang, 1.0, cbid[i]);
+
+/*
+double trav, head;
+jprintf("TARGET: %3.1f in offset [%3.1f], %3.1f degs\n", dist, goal, ang);
+(rwi->nav).Swerve(trav, head, dist - goal, ang);
+b->TurnFix(head, ttime, 1.0, cbid[i] + 1);
+if (fabs(head) < orient)
+  b->MoveFix(trav, atime, 1.0, cbid[i]);   // slower than follow
+*/
 
 //  b->TurnFix(ang, ttime, 1.0, cbid[i]);
 //  if (fabs(ang) < orient)
@@ -463,7 +470,7 @@ int jhcSocial::soc_follow_chk (const jhcAliaDesc *desc, int i)
   // re-issue basic command (drive forward if orientation okay)
   jprintf(1, dbg, ">> REQUEST %d: follow person %d\n", cbid[i], cst[i]);
   rwi->WatchPerson(cst[i], cbid[i]);
-  rwi->SeekLoc(*targ, 1.0, cbid[i]);
+  rwi->ServoPolar(dist - ideal, ang, 1.5, cbid[i]);
 
 //  b->TurnFix(ang, ttime, 1.5, cbid[i]);
 //  if (fabs(ang) < orient)

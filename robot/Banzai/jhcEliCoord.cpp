@@ -34,7 +34,7 @@
 jhcEliCoord::jhcEliCoord ()
 {
   // current software version
-  ver = 3.10;
+  ver = 3.20;
   
   // connect processing to basic robot I/O
   rwi.BindBody(&body);
@@ -116,47 +116,45 @@ int jhcEliCoord::SetPeople (const char *fname, int append)
     gr.ExtendRule("NAME", vip.Full(i));
     gr.ExtendRule("NAME", vip.First(i));
   }
-  if (SpMode() < 2)
+  if (SpeechIn() <= 0)
     return n;
 
   // possibly update speech front-end also 
-  sp.Listen(0);
-  for (i = n0; i < n; i++)
+  if (spin == 1)
   {
-    sp.ExtendRule("NAME", vip.Full(i), 0);
-    sp.ExtendRule("NAME", vip.First(i), 0);
+    sp.Listen(0);
+    for (i = n0; i < n; i++)
+    {
+      sp.ExtendRule("NAME", vip.Full(i), 0);
+      sp.ExtendRule("NAME", vip.First(i), 0);
+    }
+    sp.Listen(1);
   }
-  sp.Listen(1);
   return n;
 }
 
 
 //= Reset state for the beginning of a sequence.
-// speech: 0 for none, 1 for TTS only, 2 for reco/TTS, 3 for attn word
 // mech: 0 for no body, 1 init body, 2 for forced boot of body ONLY
 // returns 2 if robot ready, 1 if ready but no robot, 0 or negative for error
 
-int jhcEliCoord::Reset (int speech, int mech)
+int jhcEliCoord::Reset (int mech)
 {
   int rc = 0;
 
   // start up body (and get robot name)
-  rwi.BindBody(NULL);
   if (mech > 0)
-  {
     if ((rc = body.Reset(1, mech - 1)) <= 0)
       return -1;
-    rwi.BindBody(&body);
-  }
 
   // possibly start background processing of video
   if (mech >= 2)
     return 2;
-  rwi.Reset();
+  rwi.Reset(mech);
   alert = 0;
 
   // initialize timing and speech components
-  if (jhcAliaSpeech::Reset(speech, body.rname, body.vname) <= 0)
+  if (jhcAliaSpeech::Reset(body.rname, body.vname) <= 0)
     return 0;
   return((rc <= 0) ? 1 : 2);
 }

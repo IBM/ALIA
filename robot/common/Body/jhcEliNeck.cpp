@@ -64,7 +64,6 @@ jhcEliNeck::jhcEliNeck ()
 
   // motion control
   stiff = 0;
-  ice = 0;
   clr_locks(1);
 
   // load specialized arm geometry (in case no config file)
@@ -73,6 +72,7 @@ jhcEliNeck::jhcEliNeck ()
   // get standard processing values
   LoadCfg();
   Defaults();
+  current_pose(pos0, dir);
 }
 
 
@@ -302,7 +302,6 @@ int jhcEliNeck::Reset (int rpt, int chk)
   Update();
   if (rpt > 0)
     jprintf("    pan %3.1f degs, tilt %3.1f degs\n", Pan(), Tilt());
-  ice = 0;
   Freeze();
 
   // finished
@@ -388,23 +387,15 @@ int jhcEliNeck::Power (double vbat)
 //= Make neck stop in place with brakes on.
 // generally should call Update just before this
 // if tupd > 0 then calls Issue after this
+// NOTE: for continuing freeze set rate = 0 like ShiftTarget(0.0, 0.0, 0.0, 1000)
 
 int jhcEliNeck::Freeze (int doit, double tupd)
 {
-  // reset edge trigger
+  // tell ramp controllers to remember position
   if (doit <= 0)
-  {
-    ice = 0;
     return nok;
-  }
-
-  // remember orientations at first call (prevents drift)
-  if (ice <= 0)
-  {
-    jt[0].RampTarget(jt[0].Angle());
-    jt[1].RampTarget(jt[1].Angle());
-    ice = 1;
-  }
+  jt[0].rt = 0.0;
+  jt[1].rt = 0.0;
 
   // possibly talk to servos
   stiff = 1;
@@ -414,8 +405,9 @@ int jhcEliNeck::Freeze (int doit, double tupd)
 }
 
 
-//= Make neck stop and go passive (pushable).
-// immediately talks to servos
+//= Make neck stop and go passive (pushable) and immediately talks to servos.
+// for continuing limp set current position like ShiftTarget(0.0, 0.0, 1.0, 1000)
+// NOTE: this is "freer" then recycling current position since motors are disabled
 
 int jhcEliNeck::Limp ()
 {
@@ -454,8 +446,6 @@ int jhcEliNeck::Limp ()
 
 int jhcEliNeck::Update ()
 {
-  jhcMatrix tool(4);
-
   // make sure hardware is working
   if ((nok < 0) || (dyn == NULL))
     return nok;
@@ -466,6 +456,20 @@ int jhcEliNeck::Update ()
     nok = 0;
   if (jt[1].GetState() <= 0)
     nok = 0;
+  current_pose(pos0, dir);
+
+  // set up for new target arbitration
+  clr_locks(0);
+  return nok;
+}
+
+
+//= Get relative position (XYZ) and direction (PTR) vectors based on joints.
+// assumed joints are already updated
+
+void jhcEliNeck::current_pose (jhcMatrix& xyz, jhcMatrix& ptr)
+{
+  jhcMatrix tool(4);
 
   // compute coordinate transform matrices
   jt[0].SetMapping(Pan(), NULL, nx0, ny0, nz0);
@@ -473,14 +477,10 @@ int jhcEliNeck::Update ()
 
   // adjust for camera projection forward (y is reversed)
   tool.SetVec3(0.0, -cfwd, 0.0);
-  jt[1].GlobalMap(pos0, tool);
+  jt[1].GlobalMap(xyz, tool);
 
   // make up an aiming vector
-  dir.SetVec3(Pan(), Tilt(), roll);
-
-  // set up for new target arbitration
-  clr_locks(0);
-  return nok;
+  ptr.SetVec3(Pan(), Tilt(), roll);
 }
 
 
@@ -703,10 +703,10 @@ double jhcEliNeck::norm_ang (double degs) const
 {
   double a = degs;
 
-  while (a > 180.0)
-    a -= 360.0;
-  while (a <= -180.0)
-    a += 360.0;
+  if (a > 180.0)
+    a -= 360.0 * ROUND(a / 360.0);
+  else if (a <= -180.0)
+    a += 360.0 * ROUND(a / 360.0);
   return a;
 }
 

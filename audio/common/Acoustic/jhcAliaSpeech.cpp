@@ -44,8 +44,23 @@ jhcAliaSpeech::jhcAliaSpeech ()
   strcpy_s(gram,  "language/alia_top.sgm");    // main grammar file
   strcpy_s(kdir,  "KB/");                      // for kernels
   strcpy_s(kdir2, "KB2/");                     // extra abilities
+  spin  = 0;                                   // no speech reco
+  amode = 2;                                   // attn word at front
+  tts   = 0;                                   // no speech out
+  acc   = 0;                                   // forget rules/ops
   time_params(NULL);
-  acc = 0;                                     // accumulate knowledge
+}
+
+
+//= Most recent result of speech input (0 = none, 1 = speaking, 2 = reco).
+
+int jhcAliaSpeech::SpeechRC () const 
+{
+  if (spin == 2)
+    return web.Hearing();
+  if (spin == 1)
+    return sp.Hearing();
+  return 0;
 }
 
 
@@ -62,10 +77,8 @@ int jhcAliaSpeech::time_params (const char *fname)
   int ok;
 
   ps->SetTag("asp_time", 0);
-  ps->NextSpec4( &amode,    2,   "Attn (none, any, front, only)");
   ps->NextSpecF( &stretch,  2.5, "Attention window (sec)");  
   ps->NextSpec4( &wait,    12,   "Text out delay (cyc)");
-  ps->Skip();
   ps->NextSpecF( &thz,     80.0, "Thought cycle rate (Hz)");  
   ps->NextSpecF( &shz,     30.0, "Default body rate (Hz)");  
   ok = ps->LoadDefs(fname);
@@ -79,22 +92,34 @@ int jhcAliaSpeech::time_params (const char *fname)
 ///////////////////////////////////////////////////////////////////////////
 
 //= Reset state for the beginning of a sequence.
-// speech: 0 for none, 1 for TTS only, 2 for reco/TTS, 3 for attn word
 // can also set up robot name as an attention word
 // returns 1 if okay, 0 or negative for error
 
-int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
+int jhcAliaSpeech::Reset (const char *rname, const char *vname)
 {
   char extras[200];
   int ans;
 
   // remember interface choice and set attentional state
   sprintf_s(extras, "%sbaseline.lst", kdir2);
-  voice = speech;
   awake = 0;
-  if (voice >= 2)
+  if (spin == 2)
   {
-    // constrain speech by same grammar as core
+    // configure online speech recognition (requires internet connection)
+    ans = web.Init(1);
+    if (noisy > 0)
+    {
+      jprintf("Using online %s\n", web.Version());
+      jprintf("  %d recognition fixes from: misheard.map\n", web.Fixes());
+      jprintf("SPEECH -> %s\n", ((ans > 0) ? "OK" : "FAILED !!!"));
+      jprintf("=========================\n\n");
+    }
+    if (ans <= 0)
+      return 0;
+  }
+  else if (spin == 1)
+  {
+    // constrain local speech recognition by same grammar as core
     sp.SetGrammar(gram); 
     ans = sp.Init(1, 0);                       // show partial transcriptions
     if (noisy > 0)
@@ -114,14 +139,13 @@ int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
     sp.MarkRule("toplevel");          
     sp.Listen(1);
   }
-  else
-    sp.InitTTS();                              // for echoing
-
+  
   // set TTS and speech state
-  if ((voice > 0) && (vname != NULL) && (*vname != '\0'))
+  if ((tts > 0) && (spin != 1))        // use just TTS from jhcSpeechX                              
+    sp.InitTTS(noisy);                      
+  if ((tts > 0) && (vname != NULL) && (*vname != '\0'))
     sp.SetVoice(vname);
   sp.Reset();
-  sp.LoadAlt("pronounce.map");
 
   // set basic grammar for core and clear state (speech already set)
   jprintf("Initializing ALIA core %4.2f\n\n", Version());
@@ -161,7 +185,7 @@ int jhcAliaSpeech::Reset (int speech, const char *rname, const char *vname)
 }
 
 
-//= Load speech system with extra grammar pieces associated with kernels.
+//= Load local speech system with extra grammar pieces associated with kernels.
 
 void jhcAliaSpeech::kern_gram ()
 {
@@ -183,7 +207,7 @@ void jhcAliaSpeech::kern_gram ()
 }
 
 
-//= Load speech system with extra grammar pieces associated with baseline knowledge.
+//= Load local speech system with extra grammar pieces associated with baseline knowledge.
 
 void jhcAliaSpeech::base_gram (const char *list)
 {
@@ -226,7 +250,7 @@ void jhcAliaSpeech::base_gram (const char *list)
 }
 
 
-//= Add the robot's own name as an attention word.
+//= Add the robot's own name as an attention word to local speech system.
 
 void jhcAliaSpeech::self_name (const char *name)
 {
@@ -245,7 +269,7 @@ void jhcAliaSpeech::self_name (const char *name)
 }
 
 
-//= Initialize just the speech component for use with remote ALIA brain.
+//= Initialize just the local speech component for use with remote ALIA brain.
 
 int jhcAliaSpeech::VoiceInit ()
 {
@@ -264,13 +288,20 @@ int jhcAliaSpeech::VoiceInit ()
 
 int jhcAliaSpeech::UpdateSpeech ()
 {
-  // wait for new sensors then check for new input (or exit)
+  // check for new input 
   if (done > 0)
     return 0;
-  sp.Update(voice - 1);
-  if (voice >= 2)
-    if (sp.Escape())
-      return 0;
+  if ((tts > 0) && (spin != 1))
+    sp.Update(0);                      // just TTS
+  if (spin == 2)
+    web.Update(sp.Talking());
+  else if (spin == 1)
+    sp.Update();                       // does TTS also
+
+  // see if exit requested
+  if (((spin == 2) && web.Escape()) || 
+      ((spin == 1) && sp.Escape()))
+    return 0;
   return 1;
 }
 
@@ -296,7 +327,7 @@ int jhcAliaSpeech::Respond (int alert)
   bid = Response(output);
 
   // send commands to body and language output channel (no delay)
-  if (voice > 1)
+  if (tts > 0)
   {
     sp.Say(bid, output);
     sp.Issue();
@@ -312,10 +343,15 @@ int jhcAliaSpeech::Respond (int alert)
 void jhcAliaSpeech::xfer_input ()
 {
   const char *sent;
-  int hear, attn = ((voice >= 3) ? awake : 1);
+  int hear, attn = ((amode <= 0) ? 1 : awake);
 
   // get language status and input string 
-  if (voice > 1)
+  if (spin == 2)
+  {
+    hear = web.Hearing();
+    sent = web.Heard();
+  }
+  else if (spin == 1)
   {
     hear = sp.Hearing();
     sent = sp.Heard();
@@ -336,12 +372,12 @@ void jhcAliaSpeech::xfer_input ()
   // see if system should continue paying attention
   if (awake != 0) 
   {
-    if (sp.Talking() > 0)                                 // prolong during output
+    if (sp.Talking() > 0)                                 // prolong during TTS output
       awake = now;
     else if ((attn > 0) && (sp.Silence() > 0.1) &&                     
              (jms_diff(now, awake) > ROUND(1000.0 * stretch)))
     {
-      jprintf(1, noisy, "\n  ... timeout ... attention off\n");
+      jprintf(1, noisy, "\n  ... timeout ... attention off\n\n");
       awake = 0;
     }
   }
@@ -382,7 +418,9 @@ void jhcAliaSpeech::DayDream ()
 
 void jhcAliaSpeech::Done ()
 {
-  if (voice > 1)
+  if (spin == 2)
+    web.Close();
+  else if (spin == 1)
     sp.Listen(0);
   if (acc > 0)
     DumpLearned();
@@ -398,7 +436,10 @@ void jhcAliaSpeech::Done ()
 
 bool jhcAliaSpeech::Accept (const char *in, int quit) 
 {
-  if (voice > 1)
+  // process string through speech or handle separately
+  if (spin == 2)
+    web.Inject(in, quit);
+  else if (spin == 1)
     sp.Inject(in, quit); 
   else
   {
@@ -408,6 +449,10 @@ bool jhcAliaSpeech::Accept (const char *in, int quit)
       strcpy_s(input, in);
     done = quit;
   }
+
+  // no attention word ever needed for text input
+  if ((in != NULL) && (*in != '\0'))
+    awake = jms_now();
   return((in != NULL) && (*in != '\0') && (quit <= 0));
 }
 
@@ -420,7 +465,9 @@ const char *jhcAliaSpeech::NewInput ()
   const char *last, *fix;
 
   // get last input string and proper parse (if any)
-  if (voice > 1)
+  if (spin == 2)
+    last = web.LastIn();
+  else if (spin == 1)
     last = sp.LastIn();
   else
     last = lastin;
@@ -429,7 +476,7 @@ const char *jhcAliaSpeech::NewInput ()
   // show input even if not parsed correctly
   if ((last == NULL) || (*last == '\0'))
     return NULL;
-  if ((voice > 1) && (awake == 0))
+  if ((spin > 0) && (awake == 0))
     return NULL;
   if ((fix != NULL) && (*fix != '\0'))          
     return fix;
@@ -459,7 +506,7 @@ const char *jhcAliaSpeech::NewOutput ()
   {
     strcpy_s(pend, output);
     yack = now;
-    if (voice == 1)
+    if ((spin <= 0) && (tts > 0))
     {
       // start TTS immediately but allow for later override
       sp.Say(sense, output);               

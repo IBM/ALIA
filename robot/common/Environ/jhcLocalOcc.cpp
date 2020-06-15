@@ -567,7 +567,7 @@ void jhcLocalOcc::set_spin (double da)
 //
 // dist readings
 //   abs =   0                           hnd                     ndir                  ndir+hnd                 2*ndir
-//   dev = -ndir                        -hnd                       0                     +hnd                    +ndir
+//   dev = -ndir                        -hnd    (rt0)         -1   0  +1     (lf1)       +hnd                    +ndir
 //   idx =   0    1    2    3    4    5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23  (24)
 //   ang = -180 -165 -150 -135 -120 -105 -90 -75 -60 -45 -30 -15   0  15  30  45  60  75  90 105 120 135 150 165
 //   src =   B6   B7   B8   B9  B10  B11  F0  F1  F2  F3  F4  F5  F6  F7  F8  F9 F10 F11  B0  B1  B2  B3  B4  B5  
@@ -763,7 +763,7 @@ double jhcLocalOcc::Avoid (double& trav, double& head, double tx, double ty)
 double jhcLocalOcc::pick_dir (double td, double ta) const
 {
   double prog[36];
-  double trads = D2R * ta, dr = PI / ndir, step = 180.0 / ndir, hs = 0.5 * step;
+  double trads = D2R * ta, dr = PI / ndir, step = 180.0 / ndir;
   double rd, len, sum, adv, best = 0.0, win = -360.0;
   int dev;
 
@@ -802,6 +802,94 @@ double jhcLocalOcc::pick_dir (double td, double ta) const
     jprintf(3, dbg, "  %4.0f: prog %5.1f beam %5.1f\n", dev * step, prog[ndir + dev], dist[ndir + dev]); 
   jprintf(2, dbg, "  pick_dir = %1.0f degs -> avg %3.1f [prog %3.1f]\n", win, best, adv);
   return win;
+}
+
+
+//= Pick alternate direction and motion to achieve goal (forward or reverse).
+// tries to backup if distance "td" is negative and uses sensors in opposite direction
+// returns 1 if good heading found, 0 if no good choices
+
+int jhcLocalOcc::Swerve (double& trav, double& head, double td, double ta) const
+{
+  double prog[36];
+  double trads = D2R * ta, dr = PI / ndir, step = 180.0 / ndir;
+  double rd, len, sum, adv, diff, off, best = 0.0;
+  int dev, i, nd2 = 2 * ndir;
+
+int dbg = 3;
+
+  // find progress toward goal possible by traveling along each beam
+  jprintf(2, dbg, "target %3.1f in @ %3.1f deg : search [%3.1f %3.1f]\n", td, ta, rt0 * step, lf1 * step);
+  for (dev = rt0; dev <= lf1; dev++)
+  {
+    // adjust sensor number for backward travel but store progress at forward orientation 
+    i = ndir + dev;
+    if (td < 0.0)
+      i = (nd2 + dev) % nd2;
+    rd = __max(0.0, dist[i]);
+    len = rd * cos(dev * dr - trads);
+    prog[ndir + dev] = __min(len, fabs(td));
+  }
+
+  // search reachable directions for suitably long paths
+  head = 0.0;
+  trav = 0.0;
+  for (dev = rt0; dev <= lf1; dev++)
+  {
+    // adjust sensor number for backward travel then check minimums
+    i = ndir + dev;
+    if (td < 0.0)
+      i = (nd2 + dev) % nd2;
+    if ((dist[i] < block) || (prog[ndir + dev] < detour))
+    {
+      jprintf(3, dbg, "  %4.0f: prog %5.1f beam %5.1f\n", dev * step, prog[ndir + dev], dist[i]); 
+      continue;
+    }
+
+    // smooth progress over adjacent three beams (if reachable)
+    sum = 2.0 * prog[ndir + dev];
+    if (dev > rt0)
+      sum += prog[ndir + dev - 1];    
+    if (dev < lf1)
+      sum += prog[ndir + dev + 1];  
+    sum /= 4.0;
+    jprintf(3, dbg, "  %4.0f: prog %5.1f, avg %5.1f ***\n", dev * step, prog[ndir + dev], sum);
+
+    // figure out heading deviation from direct path
+    diff = fabs(dev * step - ta);
+    if (diff > 180.0)
+      diff = 360.0 - diff;
+
+    // keep beam direction with most progress (or closest toward goal)
+    if ((trav == 0.0) || (sum > best) || 
+        ((sum == best) && (prog[ndir + dev] > adv)) ||
+        ((sum == best) && (prog[ndir + dev] == adv) && (diff < off)))
+    {
+      best = sum;
+      adv = prog[ndir + dev];
+      off = diff;
+      head = dev * step;  
+      trav = dist[i];
+    }
+  }
+
+  // possibly restore full distance (for speed control)
+  if (trav == 0.0)
+    return 0;
+  trav = __min(trav, fabs(td));
+  if (trav >= lead)
+    trav = td;
+  else if (td < 0.0)
+    trav = -trav;
+
+  // possibly restore exact heading if close to winner
+  diff = fabs(head - ta);
+  if (diff > 180.0)
+    diff = 360.0 - diff;
+  if (diff < (90.0 / ndir))              
+    head = ta;
+  jprintf(2, dbg, "  pick_dir = %3.1f degs -> avg %3.1f [prog %3.1f], go %3.1f\n", head, best, adv, trav);
+  return 1;
 }
 
 

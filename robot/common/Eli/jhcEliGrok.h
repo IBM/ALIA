@@ -47,7 +47,7 @@ class jhcEliGrok : public jhcBackgRWI
 private:
   jhcImg mark, mark2;
   UL32 tnow;
-  int seen;
+  int phy, seen;
 
   // target watching control
   char wtarg[9][20];
@@ -57,8 +57,8 @@ private:
   UL32 idle;
 
   // high-level commands
-  double sx, sy, ssp;
-  int wlock, wwin, slock;
+  double sx, sy, ssp, vd, va, vsp;
+  int wlock, wwin, slock, vlock;
 
 
 // PUBLIC MEMBER VARIABLES
@@ -104,6 +104,7 @@ public:
   const jhcImg *HeadView () const {return &mark;}
   const jhcImg *MapView () const  {return &mark2;}
   const char *Watching () const;
+  bool Ghost () const {return(phy <= 0);}
 
   // processing parameter bundles 
   int Defaults (const char *fname =NULL);
@@ -112,7 +113,7 @@ public:
   int SaveCfg (const char *fname) const;
 
   // main functions
-  void Reset ();
+  void Reset (int rob =1);
   int Update (int voice =0, UL32 resume =0);
   void Stop ();
 
@@ -124,6 +125,7 @@ public:
   int SeekLoc (double tx, double ty, double sp =1.0, int bid =10);
   int SeekLoc (const jhcMatrix& targ, double sp =1.0, int bid =10) 
     {return SeekLoc(targ.X(), targ.Y(), sp, bid);}
+  int ServoPolar (double td, double ta, double sp =1.0, int bid =10);
 
 
 // PRIVATE MEMBER FUNCTIONS
@@ -143,6 +145,7 @@ private:
 
   // high-level navigation commands
   void assert_seek ();
+  void assert_servo ();
 
   // interaction overrrides
   void body_update ();
