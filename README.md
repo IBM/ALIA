@@ -1,4 +1,7 @@
 # ALIA
+
+> **:red_circle: This repository is not maintained. For a more recent version see [https://github.com/jconnell11/ALIA](https://github.com/jconnell11/ALIA) :red_circle:**
+
 ## Architecture for Linguistic Interaction and Augmentation
 
 This is an end-to-end symbolic cognitive system that is able to learn from natural language instructions via text or speech. Some examples of its use (and related papers) on a small robot can be found at:
@@ -72,5 +75,3 @@ As with MensEt, you can run Banzai without a physical robot, or with just a Kine
 ---
 
 June 2020 - Jonathan Connell - jconnell@alum.mit.edu
-
-
